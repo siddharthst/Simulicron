@@ -131,7 +131,7 @@ class initSim:
             'Genome'
         ])
         self.GenFrame = pd.DataFrame(columns=[
-            'GID', 'Size', 'Insertion_Father', 'Insertion_Mother', 'Recomob'
+            'GID', 'Size', 'Insertion_Father', 'Insertion_Mother'
         ])
 
     # Init transposons
@@ -242,11 +242,12 @@ class initSim:
                 'GID': GID,
                 'Size': self.gensize,
                 'Insertion_Father': insertion_Father,
-                'Insertion_Mother': insertion_Mother,
-                'Recomob': [0]
+                'Insertion_Mother': insertion_Mother
             })
             self.PopFrame = self.PopFrame.append(rowPop, ignore_index=True)
             self.GenFrame = self.GenFrame.append(rowGen, ignore_index=True)
+        self.PopFrame['Lineage'] = self.PopFrame['Lineage'].astype('object')
+        self.PopFrame['TE'] = self.PopFrame['TE'].astype('object')
         return (self.PopFrame, self.GenFrame)
 
     def createSim(self):
