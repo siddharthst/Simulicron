@@ -1,23 +1,25 @@
-#Imports
-import tempfile
-import numpy
-import dask as dd
-import pandas as pd
-import coloredlogs, logging
-import uuid
-import random
-from coolname import generate_slug
-from functools import wraps
+# Imports
 import inspect
+import random
+import tempfile
+import uuid
+from functools import wraps
 
-#Logger
+import coloredlogs
+import dask as dd
+import logging
+import numpy
+import pandas as pd
+from coolname import generate_slug
+
+# Logger
 logger = logging.getLogger(__name__)
 coloredlogs.install(level='DEBUG')
 
 # StackOverflow snippet #1
-###########################################################################################################################
-#//////|   Decorator   |//////////////////////////////////////////////////////////////////////////////////////////////////#
-###########################################################################################################################
+########################################################################################################################
+# /////|   Decorator   |////////////////////////////////////////////////////////////////////////////////////////////////
+########################################################################################################################
 
 
 def auto_assign_arguments(function):
@@ -30,9 +32,9 @@ def auto_assign_arguments(function):
     return wrapped
 
 
-###########################################################################################################################
-#//////|   Utils   |//////////////////////////////////////////////////////////////////////////////////////////////////////#
-###########################################################################################################################
+########################################################################################################################
+# /////|   Utils   |////////////////////////////////////////////////////////////////////////////////////////////////////
+########################################################################################################################
 
 
 def _assign_args(instance, args, kwargs, function):
@@ -76,12 +78,12 @@ def _assign_args(instance, args, kwargs, function):
         assign_variable_args(parameter=VARIABLE_PARAM, args=args)
 
 
-###########################################################################################################################
+########################################################################################################################
 
 
-###########################################################################################################################
-#//////|   Class   |//////////////////////////////////////////////////////////////////////////////////////////////////////#
-###########################################################################################################################
+########################################################################################################################
+# /////|   Class   |////////////////////////////////////////////////////////////////////////////////////////////////////
+########################################################################################################################
 class initSim:
     """Class to initialize the progenitor (F0) population.
 
@@ -128,10 +130,7 @@ class initSim:
         ])
         self.PopFrame = pd.DataFrame(columns=[
             'PID', 'Fitness', 'Name', 'Sex', 'Lineage', 'Generation', 'TE',
-            'Genome'
-        ])
-        self.GenFrame = pd.DataFrame(columns=[
-            'GID', 'Size', 'Insertion_Father', 'Insertion_Mother'
+            'Insertion_Father', 'Insertion_Mother'
         ])
 
     # Init transposons
@@ -224,31 +223,25 @@ class initSim:
                 insertion_Father = 0
                 insertion_Mother = 0
 
-            # Create unique GID to be shared between individual and genome
-            GID = uuid.uuid4().hex
-
             # Populate the population!
             rowPop = pd.Series({
                 'PID': uuid.uuid4().hex,
                 'Fitness': random.uniform(0.6, 1.0),
                 'Name': generate_slug(),
                 'Sex': 'H',
-                'Lineage': '0',
+                'Lineage': ['0'],
                 'Generation': 1,
-                'TE': TE,
-                'Genome': GID
-            })
-            rowGen = pd.Series({
-                'GID': GID,
-                'Size': self.gensize,
-                'Insertion_Father': insertion_Father,
-                'Insertion_Mother': insertion_Mother
+                'TE': [TE],
+                'Insertion_Father': [insertion_Father],
+                'Insertion_Mother': [insertion_Mother]
             })
             self.PopFrame = self.PopFrame.append(rowPop, ignore_index=True)
-            self.GenFrame = self.GenFrame.append(rowGen, ignore_index=True)
+            
         self.PopFrame['Lineage'] = self.PopFrame['Lineage'].astype('object')
         self.PopFrame['TE'] = self.PopFrame['TE'].astype('object')
-        return (self.PopFrame, self.GenFrame)
+        self.PopFrame['Insertion_Father'] = self.PopFrame['Insertion_Father'].astype('object')
+        self.PopFrame['Insertion_Mother'] = self.PopFrame['Insertion_Mother'].astype('object')
+        return (self.PopFrame)
 
     def createSim(self):
         """Method to generate the initial simulation dataset
@@ -262,5 +255,11 @@ class initSim:
         """
 
         transposon = self.initT()
-        population, genome = self.initPG()
-        return ([transposon, population, genome])
+        genome = self.initPG()
+        return ([transposon, genome])
+
+########################################################################################################################
+
+k = initSim
+z = k.createSim()
+print (z[0])
