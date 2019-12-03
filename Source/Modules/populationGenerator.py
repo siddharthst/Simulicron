@@ -126,11 +126,11 @@ class initSim:
         # Dataframe definations
         self.TranspFrame = pd.DataFrame(columns=[
             'TID', 'Position', 'SelCo', 'Name', 'Class', 'Traceback',
-            'Generation', "Parent", "TraRate"
+            'Generation', 'Parent', "TraRate"
         ])
         self.PopFrame = pd.DataFrame(columns=[
-            'PID', 'Fitness', 'Name', 'Sex', 'Lineage', 'Generation', 'TE',
-            'Insertion_Father', 'Insertion_Mother'
+            'PID', 'Fitness', 'Name', 'Sex', 'Lineage', 'Generation',
+            'TEfather', 'TEmother', 'Insertion_Father', 'Insertion_Mother'
         ])
 
     # Init transposons
@@ -145,7 +145,7 @@ class initSim:
             logger.info(
                 "Mismatch between transposon count and selection penalties. Using default for each transposon count!"
             )
-            self.tpenalty = [-0.02] * self.tcount
+            self.tpenalty = [-0.4] * self.tcount
         if (self.tcount > len(self.trate)):
             logger.info(
                 "Mismatch between transposon count and transposition rates. Using default for each transposon count!"
@@ -200,6 +200,8 @@ class initSim:
         insertion_Father = 0
         insertion_Mother = 0
         FitnessPen = 0
+        TEfather = "0"
+        TEmother = "0"
         for i in range(self.popsize):
             # In case this (un)lucky individual has transposon insertion
             if (i in IndividualToInsert):
@@ -212,35 +214,42 @@ class initSim:
                 if (Parent == "Mother"):
                     insertion_Mother = self.TranspFrame[
                         self.TranspFrame['TID'] == TE]['Position'].values[0]
+                    TEmother = TE
 
                 if (Parent == "Father"):
                     insertion_Father = self.TranspFrame[
                         self.TranspFrame['TID'] == TE]['Position'].values[0]
+                    TEfather = TE
 
             else:
                 TE = '0'
                 Parent = "0"
                 insertion_Father = 0
                 insertion_Mother = 0
+                FitnessPen = 0
+                TEmother = "0"
+                TEfather = "0"
 
             # Populate the population!
             rowPop = pd.Series({
                 'PID': uuid.uuid4().hex,
-                'Fitness': random.uniform(0.6, 1.0),
+                'Fitness': random.uniform(0.6, 1.0) - FitnessPen,
                 'Name': generate_slug(),
                 'Sex': 'H',
                 'Lineage': ['0'],
                 'Generation': 1,
-                'TE': [TE],
                 'Insertion_Father': [insertion_Father],
-                'Insertion_Mother': [insertion_Mother]
+                'Insertion_Mother': [insertion_Mother],
+                'TEmother': [TEmother],
+                'TEfather': [TEfather]
             })
             self.PopFrame = self.PopFrame.append(rowPop, ignore_index=True)
-            
+
         self.PopFrame['Lineage'] = self.PopFrame['Lineage'].astype('object')
-        self.PopFrame['TE'] = self.PopFrame['TE'].astype('object')
-        self.PopFrame['Insertion_Father'] = self.PopFrame['Insertion_Father'].astype('object')
-        self.PopFrame['Insertion_Mother'] = self.PopFrame['Insertion_Mother'].astype('object')
+        self.PopFrame['Insertion_Father'] = self.PopFrame[
+            'Insertion_Father'].astype('object')
+        self.PopFrame['Insertion_Mother'] = self.PopFrame[
+            'Insertion_Mother'].astype('object')
         return (self.PopFrame)
 
     def createSim(self):
@@ -257,9 +266,4 @@ class initSim:
         transposon = self.initT()
         genome = self.initPG()
         return ([transposon, genome])
-
 ########################################################################################################################
-
-k = initSim
-z = k.createSim()
-print (z[0])
