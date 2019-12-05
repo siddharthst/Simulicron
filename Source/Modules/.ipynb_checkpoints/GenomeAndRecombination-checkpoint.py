@@ -70,16 +70,16 @@ def recombination(genomeFrame, genomeOrg):
     :type genomeFrame: DataFrame
     :param genomeOrg: Pandas series containing one record of population DataFrame
     :type genomeOrg: Pandas series
-    :return: List of transposons after recombination
-    :rtype: int list
+    :return: Tuple containing two lists, [0] for insertion, [1] for transposon ID
+    :rtype: tuple
     """
     # Create insertion list for the progeny
     TEprogeny = []
     TEid = []
     # Create a copy of genomeFrame
     genomeCopy = genomeFrame.copy(deep=True)
-    TEid_Father = genomeOrg['TEfather']
-    TEid_Mother = genomeOrg['TEmother']
+    TEid_Father = genomeOrg['TEfather'].copy()
+    TEid_Mother = genomeOrg['TEmother'].copy()
     Insertion_Father = genomeOrg['Insertion_Father']
     Insertion_Mother = genomeOrg['Insertion_Mother']
     if (Insertion_Father[0] == 0 and Insertion_Mother[0] == 0):
@@ -115,4 +115,8 @@ def recombination(genomeFrame, genomeOrg):
                     TEprogeny.append(i)
                     TEid.append(TEid_Mother.pop(0))
         #print(genomeCopy['Progeny'].value_counts())
+    if not TEprogeny:
+        TEprogeny.append(0)
+    if not TEid:
+        TEid.append("0")
     return (TEprogeny, TEid)
