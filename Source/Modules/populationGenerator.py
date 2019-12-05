@@ -145,7 +145,7 @@ class initSim:
             logger.info(
                 "Mismatch between transposon count and selection penalties. Using default for each transposon count!"
             )
-            self.tpenalty = [-0.4] * self.tcount
+            self.tpenalty = [-0.02] * self.tcount
         if (self.tcount > len(self.trate)):
             logger.info(
                 "Mismatch between transposon count and transposition rates. Using default for each transposon count!"
@@ -231,9 +231,12 @@ class initSim:
                 TEfather = "0"
 
             # Populate the population!
+            # Define intial fitness
+            fitness = random.uniform(0.6, 1.0)
             rowPop = pd.Series({
                 'PID': uuid.uuid4().hex,
-                'Fitness': random.uniform(0.6, 1.0) - FitnessPen,
+                'Fitness': fitness,
+                'NetFitness': fitness + FitnessPen,
                 'Name': generate_slug(),
                 'Sex': 'H',
                 'Lineage': ['0'],
@@ -266,4 +269,5 @@ class initSim:
         transposon = self.initT()
         genome = self.initPG()
         return ([transposon, genome])
+
 ########################################################################################################################
