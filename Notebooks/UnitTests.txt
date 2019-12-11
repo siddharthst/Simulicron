@@ -61,5 +61,6 @@ inserted randomly in a unique individual.
 - Starting population: the same as in D1, but TEs now have a fitness disadvantage of -s
 - Simulation setting: the same as in D1, perhaps longer simulations if an equilibrium can be reached
 - What to track: the same as in D1
-- Expected theoretical results (from Charlesworth & Charlesworth 1983)
+- Expected theoretical results (approximation from Charlesworth & Charlesworth 1983)
 -- The result depends on the fitness model, and only holds in large populations. 
+-- For multiplicative fitness, the dynamics is exponential : log(n) = a t + b, where t is the time in generations, a=log(1+u+s), and b = log(n0). 
