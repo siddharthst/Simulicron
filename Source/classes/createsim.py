@@ -215,6 +215,11 @@ class initSim:
         return self.PopFrame
 
     def generateGenome(self):
+        """Method to create initial genome
+        
+        :return: Pandas DataFrame containing the genome
+        :rtype: DataFrame
+        """
         NumberInsertionSites = self.insize
         NumberChromosomes = self.nChr
         ###-----------Function main-----------###
