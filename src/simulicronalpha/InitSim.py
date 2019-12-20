@@ -8,6 +8,7 @@ from coolname import generate_slug
 
 import logging
 import coloredlogs
+
 # Logger
 logger = logging.getLogger(__name__)
 coloredlogs.install(level="DEBUG")
@@ -97,15 +98,11 @@ class initSim:
         InsertionSiteColumn = list(range(1, NumberInsertionSites))
         RecombinationRate = [0.01] * len(genome)
         chrLocation = np.random.choice(
-            list(range(1, NumberInsertionSites - 10)),
-            NumberChromosomes,
-            replace=False,
+            list(range(1, NumberInsertionSites - 10)), NumberChromosomes, replace=False,
         )
         SelectionCoef = np.random.normal(-0.02, 0.01, len(genome))
-        insertionProbability = np.random.uniform(
-            0.01, 0.99, len(genome)
-        )
-
+        insertionProbability = np.random.uniform(0.01, 0.99, len(genome))
+        insertionProbability /= insertionProbability.sum()
         for i in chrLocation:
             RecombinationRate[i] = 0.5
 
@@ -169,9 +166,7 @@ class initSim:
             self.tparent = ["Mother"] * self.tcount
 
         # Create random filled insertion sites
-        inSiteArray = random.sample(
-            range(1, self.insize - 10), self.tcount
-        )
+        inSiteArray = random.sample(range(1, self.insize - 10), self.tcount)
 
         for i in range(0, self.tcount):
             row = pd.Series(
@@ -186,9 +181,7 @@ class initSim:
                     "Parent": self.tparent[i],
                 }
             )
-            self.TranspFrame = self.TranspFrame.append(
-                row, ignore_index=True
-            )
+            self.TranspFrame = self.TranspFrame.append(row, ignore_index=True)
             self.TranspFrame["InsertionSite"] = self.TranspFrame[
                 "InsertionSite"
             ].astype(int)
@@ -206,9 +199,7 @@ class initSim:
         """
 
         # Create transposon insertions in randomly selected individuals
-        IndividualToInsert = random.sample(
-            list(range(1, self.popsize)), self.tcount
-        )
+        IndividualToInsert = random.sample(list(range(1, self.popsize)), self.tcount)
         TIDlist = self.TranspFrame.TID.tolist()
         TIDcounter = 0
         Parent = "0"
@@ -222,27 +213,26 @@ class initSim:
             if i in IndividualToInsert:
                 TE = TIDlist[TIDcounter]
                 TIDcounter += 1
-                insertionSiteID = self.TranspFrame[
-                    self.TranspFrame["TID"] == TE
-                ]["InsertionSite"].values[0]
-                Parent = self.TranspFrame[
-                    self.TranspFrame["TID"] == TE
-                ]["Parent"].values[0]
+                insertionSiteID = self.TranspFrame[self.TranspFrame["TID"] == TE][
+                    "InsertionSite"
+                ].values[0]
+                Parent = self.TranspFrame[self.TranspFrame["TID"] == TE][
+                    "Parent"
+                ].values[0]
                 FitnessPen = self.GenFrame[
-                    self.GenFrame["InsertionSiteID"]
-                    == insertionSiteID
+                    self.GenFrame["InsertionSiteID"] == insertionSiteID
                 ]["SelectionCoef"].values[0]
 
                 if Parent == "Mother":
-                    insertion_Mother = self.TranspFrame[
-                        self.TranspFrame["TID"] == TE
-                    ]["InsertionSite"].values[0]
+                    insertion_Mother = self.TranspFrame[self.TranspFrame["TID"] == TE][
+                        "InsertionSite"
+                    ].values[0]
                     TEmother = TE
 
                 if Parent == "Father":
-                    insertion_Father = self.TranspFrame[
-                        self.TranspFrame["TID"] == TE
-                    ]["InsertionSite"].values[0]
+                    insertion_Father = self.TranspFrame[self.TranspFrame["TID"] == TE][
+                        "InsertionSite"
+                    ].values[0]
                     TEfather = TE
 
             else:
@@ -272,19 +262,15 @@ class initSim:
                     "TEfather": [TEfather],
                 }
             )
-            self.PopFrame = self.PopFrame.append(
-                rowPop, ignore_index=True
-            )
+            self.PopFrame = self.PopFrame.append(rowPop, ignore_index=True)
 
-        self.PopFrame["Lineage"] = self.PopFrame["Lineage"].astype(
+        self.PopFrame["Lineage"] = self.PopFrame["Lineage"].astype("object")
+        self.PopFrame["Insertion_Father"] = self.PopFrame["Insertion_Father"].astype(
             "object"
         )
-        self.PopFrame["Insertion_Father"] = self.PopFrame[
-            "Insertion_Father"
-        ].astype("object")
-        self.PopFrame["Insertion_Mother"] = self.PopFrame[
-            "Insertion_Mother"
-        ].astype("object")
+        self.PopFrame["Insertion_Mother"] = self.PopFrame["Insertion_Mother"].astype(
+            "object"
+        )
         return self.PopFrame
 
     def createSim(self):
@@ -302,4 +288,6 @@ class initSim:
         transposon = self.initT()
         population = self.initPG()
         return [transposon, population, genome]
+
+
 ########################################################################################################################
