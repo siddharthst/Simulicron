@@ -76,8 +76,6 @@ class initSim:
                 "Generation",
                 "TEfather",
                 "TEmother",
-                "Insertion_Father",
-                "Insertion_Mother",
             ]
         )
         self.GenFrame = pd.DataFrame(
@@ -256,8 +254,8 @@ class initSim:
                     "Sex": "H",
                     "Lineage": ["0"],
                     "Generation": 1,
-                    "Insertion_Father": [insertion_Father],
-                    "Insertion_Mother": [insertion_Mother],
+                    # "Insertion_Father": [insertion_Father],
+                    # "Insertion_Mother": [insertion_Mother],
                     "TEmother": [TEmother],
                     "TEfather": [TEfather],
                 }
@@ -265,12 +263,12 @@ class initSim:
             self.PopFrame = self.PopFrame.append(rowPop, ignore_index=True)
 
         self.PopFrame["Lineage"] = self.PopFrame["Lineage"].astype("object")
-        self.PopFrame["Insertion_Father"] = self.PopFrame["Insertion_Father"].astype(
-            "object"
-        )
-        self.PopFrame["Insertion_Mother"] = self.PopFrame["Insertion_Mother"].astype(
-            "object"
-        )
+        # self.PopFrame["Insertion_Father"] = self.PopFrame["Insertion_Father"].astype(
+        #     "object"
+        # )
+        # self.PopFrame["Insertion_Mother"] = self.PopFrame["Insertion_Mother"].astype(
+        #     "object"
+        # )
         return self.PopFrame
 
     def createSim(self):
