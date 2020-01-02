@@ -7,6 +7,8 @@ import uuid
 
 def transposition(TEfather, TEmother, genomeFrame, transposonFrame, generation):
     # Skip the check for empty transposon content. Do it in the parent
+    Insertion_Father = []
+    Insertion_Mother = []
     GenomicSites = pd.Series(
         genomeFrame.InsertionProbability.values, index=genomeFrame.InsertionSiteID,
     )
@@ -20,9 +22,10 @@ def transposition(TEfather, TEmother, genomeFrame, transposonFrame, generation):
             )
             newParent = random.choice(["M", "F"])
             GenomeSites.drop(insertionSite, axis=1, inplace=True)
+            TID = uuid.uuid4().hex
             row = pd.Series(
                 {
-                    "TID": uuid.uuid4().hex,
+                    "TID": TID,
                     "InsertionSite": insertionSite,
                     "TraRate": transpositionRate,
                     "Name": generate_slug(),
@@ -32,4 +35,10 @@ def transposition(TEfather, TEmother, genomeFrame, transposonFrame, generation):
                     "Parent": newParent,
                 }
             )
+            if (newParent == 'M'):
+                TEfather.append(TID)
+            else:
+                TEmother.append(TID)
+            transposonFrame = transposonFrame.append(row, ignore_index=True)
+        
     return 0

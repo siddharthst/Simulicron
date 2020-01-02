@@ -3,7 +3,7 @@ from numpy import random, random_intel
 import pandas as pd
 
 
-def recombination(genomeFrame, genomeOrg):
+def recombination(genomeFrame, genomeOrg, transposonFrame):
     # Create insertion list for the progeny
     TEprogeny = []
     TEid = []
@@ -11,6 +11,8 @@ def recombination(genomeFrame, genomeOrg):
     genomeCopy = genomeFrame.copy(deep=True)
     TEid_Father = genomeOrg["TEfather"].copy()
     TEid_Mother = genomeOrg["TEmother"].copy()
+    for i in TEid_Father:
+
     Insertion_Father = genomeOrg["Insertion_Father"]
     Insertion_Mother = genomeOrg["Insertion_Mother"]
     if Insertion_Father[0] == 0 and Insertion_Mother[0] == 0:
