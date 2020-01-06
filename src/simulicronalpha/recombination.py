@@ -5,23 +5,18 @@ import pandas as pd
 
 def recombination(genomeFrame, genomeOrg, transposonFrame):
     # Create insertion list for the progeny
-    TEprogeny = []
     TEid = []
     # Create a copy of genomeFrame
     genomeCopy = genomeFrame.copy(deep=True)
-    TEid_Father = genomeOrg["TEfather"].copy()
-    TEid_Mother = genomeOrg["TEmother"].copy()
-    for i in TEid_Father:
+    # Added lookup to transposon frame
+    # Instead of looking into population database the insertion
+    # sites are now accessed directly from the transposon data-
+    # base
+    TEid_Father = genomeOrg["TEfather"].tolist()
+    TEid_Mother = genomeOrg["TEmother"].tolist()
 
-    Insertion_Father = genomeOrg["Insertion_Father"]
-    Insertion_Mother = genomeOrg["Insertion_Mother"]
     if Insertion_Father[0] == 0 and Insertion_Mother[0] == 0:
-        return (
-            [0],
-            random.choice(
-                [genomeOrg["Insertion_Father"], genomeOrg["Insertion_Mother"],]
-            ),
-        )
+        return [0]
     else:
         initParent = random.choice(["M", "F"])
         surrogateParent = "M" if ("M" != initParent) else "F"
@@ -32,25 +27,33 @@ def recombination(genomeFrame, genomeOrg, transposonFrame):
         genomeCopy["Progeny"] = np.where(
             switch.cumsum() % 2 == 0, initParent, surrogateParent
         )
-        if all(v == 0 for v in Insertion_Father):
+        if all(v == 0 for v in TEid_Father):
             pass
         else:
-            for i in Insertion_Father:
-                se = genomeCopy[genomeCopy["InsertionSite"] == i]["Progeny"].values[0]
+            for i in TEid_Father:
+                insertionSite = transposonFrame.loc[transposonFrame["TID"] == i][
+                    "InsertionSite"
+                ].values[0]
+                se = genomeCopy[genomeCopy["InsertionSite"] == insertionSite][
+                    "Progeny"
+                ].values[0]
                 if se == "M":
-                    TEprogeny.append(i)
-                    TEid.append(TEid_Father.pop(0))
-        if all(v == 0 for v in Insertion_Mother):
+                    TEid.append(i)
+
+        if all(v == 0 for v in TEid_Mother):
             pass
         else:
             for i in Insertion_Mother:
-                se = genomeCopy[genomeCopy["InsertionSite"] == i]["Progeny"].values[0]
+                insertionSite = transposonFrame.loc[transposonFrame["TID"] == i][
+                    "InsertionSite"
+                ].values[0]
+                se = genomeCopy[genomeCopy["InsertionSite"] == insertionSite][
+                    "Progeny"
+                ].values[0]
                 if se == "F":
-                    TEprogeny.append(i)
-                    TEid.append(TEid_Mother.pop(0))
+                    TEid.append(i)
+
         # print(genomeCopy['Progeny'].value_counts())
-    if not TEprogeny:
-        TEprogeny.append(0)
     if not TEid:
         TEid.append(0)
-    return (TEprogeny, TEid)
+    return (TEid)
