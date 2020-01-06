@@ -15,7 +15,7 @@ def recombination(genomeFrame, genomeOrg, transposonFrame):
     TEid_Father = genomeOrg["TEfather"].tolist()
     TEid_Mother = genomeOrg["TEmother"].tolist()
 
-    if Insertion_Father[0] == 0 and Insertion_Mother[0] == 0:
+    if TEid_Father[0] == 0 and TEid_Mother[0] == 0:
         return [0]
     else:
         initParent = random.choice(["M", "F"])
@@ -43,7 +43,7 @@ def recombination(genomeFrame, genomeOrg, transposonFrame):
         if all(v == 0 for v in TEid_Mother):
             pass
         else:
-            for i in Insertion_Mother:
+            for i in TEid_Mother:
                 insertionSite = transposonFrame.loc[transposonFrame["TID"] == i][
                     "InsertionSite"
                 ].values[0]
