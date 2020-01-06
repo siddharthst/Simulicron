@@ -5,15 +5,16 @@ import pandas as pd
 import uuid
 
 
-def transposition(TEfather, TEmother, genomeFrame, transposonFrame, generation):
+def transposition(genomeFrame, transposonFrame, orgFrame):
     # Skip the check for empty transposon content. Do it in the parent
-    Insertion_Father = []
-    Insertion_Mother = []
+    filledSites = list(
+        filter((0).__ne__, orgFrame.iloc[0]["TEfather"] + orgFrame.iloc[0]["TEmother"])
+    )
     GenomicSites = pd.Series(
         genomeFrame.InsertionProbability.values, index=genomeFrame.InsertionSiteID,
     )
     # GenomicSites = GenomicSites[~GenomicSites.index.isin(TEfather + TEmother)]
-    GenomeSites.drop(TEfather + TEmother, axis=1, inplace=True)
+    GenomeSites = GenomeSites.drop(filledSites, axis=1, inplace=True)
     for i in TEfather + TEmother:
         transpositionRate = transposonFrame.loc[transposonFrame["TID"] == i, "TraRate"]
         if transpositionRate > np.random_intel.uniform(0, 1.0):
@@ -35,10 +36,10 @@ def transposition(TEfather, TEmother, genomeFrame, transposonFrame, generation):
                     "Parent": newParent,
                 }
             )
-            if (newParent == 'M'):
+            if newParent == "M":
                 TEfather.append(TID)
             else:
                 TEmother.append(TID)
             transposonFrame = transposonFrame.append(row, ignore_index=True)
-        
+
     return 0
