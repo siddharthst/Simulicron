@@ -3,7 +3,7 @@ from numpy import random, random_intel
 import pandas as pd
 
 
-def recombination(genomeFrame, genomeOrg, transposonFrame):
+def recombination(self, genomeFrame=None, genomeOrg=None, transposonFrame=None):
     # Create insertion list for the progeny
     TEid = []
     # Create a copy of genomeFrame
@@ -56,4 +56,4 @@ def recombination(genomeFrame, genomeOrg, transposonFrame):
         # print(genomeCopy['Progeny'].value_counts())
     if not TEid:
         TEid.append(0)
-    return (TEid)
+    return TEid

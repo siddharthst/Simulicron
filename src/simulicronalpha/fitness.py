@@ -1,8 +1,16 @@
 import numpy as np
 
-def fitness(genomeFrame, populationFrame, function=1):
+
+def fitness(
+    self, genomeFrame=None, populationFrame=None, transposonFrame=None, function=1
+):
     TEcontent = (
-        populationFrame["Insertion_Father"] + populationFrame["Insertion_Mother"]
+        transposonFrame[
+            transposonFrame["TID"].isin(populationFrame["TEfather"].tolist())
+        ]["InsertionSite"].tolist()
+        + transposonFrame[
+            transposonFrame["TID"].isin(populationFrame["TEmother"].tolist())
+        ]["InsertionSite"].tolist()
     )
     selectionCoef = []
     for i in TEcontent:
