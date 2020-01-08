@@ -69,7 +69,7 @@ class RunSim(initSim):
                     insertionSite = self.TranspFrame.loc[self.TranspFrame["TID"] == i][
                         "InsertionSite"
                     ].values[0]
-                    se = genomeCopy[genomeCopy["InsertionSite"] == insertionSite][
+                    se = genomeCopy[genomeCopy["InsertionSiteID"] == insertionSite][
                         "Progeny"
                     ].values[0]
                     if se == "F":
@@ -115,34 +115,49 @@ class RunSim(initSim):
         # Skip the check for empty transposon content. Do it in the parent
         TEfather = TIDm
         TEmother = TIDf
-        filledSites = list(
-            filter(
-                (0).__ne__,
-                self.TranspFrame[self.TranspFrame["TID"].isin([TIDm])][
-                    "InsertionSite"
-                ].tolist()
-                + self.TranspFrame[self.TranspFrame["TID"].isin([TIDf])][
-                    "InsertionSite"
-                ].tolist(),
-            )
+        filledSites = (
+            self.TranspFrame[self.TranspFrame["TID"].isin(TIDm)][
+                "InsertionSite"
+            ].tolist()
+            + self.TranspFrame[self.TranspFrame["TID"].isin(TIDf)][
+                "InsertionSite"
+            ].tolist()
         )
-        print (filledSites)
+        # filledSites = list(
+        #     filter(
+        #         (0).__ne__,
+        #         self.TranspFrame[self.TranspFrame["TID"].isin([TIDm])][
+        #             "InsertionSite"
+        #         ].tolist()
+        #         + self.TranspFrame[self.TranspFrame["TID"].isin([TIDf])][
+        #             "InsertionSite"
+        #         ].tolist(),
+        #     )
+        # )
+        # print (TIDm)
+        # print(self.TranspFrame[self.TranspFrame["TID"].isin(TIDm)]["InsertionSite"].tolist())
+        # print (TIDf)
+        # print(self.TranspFrame[self.TranspFrame["TID"].isin(TIDf)]["InsertionSite"].tolist())
+        # print(filledSites)
+        # print ("----------")
+        TEs = list(filter((0).__ne__, TIDm + TIDf))
         GenomicSites = pd.Series(
             self.GenFrame.InsertionProbability.values,
             index=self.GenFrame.InsertionSiteID,
         ).copy(deep=True)
         GenomicSites.drop(filledSites, inplace=True)
-        for i in filledSites:
+        for i in TEs:
+            if i == 0:
+                pass
             transpositionRate = self.TranspFrame.loc[
                 self.TranspFrame["TID"] == i, "TraRate"
-            ]
-            if transpositionRate > np.random_intel.uniform(0, 1.0):
+            ].item()
+            if transpositionRate > np.random_intel.uniform(0, 0.001):
+                GenomicSites /= GenomicSites.sum()
                 insertionSite = np.random_intel.choice(
-                    GenomicSites.index.values,
-                    1,
-                    p=GenomicSites.InsertionProbability.values,
-                )
-                newParent = random.choice(["M", "F"])
+                    GenomicSites.index.values, 1, p=GenomicSites.values,
+                )[0]
+                newParent = random.choice(["Mother", "Father"])
                 GenomicSites.drop(insertionSite, inplace=True)
                 TID = uuid.uuid4().hex
                 row = pd.Series(
@@ -159,7 +174,7 @@ class RunSim(initSim):
                         "Parent": newParent,
                     }
                 )
-                if newParent == "M":
+                if newParent == "Mother":
                     TEfather.append(TID)
                 else:
                     TEmother.append(TID)
@@ -168,21 +183,55 @@ class RunSim(initSim):
 
     # /////|   SimRunner   |//////////////////////////////////////////////////////////////////////////
     # /////|   & selection   |////////////////////////////////////////////////////////////////////////
-    def runSimulation(self, genMax=10000):
+    def runSimulation(self, genMax=100):
         SimFrame = self.PopFrame.copy(deep=True)
         for i in list(range(genMax)):
-            print(i)
+            # print(i)
             currentPop = pd.DataFrame()
             for k in list(range(SimFrame.shape[0])):
                 parentFrame = SimFrame.sample(n=2, weights="NetFitness")
-                TIDm = self.recombination(parentFrame.iloc[0])
-                TIDf = self.recombination(parentFrame.iloc[1])
-                TIDm, TIDf = self.transposition(TIDm, TIDf)
+                if (
+                    parentFrame.iloc[0]["TEfather"] == [0]
+                    and parentFrame.iloc[0]["TEmother"] == [0]
+                    and parentFrame.iloc[1]["TEfather"] == [0]
+                    and parentFrame.iloc[1]["TEmother"] == [0]
+                ):
+                    TIDm = [0]
+                    TIDf = [0]
+                    fitness = np.mean(
+                        [
+                            parentFrame.iloc[0]["NetFitness"],
+                            parentFrame.iloc[1]["NetFitness"],
+                        ]
+                    )
+                else:
+                    if parentFrame.iloc[0]["TEfather"] == [0] and parentFrame.iloc[0][
+                        "TEmother"
+                    ] == [0]:
+                        TIDm = [0]
+                    else:
+                        TIDm = self.recombination(parentFrame.iloc[0])
+                    if parentFrame.iloc[1]["TEfather"] == [0] and parentFrame.iloc[1][
+                        "TEmother"
+                    ] == [0]:
+                        TIDf = [0]
+                    else:
+                        TIDf = self.recombination(parentFrame.iloc[1])
+                    if TIDm == [0] and TIDf == [0]:
+                        fitness = np.mean(
+                            [
+                                parentFrame.iloc[0]["NetFitness"],
+                                parentFrame.iloc[1]["NetFitness"],
+                            ]
+                        )
+                    else:
+                        TIDm, TIDf = self.transposition(TIDm, TIDf)
+                        fitness = self.fitness(TIDm, TIDf)
                 rowPop = pd.Series(
                     {
                         "PID": uuid.uuid4().hex,
                         "Fitness": 0,
-                        "NetFitness": self.fitness(TIDm, TIDf),
+                        "NetFitness": fitness,
                         "Name": generate_slug(),
                         "Sex": "H",
                         "Lineage": ["0"],
@@ -192,4 +241,5 @@ class RunSim(initSim):
                     }
                 )
                 currentPop = currentPop.append(rowPop, ignore_index=True)
+        print(self.TranspFrame)
         return 0
