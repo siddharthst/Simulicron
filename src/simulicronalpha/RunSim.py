@@ -56,7 +56,7 @@ class RunSim(initSim):
                     insertionSite = self.TranspFrame.loc[self.TranspFrame["TID"] == i][
                         "InsertionSite"
                     ].values[0]
-                    se = genomeCopy[genomeCopy["InsertionSite"] == insertionSite][
+                    se = genomeCopy[genomeCopy["InsertionSiteID"] == insertionSite][
                         "Progeny"
                     ].values[0]
                     if se == "M":
@@ -152,7 +152,7 @@ class RunSim(initSim):
             transpositionRate = self.TranspFrame.loc[
                 self.TranspFrame["TID"] == i, "TraRate"
             ].item()
-            if transpositionRate > np.random_intel.uniform(0, 0.001):
+            if transpositionRate > np.random_intel.uniform(0, 1):
                 GenomicSites /= GenomicSites.sum()
                 insertionSite = np.random_intel.choice(
                     GenomicSites.index.values, 1, p=GenomicSites.values,
@@ -186,7 +186,6 @@ class RunSim(initSim):
     def runSimulation(self, genMax=100):
         SimFrame = self.PopFrame.copy(deep=True)
         for i in list(range(genMax)):
-            # print(i)
             currentPop = pd.DataFrame()
             for k in list(range(SimFrame.shape[0])):
                 parentFrame = SimFrame.sample(n=2, weights="NetFitness")
@@ -241,5 +240,5 @@ class RunSim(initSim):
                     }
                 )
                 currentPop = currentPop.append(rowPop, ignore_index=True)
-        print(self.TranspFrame)
+        #print(self.TranspFrame)
         return 0
