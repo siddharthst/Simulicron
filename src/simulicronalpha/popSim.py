@@ -125,6 +125,18 @@ def recombination(rates, transposonMatrix, v1=None, v2=None):
     haplotype2 = [x in allele2 for x in transposon2]
     r1 = v1[haplotype1]
     r2 = v2[haplotype2]
+    # print (haplotype1)
+    # print (r1)
+    # print (allele1)
+    # print (haplotype2)
+    # print (r2)
+    # print (allele2)
+    if r1.size == 1:
+        if r1 == [0]:
+            r1 = np.asarray([])
+    if r2.size == 1:
+        if r2 == [0]:
+            r2 = np.asarray([])
     if r1.size == 0 and r2.size == 0:
         return 0
     elif r1.size == 0 and r2.size != 0:
@@ -153,11 +165,11 @@ def transposition(transposonMatrix, genomeMatrix, v1=None, v2=None):
         allele2Sites = transposonMatrix[[v2], 1].tolist()[0]
         allele2Index = v2
 
-    transposonIndices =  np.array(allele1Index + allele2Index)
+    transposonIndices = np.array(allele1Index + allele2Index)
     transposonRates = np.array(allele1 + allele2)
     filledSites = allele1Sites + allele2Sites
     Transoposecheck = transposonRates > np.random.uniform(
-        0, 0.1, len(transposonRates)
+        0, 1, len(transposonRates)
     )
 
     if not any(Transoposecheck):
@@ -192,11 +204,50 @@ def transposition(transposonMatrix, genomeMatrix, v1=None, v2=None):
                 [transposonMatrix, transposonToAdd,]
             )
             if progenyAllele[i] == "v1":
-                allele1Index.append(len(transposonMatrix)-1)
+                allele1Index.append(len(transposonMatrix) - 1)
             if progenyAllele[i] == "v2":
-                allele2Index.append(len(transposonMatrix)-1)
-    if (allele1Index == []):
+                allele2Index.append(len(transposonMatrix) - 1)
+    if allele1Index == []:
         allele1Index = 0
-    if (allele2Index == []):
-        allele2Index = 0            
+    if allele2Index == []:
+        allele2Index = 0
     return (allele1Index, allele2Index)
+
+
+def runSim(
+    genomeMatrix, populationMatrix, transposonMatrix, generations=100
+):
+    for i in list(range(generations)):
+        for k in list(range(populationMatrix.shape[0])):
+            fitness = list(populationMatrix[0:, 2])
+            p1, p2 = random.choices(
+                list(range(populationMatrix.shape[0])),
+                weights=fitness,
+                k=2,
+            )
+            if (
+                populationMatrix[p1, 0] == 0
+                and populationMatrix[p1, 1] == 0
+            ):
+                v1 = 0
+            else:
+                v1 = recombination(
+                    genomeMatrix[0:, 2],
+                    transposonMatrix,
+                    v1=populationMatrix[p1, 0],
+                    v2=populationMatrix[p1, 1],
+                )
+            if (
+                populationMatrix[p2, 0] == 0
+                and populationMatrix[p2, 1] == 0
+            ):
+                v2 = 0
+            else:
+                v2 = recombination(
+                    genomeMatrix[0:, 2],
+                    transposonMatrix,
+                    v1=populationMatrix[p2, 0],
+                    v2=populationMatrix[p2, 1],
+                )
+            if (v1 == 0 and v2 == 0):
+                pass
