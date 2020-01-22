@@ -87,6 +87,29 @@ def generateFitness(
             )
 
 
+def calculateFitness(
+    transposonMatrix,
+    currentFitness,
+    v1,
+    v2,
+    fitnessFunction=1,
+):
+    cV1 = v1
+    cV2 = v2
+    if cV1 == 0:
+        cV1 = np.asarray([])
+    else:
+        cV1 = np.asarray(v1)
+    if cV2 == 0:
+        cV2 = np.asarray([])
+    else:
+        cV2 = np.asarray(v2)
+    teContent = c([cV1, cV2]).astype(int)
+    penalties = transposonMatrix[teContent, 2]
+    if fitnessFunction == 1:
+        return currentFitness - np.exp(sum(penalties))
+
+
 def recombination2(rates, transposonMatrix, v1=None, v2=None):
     rec = np.random.uniform(size=len(rates)) < rates
     start = [0 if (np.random.uniform() < 0.5) else 1]
@@ -140,11 +163,11 @@ def recombination(rates, transposonMatrix, v1=None, v2=None):
     if r1.size == 0 and r2.size == 0:
         return 0
     elif r1.size == 0 and r2.size != 0:
-        return r2
+        return list(r2)
     elif r1.size != 0 and r2.size == 0:
-        return r1
+        return list(r1)
     else:
-        return c([r1, r2])
+        return list(c([r1, r2]))
 
 
 def transposition(transposonMatrix, genomeMatrix, v1=None, v2=None):
@@ -171,9 +194,8 @@ def transposition(transposonMatrix, genomeMatrix, v1=None, v2=None):
     Transoposecheck = transposonRates > np.random.uniform(
         0, 1, len(transposonRates)
     )
-
     if not any(Transoposecheck):
-        return (v1, v2)
+        return (v1, v2, transposonMatrix)
     else:
         transposonsToTranspose = transposonIndices[Transoposecheck]
         emptySiteIndices = [
@@ -201,7 +223,10 @@ def transposition(transposonMatrix, genomeMatrix, v1=None, v2=None):
                 transposonMatrix[transposonsToTranspose[i], 3],
             ]
             transposonMatrix = np.vstack(
-                [transposonMatrix, transposonToAdd,]
+                [
+                    transposonMatrix,
+                    np.asarray(transposonToAdd, object),
+                ]
             )
             if progenyAllele[i] == "v1":
                 allele1Index.append(len(transposonMatrix) - 1)
@@ -211,43 +236,102 @@ def transposition(transposonMatrix, genomeMatrix, v1=None, v2=None):
         allele1Index = 0
     if allele2Index == []:
         allele2Index = 0
-    return (allele1Index, allele2Index)
+
+    return (allele1Index, allele2Index, transposonMatrix)
 
 
 def runSim(
     genomeMatrix, populationMatrix, transposonMatrix, generations=100
 ):
+    transposonMatrixCopy = transposonMatrix
+    populationMatrixCopy = populationMatrix
     for i in list(range(generations)):
-        for k in list(range(populationMatrix.shape[0])):
-            fitness = list(populationMatrix[0:, 2])
+        populationV1 = []
+        populationV2 = []
+        populationFit = []
+        for k in list(range(populationMatrixCopy.shape[0])):
+            fitness = list(populationMatrixCopy[0:, 2])
             p1, p2 = random.choices(
-                list(range(populationMatrix.shape[0])),
+                list(range(populationMatrixCopy.shape[0])),
                 weights=fitness,
                 k=2,
             )
+            baseFitness = random.choice([populationMatrixCopy[p1, 2], populationMatrixCopy[p2, 2],])
+            # Since recombination function only accepts arrays,
+            # checking and forcing type conversion as needed
+            # for the respective alleles
             if (
-                populationMatrix[p1, 0] == 0
-                and populationMatrix[p1, 1] == 0
+                populationMatrixCopy[p1, 0] == 0
+                and populationMatrixCopy[p1, 1] == 0
             ):
                 v1 = 0
             else:
+                cP1V1 = populationMatrixCopy[p1, 0]
+                cP1V2 = populationMatrixCopy[p1, 1]
+                if isinstance(cP1V1, list):
+                    cP1V1 = np.asarray(cP1V1)
+                else:
+                    cP1V1 = np.asarray([cP1V1])
+                if isinstance(cP1V2, list):
+                    cP1V2 = np.asarray(cP1V2)
+                else:
+                    cP1V2 = np.asarray([cP1V2])
+
                 v1 = recombination(
                     genomeMatrix[0:, 2],
-                    transposonMatrix,
-                    v1=populationMatrix[p1, 0],
-                    v2=populationMatrix[p1, 1],
+                    transposonMatrixCopy,
+                    v1=cP1V1,
+                    v2=cP1V2,
                 )
+
             if (
-                populationMatrix[p2, 0] == 0
-                and populationMatrix[p2, 1] == 0
+                populationMatrixCopy[p2, 0] == 0
+                and populationMatrixCopy[p2, 1] == 0
             ):
                 v2 = 0
             else:
+                cP2V1 = populationMatrixCopy[p2, 0]
+                cP2V2 = populationMatrixCopy[p2, 1]
+                if isinstance(cP2V1, list):
+                    cP2V1 = np.asarray(cP2V1)
+                else:
+                    cP2V1 = np.asarray([cP2V1])
+                if isinstance(cP2V2, list):
+                    cP2V2 = np.asarray(cP2V2)
+                else:
+                    cP2V2 = np.asarray([cP2V2])
+
                 v2 = recombination(
                     genomeMatrix[0:, 2],
-                    transposonMatrix,
-                    v1=populationMatrix[p2, 0],
-                    v2=populationMatrix[p2, 1],
+                    transposonMatrixCopy,
+                    v1=cP2V1,
+                    v2=cP2V2,
                 )
-            if (v1 == 0 and v2 == 0):
-                pass
+
+            if v1 == 0 and v2 == 0:
+                indFitness = baseFitness
+
+            else:
+                v1, v2, transposonMatrixCopy = transposition(
+                    transposonMatrixCopy, genomeMatrix, v1=v1, v2=v2
+                )
+                indFitness = calculateFitness(transposonMatrixCopy, baseFitness, v1, v2)
+
+            populationV1.append(v1)
+            populationV2.append(v2)
+            populationFit.append(indFitness)
+        populationMatrixCopy = np.vstack(
+            (populationV1, populationV2, populationFit)
+        ).T
+        if all(v == 0 for v in populationV1) and all(
+            v == 0 for v in populationV1
+        ):
+            # print("No TE", i)
+            break
+    # print(transposonMatrixCopy.size / 4)
+                # print ('p2v1', populationMatrixCopy[p2, 0])
+                # print ('c2v1', cP2V1)
+                # print ('c2v1Type', type(populationMatrixCopy[p2, 0]))
+                # print ('p2v2', populationMatrixCopy[p2, 1])
+                # print ('c2v2', cP2V2)
+                # print ('c2v2Type', type(populationMatrixCopy[p2, 1]))

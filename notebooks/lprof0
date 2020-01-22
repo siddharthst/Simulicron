@@ -1,32 +1,96 @@
 Timer unit: 1e-06 s
 
-Total time: 0.005276 s
+Total time: 0.07932 s
 File: /home/siddharth/Documents/Projects/Simulicron/src/simulicronalpha/popSim.py
-Function: recombination at line 89
+Function: runSim at line 243
 
 Line #      Hits         Time  Per Hit   % Time  Line Contents
 ==============================================================
-    89                                           def recombination(rates, transposonMatrix, v1=None, v2=None):
-    90         1         60.0     60.0      1.1      rec = np.random.uniform(size=len(rates)) < rates
-    91         1          5.0      5.0      0.1      start = [0 if (np.random.uniform() < 0.5) else 1]
-    92         1        582.0    582.0     11.0      whichcol = 1 + cumsum(c((start, rec))) % 2
-    93         1         15.0     15.0      0.3      allele1 = np.where(whichcol == 1)[0]
-    94         1          9.0      9.0      0.2      allele2 = np.where(whichcol == 2)[0]
-    95         1       2390.0   2390.0     45.3      r1 = v1[(np.isin(transposonMatrix[[v1], 1], allele1))[0]]
-    96         1       2213.0   2213.0     41.9      r2 = v2[(np.isin(transposonMatrix[[v2], 1], allele2))[0]]
-    97                                               # print (allele1)
-    98                                               # print (allele2)
-    99                                               # print (np.isin(transposonMatrix[[v1], 1], allele1))
-   100                                               # print (np.isin(transposonMatrix[[v2], 1], allele2))
-   101                                               # print (type(r1))
-   102                                               # print (type(r2))
-   103                                               # print (r1)
-   104                                               # print (r2)
-   105         1          1.0      1.0      0.0      if r1.size == 0 and r2.size == 0:
-   106                                                   return 0
-   107         1          0.0      0.0      0.0      elif r1.size == 0 and r2.size != 0:
-   108                                                   return r2
-   109         1          1.0      1.0      0.0      elif r1.size != 0 and r2.size == 0:
-   110         1          0.0      0.0      0.0          return r1
-   111                                               else:
-   112                                                   return c([r1, r2])
+   243                                           def runSim(
+   244                                               genomeMatrix, populationMatrix, transposonMatrix, generations=100
+   245                                           ):
+   246         1          1.0      1.0      0.0      transposonMatrixCopy = transposonMatrix
+   247         1          1.0      1.0      0.0      populationMatrixCopy = populationMatrix
+   248         1          2.0      2.0      0.0      for i in list(range(generations)):
+   249         1          1.0      1.0      0.0          populationV1 = []
+   250         1          0.0      0.0      0.0          populationV2 = []
+   251         1          1.0      1.0      0.0          populationFit = []
+   252      1001        830.0      0.8      1.0          for k in list(range(populationMatrixCopy.shape[0])):
+   253      1000      14732.0     14.7     18.6              fitness = list(populationMatrixCopy[0:, 2])
+   254      1000       1156.0      1.2      1.5              p1, p2 = random.choices(
+   255      1000       9496.0      9.5     12.0                  list(range(populationMatrixCopy.shape[0])),
+   256      1000        702.0      0.7      0.9                  weights=fitness,
+   257      1000      35623.0     35.6     44.9                  k=2,
+   258                                                       )
+   259      1000       4809.0      4.8      6.1              baseFitness = random.choice([populationMatrixCopy[p1, 2], populationMatrixCopy[p2, 2],])
+   260                                                       # Since recombination function only accepts arrays,
+   261                                                       # checking and forcing type conversion as needed
+   262                                                       # for the respective alleles
+   263                                                       if (
+   264      1000        905.0      0.9      1.1                  populationMatrixCopy[p1, 0] == 0
+   265       996        835.0      0.8      1.1                  and populationMatrixCopy[p1, 1] == 0
+   266                                                       ):
+   267       996        701.0      0.7      0.9                  v1 = 0
+   268                                                       else:
+   269         4          4.0      1.0      0.0                  cP1V1 = populationMatrixCopy[p1, 0]
+   270         4          4.0      1.0      0.0                  cP1V2 = populationMatrixCopy[p1, 1]
+   271         4          6.0      1.5      0.0                  if isinstance(cP1V1, list):
+   272         4         29.0      7.2      0.0                      cP1V1 = np.asarray(cP1V1)
+   273                                                           else:
+   274                                                               cP1V1 = np.asarray([cP1V1])
+   275         4          6.0      1.5      0.0                  if isinstance(cP1V2, list):
+   276                                                               cP1V2 = np.asarray(cP1V2)
+   277                                                           else:
+   278         4          9.0      2.2      0.0                      cP1V2 = np.asarray([cP1V2])
+   279                                           
+   280         4          3.0      0.8      0.0                  v1 = recombination(
+   281         4          5.0      1.2      0.0                      genomeMatrix[0:, 2],
+   282         4          2.0      0.5      0.0                      transposonMatrixCopy,
+   283         4          4.0      1.0      0.0                      v1=cP1V1,
+   284         4        843.0    210.8      1.1                      v2=cP1V2,
+   285                                                           )
+   286                                           
+   287                                                       if (
+   288      1000        817.0      0.8      1.0                  populationMatrixCopy[p2, 0] == 0
+   289       998        842.0      0.8      1.1                  and populationMatrixCopy[p2, 1] == 0
+   290                                                       ):
+   291       998        739.0      0.7      0.9                  v2 = 0
+   292                                                       else:
+   293         2          2.0      1.0      0.0                  cP2V1 = populationMatrixCopy[p2, 0]
+   294         2          2.0      1.0      0.0                  cP2V2 = populationMatrixCopy[p2, 1]
+   295         2          2.0      1.0      0.0                  if isinstance(cP2V1, list):
+   296         2         29.0     14.5      0.0                      cP2V1 = np.asarray(cP2V1)
+   297                                                           else:
+   298                                                               cP2V1 = np.asarray([cP2V1])
+   299         2          4.0      2.0      0.0                  if isinstance(cP2V2, list):
+   300                                                               cP2V2 = np.asarray(cP2V2)
+   301                                                           else:
+   302         2          5.0      2.5      0.0                      cP2V2 = np.asarray([cP2V2])
+   303                                           
+   304         2          2.0      1.0      0.0                  v2 = recombination(
+   305         2          2.0      1.0      0.0                      genomeMatrix[0:, 2],
+   306         2          2.0      1.0      0.0                      transposonMatrixCopy,
+   307         2          0.0      0.0      0.0                      v1=cP2V1,
+   308         2       1211.0    605.5      1.5                      v2=cP2V2,
+   309                                                           )
+   310                                           
+   311      1000        791.0      0.8      1.0              if v1 == 0 and v2 == 0:
+   312      1000        731.0      0.7      0.9                  indFitness = baseFitness
+   313                                           
+   314                                                       else:
+   315                                                           v1, v2, transposonMatrixCopy = transposition(
+   316                                                               transposonMatrixCopy, genomeMatrix, v1=v1, v2=v2
+   317                                                           )
+   318                                                           indFitness = calculateFitness(transposonMatrixCopy, baseFitness, v1, v2)
+   319                                           
+   320      1000        856.0      0.9      1.1              populationV1.append(v1)
+   321      1000        809.0      0.8      1.0              populationV2.append(v2)
+   322      1000        824.0      0.8      1.0              populationFit.append(indFitness)
+   323         1          1.0      1.0      0.0          populationMatrixCopy = np.vstack(
+   324         1        235.0    235.0      0.3              (populationV1, populationV2, populationFit)
+   325                                                   ).T
+   326         1        373.0    373.0      0.5          if all(v == 0 for v in populationV1) and all(
+   327         1        313.0    313.0      0.4              v == 0 for v in populationV1
+   328                                                   ):
+   329                                                       # print("No TE", i)
+   330         1         18.0     18.0      0.0              break
