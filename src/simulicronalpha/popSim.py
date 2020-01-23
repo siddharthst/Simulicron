@@ -3,6 +3,12 @@ from numpy import cumsum
 from numpy import concatenate as c
 import random
 
+# Current multiprocessing implementation
+import multiprocessing
+
+# For future cluster based implementation
+# import ray
+# ray.init()
 
 def generateGenome(
     numberOfInsertionSites=1000,
@@ -88,11 +94,7 @@ def generateFitness(
 
 
 def calculateFitness(
-    transposonMatrix,
-    currentFitness,
-    v1,
-    v2,
-    fitnessFunction=1,
+    transposonMatrix, currentFitness, v1, v2, fitnessFunction=1,
 ):
     cV1 = v1
     cV2 = v2
@@ -239,9 +241,10 @@ def transposition(transposonMatrix, genomeMatrix, v1=None, v2=None):
 
     return (allele1Index, allele2Index, transposonMatrix)
 
-
+# For future cluster based implementation
+# @ray.remote()
 def runSim(
-    genomeMatrix, populationMatrix, transposonMatrix, generations=100
+    genomeMatrix, populationMatrix, transposonMatrix, generations=100,
 ):
     transposonMatrixCopy = transposonMatrix
     populationMatrixCopy = populationMatrix
@@ -256,7 +259,12 @@ def runSim(
                 weights=fitness,
                 k=2,
             )
-            baseFitness = random.choice([populationMatrixCopy[p1, 2], populationMatrixCopy[p2, 2],])
+            baseFitness = random.choice(
+                [
+                    populationMatrixCopy[p1, 2],
+                    populationMatrixCopy[p2, 2],
+                ]
+            )
             # Since recombination function only accepts arrays,
             # checking and forcing type conversion as needed
             # for the respective alleles
@@ -315,7 +323,9 @@ def runSim(
                 v1, v2, transposonMatrixCopy = transposition(
                     transposonMatrixCopy, genomeMatrix, v1=v1, v2=v2
                 )
-                indFitness = calculateFitness(transposonMatrixCopy, baseFitness, v1, v2)
+                indFitness = calculateFitness(
+                    transposonMatrixCopy, baseFitness, v1, v2
+                )
 
             populationV1.append(v1)
             populationV2.append(v2)
@@ -324,14 +334,30 @@ def runSim(
             (populationV1, populationV2, populationFit)
         ).T
         if all(v == 0 for v in populationV1) and all(
-            v == 0 for v in populationV1
+            v == 0 for v in populationV2
         ):
-            # print("No TE", i)
-            break
+            return (0, i)
+        if all(v != 0 for v in populationV1) or all(
+            v != 0 for v in populationV2
+        ):
+            return (1, i)
     # print(transposonMatrixCopy.size / 4)
-                # print ('p2v1', populationMatrixCopy[p2, 0])
-                # print ('c2v1', cP2V1)
-                # print ('c2v1Type', type(populationMatrixCopy[p2, 0]))
-                # print ('p2v2', populationMatrixCopy[p2, 1])
-                # print ('c2v2', cP2V2)
-                # print ('c2v2Type', type(populationMatrixCopy[p2, 1]))
+    # print ('p2v1', populationMatrixCopy[p2, 0])
+    # print ('c2v1', cP2V1)
+    # print ('c2v1Type', type(populationMatrixCopy[p2, 0]))
+    # print ('p2v2', populationMatrixCopy[p2, 1])
+    # print ('c2v2', cP2V2)
+    # print ('c2v2Type', type(populationMatrixCopy[p2, 1]))
+
+def runBatch(numberOfGenerations=10000):
+    results = []
+    for i in range(numberOfGenerations):
+        gen = generateGenome(numberOfInsertionSites=1000)
+        pop = generatePopulation()
+        tr = generateTransposon(gen)
+        
+
+
+
+
+
