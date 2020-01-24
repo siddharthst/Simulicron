@@ -10,6 +10,7 @@ import multiprocessing
 # import ray
 # ray.init()
 
+
 def generateGenome(
     numberOfInsertionSites=1000,
     numberOfChromosomes=10,
@@ -67,7 +68,7 @@ def generateTransposon(genomeArray, NumberOfTransposonInsertions=2):
     )
     counter = 1
     for i in insertionSites:
-        transposons[counter][3] = np.random.uniform(0.01, 0.02)
+        transposons[counter][3] = np.random.uniform(0.02, 0.03)
         transposons[counter][2] = genomeArray[i][0]
         transposons[counter][1] = i
         transposons[counter][0] = "%030x" % random.randrange(16 ** 30)
@@ -241,6 +242,7 @@ def transposition(transposonMatrix, genomeMatrix, v1=None, v2=None):
 
     return (allele1Index, allele2Index, transposonMatrix)
 
+
 # For future cluster based implementation
 # @ray.remote()
 def runSim(
@@ -248,7 +250,7 @@ def runSim(
 ):
     transposonMatrixCopy = transposonMatrix
     populationMatrixCopy = populationMatrix
-    for i in list(range(generations)):
+    for i in range(generations):
         populationV1 = []
         populationV2 = []
         populationFit = []
@@ -323,9 +325,10 @@ def runSim(
                 v1, v2, transposonMatrixCopy = transposition(
                     transposonMatrixCopy, genomeMatrix, v1=v1, v2=v2
                 )
-                indFitness = calculateFitness(
-                    transposonMatrixCopy, baseFitness, v1, v2
-                )
+                indFitness = baseFitness
+                # indFitness = calculateFitness(
+                #     transposonMatrixCopy, baseFitness, v1, v2
+                # )
 
             populationV1.append(v1)
             populationV2.append(v2)
@@ -336,11 +339,13 @@ def runSim(
         if all(v == 0 for v in populationV1) and all(
             v == 0 for v in populationV2
         ):
-            return (0, i)
+            return (0, i, transposonMatrixCopy.size / 4 - 1)
         if all(v != 0 for v in populationV1) or all(
             v != 0 for v in populationV2
         ):
-            return (1, i)
+            return (1, i, transposonMatrixCopy.size / 4 - 1)
+
+    return (2, i, transposonMatrixCopy.size / 4 - 1)
     # print(transposonMatrixCopy.size / 4)
     # print ('p2v1', populationMatrixCopy[p2, 0])
     # print ('c2v1', cP2V1)
@@ -349,15 +354,19 @@ def runSim(
     # print ('c2v2', cP2V2)
     # print ('c2v2Type', type(populationMatrixCopy[p2, 1]))
 
-def runBatch(numberOfGenerations=10000):
-    results = []
+
+def runBatch(numberOfGenerations=100000):
+    argArray = []
     for i in range(numberOfGenerations):
-        gen = generateGenome(numberOfInsertionSites=1000)
+        gen = generateGenome(
+            numberOfInsertionSites=1000, numberOfChromosomes=4, baseRecombinationRate=0.1
+        )
         pop = generatePopulation()
         tr = generateTransposon(gen)
-        
+        argArray.append((gen, pop, tr))
 
+    with multiprocessing.Pool(processes=8) as pool:
+        results = pool.starmap(runSim, argArray)
 
-
-
+    return results
 
