@@ -258,7 +258,7 @@ def runSim(
     genomeMatrix,
     populationMatrix,
     transposonMatrix,
-    generations=100000,
+    generations=2,
 ):
     transposonMatrixCopy = transposonMatrix
     populationMatrixCopy = populationMatrix
