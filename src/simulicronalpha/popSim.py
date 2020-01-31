@@ -12,13 +12,17 @@ import multiprocessing
 
 
 def generateGenome(
+    baseSelection=1,
     numberOfInsertionSites=1000,
     numberOfChromosomes=10,
     baseRecombinationRate=0.01,
 ):
-    SelectionCoef = np.random.normal(
-        -0.02, 0.01, numberOfInsertionSites
-    )
+    if baseSelection == 0.0:
+        SelectionCoef = np.zeros(numberOfInsertionSites)
+    else:
+        SelectionCoef = np.random.normal(
+            -0.02, 0.01, numberOfInsertionSites
+        )
     insertionProbability = np.random.uniform(
         0.01, 0.99, numberOfInsertionSites
     )
@@ -30,7 +34,9 @@ def generateGenome(
         replace=False,
         size=numberOfChromosomes,
     )
-    RecombinationRates[chromosomeLocation] = 0.5
+    # Only insert more chromosomes if needed
+    if numberOfChromosomes > 1:
+        RecombinationRates[chromosomeLocation] = 0.5
     genome = np.vstack(
         (SelectionCoef, insertionProbability, RecombinationRates)
     ).T
@@ -51,13 +57,13 @@ def generatePopulation(
         allele = random.choice([0, 1])
         population[infectedIndividuals[i]][allele] = [counter]
         counter += 1
-    population[0:, 2] = np.exp(
-        np.random.uniform(0.6, 1.0, NumberOfIndividual)
-    )
+    population[0:, 2] = 1
     return population
 
 
-def generateTransposon(genomeArray, NumberOfTransposonInsertions=2):
+def generateTransposon(
+    genomeArray, baseTransposition=1, NumberOfTransposonInsertions=2
+):
     transposons = np.zeros(
         (NumberOfTransposonInsertions + 1, 4), dtype=np.ndarray
     )
@@ -68,7 +74,11 @@ def generateTransposon(genomeArray, NumberOfTransposonInsertions=2):
     )
     counter = 1
     for i in insertionSites:
-        transposons[counter][3] = np.random.uniform(0.02, 0.03)
+        transposons[counter][3] = (
+            0
+            if baseTransposition == 0
+            else np.random.uniform(0.02, 0.03)
+        )
         transposons[counter][2] = genomeArray[i][0]
         transposons[counter][1] = i
         transposons[counter][0] = "%030x" % random.randrange(16 ** 30)
@@ -89,13 +99,12 @@ def generateFitness(
         )
         SelectionCoef = transposonMatrix[transposonContent, 2]
         if fitnessFunction == 1:
-            populationMatrix[i][2] = populationMatrix[i][2] - np.exp(
-                -sum(SelectionCoef)
-            )
+            populationMatrix[i][2] = np.exp(sum(SelectionCoef))
+    return populationMatrix[:, 2]
 
 
 def calculateFitness(
-    transposonMatrix, currentFitness, v1, v2, fitnessFunction=1,
+    transposonMatrix, v1, v2, fitnessFunction=1,
 ):
     cV1 = v1
     cV2 = v2
@@ -110,10 +119,10 @@ def calculateFitness(
     teContent = c([cV1, cV2]).astype(int)
     penalties = transposonMatrix[teContent, 2]
     if fitnessFunction == 1:
-        return currentFitness - np.exp(sum(penalties))
+        return np.exp(sum(penalties))
 
 
-def recombination2(rates, transposonMatrix, v1=None, v2=None):
+def recombination2(rates, transposonMatrix, v1, v2):
     rec = np.random.uniform(size=len(rates)) < rates
     start = [0 if (np.random.uniform() < 0.5) else 1]
     whichcol = 1 + cumsum(c((start, rec))) % 2
@@ -139,7 +148,7 @@ def recombination2(rates, transposonMatrix, v1=None, v2=None):
         return c([r1, r2])
 
 
-def recombination(rates, transposonMatrix, v1=None, v2=None):
+def recombination(rates, transposonMatrix, v1, v2):
     rec = np.random.uniform(size=len(rates)) < rates
     start = [0 if (np.random.uniform() < 0.5) else 1]
     whichcol = 1 + cumsum(c((start, rec))) % 2
@@ -173,7 +182,7 @@ def recombination(rates, transposonMatrix, v1=None, v2=None):
         return list(c([r1, r2]))
 
 
-def transposition(transposonMatrix, genomeMatrix, v1=None, v2=None):
+def transposition(transposonMatrix, genomeMatrix, v1, v2):
     if v1 == 0:
         allele1 = []
         allele1Sites = []
@@ -246,7 +255,10 @@ def transposition(transposonMatrix, genomeMatrix, v1=None, v2=None):
 # For future cluster based implementation
 # @ray.remote()
 def runSim(
-    genomeMatrix, populationMatrix, transposonMatrix, generations=100,
+    genomeMatrix,
+    populationMatrix,
+    transposonMatrix,
+    generations=100000,
 ):
     transposonMatrixCopy = transposonMatrix
     populationMatrixCopy = populationMatrix
@@ -256,17 +268,13 @@ def runSim(
         populationFit = []
         for k in list(range(populationMatrixCopy.shape[0])):
             fitness = list(populationMatrixCopy[0:, 2])
+
             p1, p2 = random.choices(
                 list(range(populationMatrixCopy.shape[0])),
                 weights=fitness,
                 k=2,
             )
-            baseFitness = random.choice(
-                [
-                    populationMatrixCopy[p1, 2],
-                    populationMatrixCopy[p2, 2],
-                ]
-            )
+
             # Since recombination function only accepts arrays,
             # checking and forcing type conversion as needed
             # for the respective alleles
@@ -319,23 +327,20 @@ def runSim(
                 )
 
             if v1 == 0 and v2 == 0:
-                indFitness = baseFitness
+                indFitness = 1
 
             else:
                 v1, v2, transposonMatrixCopy = transposition(
                     transposonMatrixCopy, genomeMatrix, v1=v1, v2=v2
                 )
-                indFitness = baseFitness
-                # indFitness = calculateFitness(
-                #     transposonMatrixCopy, baseFitness, v1, v2
-                # )
+                indFitness = calculateFitness(
+                    transposonMatrixCopy, v1, v2
+                )
 
             populationV1.append(v1)
             populationV2.append(v2)
             populationFit.append(indFitness)
-        populationMatrixCopy = np.vstack(
-            (populationV1, populationV2, populationFit)
-        ).T
+
         if all(v == 0 for v in populationV1) and all(
             v == 0 for v in populationV2
         ):
@@ -344,7 +349,9 @@ def runSim(
             v != 0 for v in populationV2
         ):
             return (1, i, transposonMatrixCopy.size / 4 - 1)
-
+        populationMatrixCopy = np.vstack(
+            (populationV1, populationV2, populationFit)
+        ).T
     return (2, i, transposonMatrixCopy.size / 4 - 1)
     # print(transposonMatrixCopy.size / 4)
     # print ('p2v1', populationMatrixCopy[p2, 0])
@@ -355,14 +362,102 @@ def runSim(
     # print ('c2v2Type', type(populationMatrixCopy[p2, 1]))
 
 
-def runBatch(numberOfGenerations=100000):
+def runSim1(
+    genomeMatrix, populationMatrix, transposonMatrix, generations=100,
+):
+    transposonMatrixCopy = transposonMatrix
+    populationMatrixCopy = populationMatrix
+    for i in range(generations):
+        populationV1 = []
+        populationV2 = []
+        populationFit = []
+        for k in list(range(populationMatrixCopy.shape[0])):
+            fitness = list(populationMatrixCopy[0:, 2])
+            while True:
+                p1, p2 = random.choices(
+                    list(range(populationMatrixCopy.shape[0])),
+                    weights=fitness,
+                    k=2,
+                )
+                if p1 != p2:
+                    break
+            p1v = random.choice([0, 1])
+            p2v = random.choice([0, 1])
+            v1 = populationMatrixCopy[p1, p1v]
+            v2 = populationMatrixCopy[p2, p2v]
+            populationV1.append(v1)
+            populationV2.append(v2)
+            populationFit.append(1)
+        if all(v == 0 for v in populationV1) and all(
+            v == 0 for v in populationV2
+        ):
+            return (0, i, transposonMatrixCopy.size / 4 - 1)
+        if all(v != 0 for v in populationV1) or all(
+            v != 0 for v in populationV2
+        ):
+            return (1, i, transposonMatrixCopy.size / 4 - 1)
+        populationMatrixCopy = np.vstack(
+            (populationV1, populationV2, populationFit)
+        ).T
+    return (2, i, transposonMatrixCopy.size / 4 - 1)
+
+
+def runBatch(
+    numberOfSimulations=1000,
+    numberOfChromosomes=4,
+    numberOfInsertionSites=1000,
+    baseRecombinationRate=0.1,
+    NumberOfIndividual=1000,
+    NumberOfTransposonInsertions=2,
+    NumberOfGenerations=100000,
+    baseSelection=1,
+    baseTransposition=1,
+):
+    print("Supplied parameters: ")
+    print("Number of simulations          : ", numberOfSimulations)
+    print("Number of generations          : ", NumberOfGenerations)
+    print("Number Of Individual           : ", NumberOfIndividual)
+    print("Number Of Insertion Sites      : ", numberOfInsertionSites)
+    print("Number Of Chromosomes          : ", numberOfChromosomes)
+    print(
+        "Number Of transposon insertion : ",
+        NumberOfTransposonInsertions,
+    )
+    print("----------------------------------- :")
+    print("Sample genome with given parameters :")
+    gen = generateGenome(
+        numberOfInsertionSites=numberOfInsertionSites,
+        numberOfChromosomes=numberOfChromosomes,
+        baseRecombinationRate=baseRecombinationRate,
+        baseSelection=baseSelection,
+    )
+    print(gen)
+    print("--------------------------------------- :")
+    print("Sample transposon with given parameters :")
+    tr = generateTransposon(
+        genomeArray=gen,
+        NumberOfTransposonInsertions=NumberOfTransposonInsertions,
+        baseTransposition=baseTransposition,
+    )
+    print(tr)
+
     argArray = []
-    for i in range(numberOfGenerations):
+    for i in range(numberOfSimulations):
         gen = generateGenome(
-            numberOfInsertionSites=1000, numberOfChromosomes=4, baseRecombinationRate=0.1
+            numberOfInsertionSites=numberOfInsertionSites,
+            numberOfChromosomes=numberOfChromosomes,
+            baseRecombinationRate=baseRecombinationRate,
+            baseSelection=baseSelection,
         )
-        pop = generatePopulation()
-        tr = generateTransposon(gen)
+        pop = generatePopulation(
+            NumberOfIndividual=NumberOfIndividual,
+            NumberOfTransposonInsertions=NumberOfTransposonInsertions,
+        )
+        tr = generateTransposon(
+            genomeArray=gen,
+            NumberOfTransposonInsertions=NumberOfTransposonInsertions,
+            baseTransposition=baseTransposition,
+        )
         argArray.append((gen, pop, tr))
 
     with multiprocessing.Pool(processes=8) as pool:
