@@ -258,7 +258,7 @@ def runSim(
     genomeMatrix,
     populationMatrix,
     transposonMatrix,
-    generations=2,
+    generations=100000,
 ):
     transposonMatrixCopy = transposonMatrix
     populationMatrixCopy = populationMatrix
@@ -340,19 +340,21 @@ def runSim(
             populationV1.append(v1)
             populationV2.append(v2)
             populationFit.append(indFitness)
-
+        # Return i+2 since i start at 0 = generation 1
+        # and the condition check happens at generation 
+        # n-1, hence i + 1 + 1 
         if all(v == 0 for v in populationV1) and all(
             v == 0 for v in populationV2
         ):
-            return (0, i, transposonMatrixCopy.size / 4 - 1)
+            return (0, i+2, transposonMatrixCopy.size / 4 - 1)
         if all(v != 0 for v in populationV1) or all(
             v != 0 for v in populationV2
         ):
-            return (1, i, transposonMatrixCopy.size / 4 - 1)
+            return (1, i+2, transposonMatrixCopy.size / 4 - 1)
         populationMatrixCopy = np.vstack(
             (populationV1, populationV2, populationFit)
         ).T
-    return (2, i, transposonMatrixCopy.size / 4 - 1)
+    return (2, i+2, transposonMatrixCopy.size / 4 - 1)
     # print(transposonMatrixCopy.size / 4)
     # print ('p2v1', populationMatrixCopy[p2, 0])
     # print ('c2v1', cP2V1)
