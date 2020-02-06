@@ -61,17 +61,66 @@ def generatePopulation(
     return population
 
 
+# def generateTransposon(
+#     genomeArray, baseTransposition=1, NumberOfTransposonInsertions=2
+# ):
+#     transposons = np.zeros(
+#         (NumberOfTransposonInsertions + 1, 4), dtype=np.ndarray
+#     )
+#     insertionSites = np.random.choice(
+#         np.arange(genomeArray.shape[0]),
+#         replace=False,
+#         size=NumberOfTransposonInsertions,
+#     )
+#     counter = 1
+#     for i in insertionSites:
+#         transposons[counter][3] = (
+#             0
+#             if baseTransposition == 0
+#             else np.random.uniform(0.02, 0.03)
+#         )
+#         transposons[counter][2] = genomeArray[i][0]
+#         transposons[counter][1] = i
+#         transposons[counter][0] = "%030x" % random.randrange(16 ** 30)
+#         counter += 1
+#     return transposons
+
+
 def generateTransposon(
-    genomeArray, baseTransposition=1, NumberOfTransposonInsertions=2
+    genomeArray,
+    baseTransposition=1,
+    NumberOfTransposonInsertions=2,
+    consecutiveTransposons=False,
+    changeRecombination=False,
+    baseRecombination=0.01,
 ):
     transposons = np.zeros(
         (NumberOfTransposonInsertions + 1, 4), dtype=np.ndarray
     )
-    insertionSites = np.random.choice(
-        np.arange(genomeArray.shape[0]),
-        replace=False,
-        size=NumberOfTransposonInsertions,
-    )
+    if consecutiveTransposons == True:
+        # The starting position is padded to prevent
+        # index overflow
+        start = random.choice(
+            range(
+                1 + NumberOfTransposonInsertions,
+                genomeArray.shape[0] - NumberOfTransposonInsertions,
+            )
+        )
+        insertionSites = np.arange(
+            start, start + NumberOfTransposonInsertions
+        )
+    else:
+        insertionSites = np.random.choice(
+            np.arange(genomeArray.shape[0]),
+            replace=False,
+            size=NumberOfTransposonInsertions,
+        )
+
+    # If there is a requirment to change the recombination rate
+    # at transposon insertion site
+    if changeRecombination == True:
+        genomeArray[insertionSites+1, 2] = baseRecombination
+
     counter = 1
     for i in insertionSites:
         transposons[counter][3] = (
@@ -83,7 +132,7 @@ def generateTransposon(
         transposons[counter][1] = i
         transposons[counter][0] = "%030x" % random.randrange(16 ** 30)
         counter += 1
-    return transposons
+    return transposons, genomeArray
 
 
 def generateFitness(
@@ -259,7 +308,18 @@ def runSim(
     populationMatrix,
     transposonMatrix,
     generations=100000,
+    testCondition="B1",
 ):
+    # ------------------#
+    # lambda/macros
+    flatten = lambda *n: (
+        e
+        for a in n
+        for e in (
+            flatten(*a) if isinstance(a, (tuple, list)) else (a,)
+        )
+    )
+    # ------------------#
     transposonMatrixCopy = transposonMatrix
     populationMatrixCopy = populationMatrix
     for i in range(generations):
@@ -341,27 +401,64 @@ def runSim(
             populationV2.append(v2)
             populationFit.append(indFitness)
         # Return i+2 since i start at 0 = generation 1
-        # and the condition check happens at generation 
-        # n-1, hence i + 1 + 1 
-        if all(v == 0 for v in populationV1) and all(
-            v == 0 for v in populationV2
+        # and the condition check happens at generation
+        # n-1, hence i + 1 + 1
+
+        # Check if there are no transposons left
+        if all(
+            np.array_equal(v, [0, 0])
+            for v in np.c_[populationV1, populationV2]
         ):
-            return (0, i+2, transposonMatrixCopy.size / 4 - 1)
-        if all(v != 0 for v in populationV1) or all(
-            v != 0 for v in populationV2
+            return ("LOSS", i + 2, transposonMatrixCopy.size / 4 - 1)
+
+        # Check if all members of population contain transposon
+        if not any(
+            all(k == 0 for k in z)
+            for z in [
+                list(flatten(v.flatten().tolist()))
+                for v in np.c_[populationV1, populationV2]
+            ]
         ):
-            return (1, i+2, transposonMatrixCopy.size / 4 - 1)
+            # Check if we are going through unit test,
+            # otherwise quit the simulation
+            if testCondition == "B1":
+                # Check for unique transposons
+                uniqueTransposons = np.unique(
+                    [
+                        list(flatten(v.flatten().tolist()))
+                        for v in np.c_[populationV1, populationV2]
+                    ]
+                )
+                uniqueTransposons = uniqueTransposons[
+                    uniqueTransposons != 0
+                ]
+                # If only one unique transposon has left,
+                # return the it
+                # Else return a 3
+                if uniqueTransposons.size == 1:
+                    return (
+                        str(uniqueTransposons[0]),
+                        i + 2,
+                        transposonMatrixCopy.size / 4 - 1,
+                    )
+                else:
+                    return (
+                        "Both",
+                        i + 2,
+                        transposonMatrixCopy.size / 4 - 1,
+                    )
+
+            return (1, i + 2, transposonMatrixCopy.size / 4 - 1)
+
+        # Bind population for next iteration
         populationMatrixCopy = np.vstack(
             (populationV1, populationV2, populationFit)
         ).T
-    return (2, i+2, transposonMatrixCopy.size / 4 - 1)
-    # print(transposonMatrixCopy.size / 4)
-    # print ('p2v1', populationMatrixCopy[p2, 0])
-    # print ('c2v1', cP2V1)
-    # print ('c2v1Type', type(populationMatrixCopy[p2, 0]))
-    # print ('p2v2', populationMatrixCopy[p2, 1])
-    # print ('c2v2', cP2V2)
-    # print ('c2v2Type', type(populationMatrixCopy[p2, 1]))
+
+    # Quit simulation if there in a transient state
+    # i.e. no fixation or loss
+    return ("FLUX", i + 2, transposonMatrixCopy.size / 4 - 1)
+
 
 
 def runSim1(
@@ -414,6 +511,10 @@ def runBatch(
     NumberOfGenerations=100000,
     baseSelection=1,
     baseTransposition=1,
+    testCondition=None,
+    consecutiveTransposons=False,
+    changeRecombination=False,
+    baseTrRecombination=0.1,
 ):
     print("Supplied parameters: ")
     print("Number of simulations          : ", numberOfSimulations)
@@ -436,10 +537,13 @@ def runBatch(
     print(gen)
     print("--------------------------------------- :")
     print("Sample transposon with given parameters :")
-    tr = generateTransposon(
+    tr, gen = generateTransposon(
         genomeArray=gen,
         NumberOfTransposonInsertions=NumberOfTransposonInsertions,
         baseTransposition=baseTransposition,
+        consecutiveTransposons=consecutiveTransposons,
+        changeRecombination=changeRecombination,
+        baseRecombination = baseTrRecombination
     )
     print(tr)
 
@@ -455,11 +559,15 @@ def runBatch(
             NumberOfIndividual=NumberOfIndividual,
             NumberOfTransposonInsertions=NumberOfTransposonInsertions,
         )
-        tr = generateTransposon(
+        tr, gen = generateTransposon(
             genomeArray=gen,
             NumberOfTransposonInsertions=NumberOfTransposonInsertions,
             baseTransposition=baseTransposition,
+            consecutiveTransposons=consecutiveTransposons,
+            changeRecombination=changeRecombination,
+            baseRecombination = baseTrRecombination
         )
+        pop[:,2] = generateFitness(pop, tr)
         argArray.append((gen, pop, tr))
 
     with multiprocessing.Pool(processes=8) as pool:
