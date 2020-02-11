@@ -73,8 +73,9 @@ def transposition(
             )
             # Code to track the genealogy of TE
             for k in range(NumberOfTransposonInsertions):
-                if (transposonsToTranspose[i] in TEset[k]):
-                    TEset[k].add(len(transposonMatrix) - 1)
+                if (transposonsToTranspose[i] in TEset[k+1]):
+                    TEset[k+1].add(len(transposonMatrix) - 1)
+                    pass
             
             # Assign TE to the choosed allele
             if progenyAllele[i] == "v1":
@@ -86,4 +87,4 @@ def transposition(
     if allele2Index == []:
         allele2Index = 0
 
-    return (allele1Index, allele2Index, transposonMatrix)
+    return (allele1Index, allele2Index, transposonMatrix, TEset)
