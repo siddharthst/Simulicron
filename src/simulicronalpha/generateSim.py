@@ -3,21 +3,36 @@ from numpy import cumsum
 from numpy import concatenate as c
 import random
 
+
 def generateGenome(
-    baseSelection=1,
+    baseSelection=None,
+    baseInsertionProb=None,
     numberOfInsertionSites=1000,
     numberOfChromosomes=10,
     baseRecombinationRate=0.01,
 ):
-    if baseSelection == 0.0:
+    # Define selection penalty for the insertion site
+    if baseSelection == None:
         SelectionCoef = np.zeros(numberOfInsertionSites)
-    else:
+    elif baseSelection == "Random":
         SelectionCoef = np.random.normal(
             -0.02, 0.01, numberOfInsertionSites
         )
-    insertionProbability = np.random.uniform(
-        0.01, 0.99, numberOfInsertionSites
-    )
+    else:
+        SelectionCoef = np.full(numberOfInsertionSites, baseSelection)
+
+    # Define insertion probability for the insertion site
+    if baseInsertionProb == None:
+        insertionProbability = np.zeros(numberOfInsertionSites)
+    elif baseInsertionProb == "Random":
+        insertionProbability = np.random.uniform(
+            0.01, 0.99, numberOfInsertionSites
+        )
+    else:
+        insertionProbability = np.full(
+            numberOfInsertionSites, baseInsertionProb
+        )
+
     RecombinationRates = np.full(
         numberOfInsertionSites, baseRecombinationRate, dtype=float
     )
@@ -36,7 +51,9 @@ def generateGenome(
 
 
 def generatePopulation(
-    NumberOfIndividual=1000, NumberOfTransposonInsertions=2
+    transposonMatrix,
+    NumberOfIndividual=1000,
+    NumberOfTransposonInsertions=2,
 ):
     population = np.zeros((NumberOfIndividual, 3), dtype=np.ndarray)
     infectedIndividuals = np.random.choice(
@@ -44,38 +61,20 @@ def generatePopulation(
         NumberOfTransposonInsertions,
         replace=False,
     )
+    # Set base fitness
+    population[0:, 2] = 1
+
+    # Insert transposons and change fitness
     counter = 1
     for i in list(range(NumberOfTransposonInsertions)):
         allele = random.choice([0, 1])
         population[infectedIndividuals[i]][allele] = [counter]
+        population[infectedIndividuals[i]][2] = 1 + (
+            transposonMatrix[i + 1][2]
+        )
         counter += 1
-    population[0:, 2] = 1
+
     return population
-
-
-# def generateTransposon(
-#     genomeArray, baseTransposition=1, NumberOfTransposonInsertions=2
-# ):
-#     transposons = np.zeros(
-#         (NumberOfTransposonInsertions + 1, 4), dtype=np.ndarray
-#     )
-#     insertionSites = np.random.choice(
-#         np.arange(genomeArray.shape[0]),
-#         replace=False,
-#         size=NumberOfTransposonInsertions,
-#     )
-#     counter = 1
-#     for i in insertionSites:
-#         transposons[counter][3] = (
-#             0
-#             if baseTransposition == 0
-#             else np.random.uniform(0.02, 0.03)
-#         )
-#         transposons[counter][2] = genomeArray[i][0]
-#         transposons[counter][1] = i
-#         transposons[counter][0] = "%030x" % random.randrange(16 ** 30)
-#         counter += 1
-#     return transposons
 
 
 def generateTransposon(
@@ -84,7 +83,7 @@ def generateTransposon(
     NumberOfTransposonInsertions=2,
     consecutiveTransposons=False,
     changeRecombination=False,
-    baseRecombination=0.01,
+    RecombinationRate=0.01,
 ):
     transposons = np.zeros(
         (NumberOfTransposonInsertions + 1, 4), dtype=np.ndarray
@@ -111,7 +110,7 @@ def generateTransposon(
     # If there is a requirment to change the recombination rate
     # at transposon insertion site
     if changeRecombination == True:
-        genomeArray[insertionSites+1, 2] = baseRecombination
+        genomeArray[insertionSites + 1, 2] = RecombinationRate
 
     counter = 1
     for i in insertionSites:
@@ -127,7 +126,6 @@ def generateTransposon(
 
     # Create sets to store transposon propogation
     TEset = {}
-    for i in NumberOfTransposonInsertions:
-        tempSet = set()
-        TEset[i] = tempSet.add(i)
+    for i in list(range(NumberOfTransposonInsertions)):
+        TEset[i+1] = set([i+1])
     return transposons, genomeArray, TEset
