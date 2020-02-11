@@ -29,7 +29,7 @@ def runSim(
     NumberOfTransposonInsertions,
     generations=100000,
 ):
-    #------------------#
+    # ------------------#
     # lambda/macros
     flatten = lambda *n: (
         e
@@ -38,8 +38,8 @@ def runSim(
             flatten(*a) if isinstance(a, (tuple, list)) else (a,)
         )
     )
-    #------------------#
-    #------------------#
+    # ------------------#
+    # ------------------#
     # for storing transposons which are fixed
     fixedTE = []
     # for storing transposons which are not fixed
@@ -141,7 +141,14 @@ def runSim(
             np.array_equal(v, [0, 0])
             for v in np.c_[populationV1, populationV2]
         ):
-            return ("LOSS", i + 2, transposonMatrixCopy.size / 4 - 1)
+            return (
+                "LOSS",
+                fixedTE,
+                unfixedTE,
+                lostTE,
+                i + 2,
+                transposonMatrixCopy.size / 4 - 1,
+            )
 
         # Check if all members of population contain transposon
         if not any(
@@ -150,13 +157,15 @@ def runSim(
                 list(flatten(v.flatten().tolist()))
                 for v in np.c_[populationV1, populationV2]
             ]
-        ):
+        ): 
+            counter = 0
             for TE in TEset.keys():
                 if all(
                     bool(set(k).intersection(TEset[i]))
                     for k in populationV1 + populationV2
                 ):
                     fixedTE.append(TE)
+                    counter += 1
                 elif any(
                     bool(set(k).intersection(TEset[i]))
                     for k in populationV1 + populationV2
@@ -164,7 +173,7 @@ def runSim(
                     unfixedTE.append(i)
                 else:
                     lostTE.append(i)
-    
+
         # Bind population for next iteration
         populationMatrixCopy = np.vstack(
             (populationV1, populationV2, populationFit)
@@ -172,7 +181,14 @@ def runSim(
 
     # Quit simulation if there in a transient state
     # i.e. no fixation or loss
-    return ("FLUX", i + 2, transposonMatrixCopy.size / 4 - 1)
+    return (
+        "FLUX",
+        fixedTE,
+        unfixedTE,
+        lostTE,
+        i + 2,
+        transposonMatrixCopy.size / 4 - 1,
+    )
 
 
 def runBatch(

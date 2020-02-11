@@ -2,9 +2,7 @@
 Changelog
 =========
 
-Version 0.1
+Version 0.001
 ===========
 
-- Feature A added
-- FIX: nasty bug #1729 fixed
-- add your changes here!
+- FIX: Bug #1 fixed - now the code tracks complete fixation
