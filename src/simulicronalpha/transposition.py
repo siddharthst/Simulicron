@@ -36,7 +36,7 @@ def transposition(
         0, 1, len(transposonRates)
     )
     if not any(Transoposecheck):
-        return (v1, v2, transposonMatrix)
+        return (v1, v2, transposonMatrix, TEset)
     else:
         transposonsToTranspose = transposonIndices[Transoposecheck]
         emptySiteIndices = [
