@@ -239,7 +239,7 @@ def runBatch(
             NumberOfTransposonInsertions=NumberOfTransposonInsertions,
         )
 
-        argArray.append((gen, pop, tr))
+        argArray.append((gen, pop, tr, TEset))
 
     with multiprocessing.Pool(processes=4) as pool:
         results = pool.starmap(runSim, argArray)
