@@ -1,6 +1,7 @@
 import numpy as np
 from numpy import cumsum
 from numpy import concatenate as c
+import pandas as pd
 import random
 
 from generateSim import (
@@ -159,7 +160,7 @@ def runSim(
             ]
         ):
             counter = 0
-            for TE in TEset.keys():
+            for TE in list(TEset):
                 if all(
                     bool(set(k).intersection(TEset[TE]))
                     for k in populationV1 + populationV2
@@ -185,20 +186,12 @@ def runSim(
                         i + 2,
                         transposonMatrixCopy.size / 4 - 1,
                     )
-
-        # Bind population for next iteration
-        print ("++++++++++++++++++++")
-        print (len(populationV1))
-        print (len(populationV2))
-        print (len(populationFit))
-        print ("--------------------")
-        print (populationV1)
-        print (populationV2)
-        print (populationFit)
-        print ("....................")
-        populationMatrixCopy = np.vstack(
-            (populationV1, populationV2, populationFit)
-        ).T
+        # Major bug in numpy - forced to use pandas
+        # Refer to the question
+        # https://stackoverflow.com/questions/60210897
+        populationMatrixCopy = pd.DataFrame(
+            [populationV1, populationV2, populationFit]
+        ).T.to_numpy()
 
     # Quit simulation if there in a transient state
     # i.e. no fixation or loss
@@ -248,15 +241,7 @@ def createData(
             NumberOfTransposonInsertions=NumberOfTransposonInsertions,
         )
 
-        yield (
-            (
-                gen,
-                pop,
-                tr,
-                TEset,
-                NumberOfTransposonInsertions,
-            )
-        )
+        yield ((gen, pop, tr, TEset, NumberOfTransposonInsertions,))
 
 
 def runBatch(
@@ -289,9 +274,9 @@ def runBatch(
     )
     inputSet = []
     for i in dataSet:
-        inputSet.append(i) 
+        inputSet.append(i)
 
-    with multiprocessing.Pool(processes=1) as pool:
+    with multiprocessing.Pool(processes=8) as pool:
         results = pool.starmap(runSim, inputSet)
 
     return results

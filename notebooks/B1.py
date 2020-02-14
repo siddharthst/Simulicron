@@ -47,7 +47,8 @@ sim   = runBatch(numberOfSimulations=100000, NumberOfTransposonInsertions=2, bas
                     NumberOfIndividual=10)
 with open("b1P10C0-5.pickle", "wb") as f:
     pickle.dump((sim), f)
-    
+
+   
 # 30
     
 sim   = runBatch(numberOfSimulations=100000, NumberOfTransposonInsertions=2, baseSelection=0, 
