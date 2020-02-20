@@ -109,8 +109,9 @@ def generateTransposon(
 
     # If there is a requirment to change the recombination rate
     # at transposon insertion site
+    # This changes the recombination on index position + 1 
     if changeRecombination == True:
-        genomeArray[insertionSites + 1, 2] = RecombinationRate
+        genomeArray[insertionSites[-1], 2] = RecombinationRate
 
     counter = 1
     for i in insertionSites:
