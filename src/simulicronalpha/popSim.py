@@ -171,9 +171,9 @@ def runSim(
                     bool(set(k).intersection(TEset[TE]))
                     for k in populationV1 + populationV2
                 ):
-                    unfixedTE.append(i)
+                    unfixedTE.append(TE)
                 else:
-                    lostTE.append(i)
+                    lostTE.append(TE)
                     del TEset[TE]
 
                 # If all transposons are fixed
