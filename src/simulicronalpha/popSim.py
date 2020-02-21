@@ -165,6 +165,10 @@ def runSim(
                     bool(set(k).intersection(TEset[TE]))
                     for k in populationV1 + populationV2
                 ):
+                    # Check if the TE appears in
+                    # unfixed array and remove it
+                    # from that array
+                    unfixedTE = list(filter((TE).__ne__, unfixedTE))
                     fixedTE.append(TE)
                     counter += 1
                 elif any(
@@ -173,11 +177,17 @@ def runSim(
                 ):
                     unfixedTE.append(TE)
                 else:
+                    # Check if the TE appears in
+                    # unfixed array and remove it
+                    # from that array
+                    unfixedTE = list(filter((TE).__ne__, unfixedTE))
                     lostTE.append(TE)
                     del TEset[TE]
 
                 # If all transposons are fixed
                 if counter == len(TEset):
+                    # Cleanup the output
+                    fixedTE = list(set(fixedTE))
                     return (
                         "FIXED",
                         fixedTE,
@@ -212,6 +222,7 @@ def createData(
     numberOfInsertionSites=1000,
     baseRecombinationRate=0.1,
     NumberOfIndividual=1000,
+    InsertIntoOne=True,
     NumberOfTransposonInsertions=2,
     NumberOfGenerations=100000,
     baseSelection=1,
@@ -239,6 +250,7 @@ def createData(
             transposonMatrix=tr,
             NumberOfIndividual=NumberOfIndividual,
             NumberOfTransposonInsertions=NumberOfTransposonInsertions,
+            InsertIntoOne=InsertIntoOne,
         )
 
         yield ((gen, pop, tr, TEset, NumberOfTransposonInsertions,))
@@ -250,6 +262,7 @@ def runBatch(
     numberOfInsertionSites=1000,
     baseRecombinationRate=0.1,
     NumberOfIndividual=1000,
+    InsertIntoOne=True,
     NumberOfTransposonInsertions=2,
     NumberOfGenerations=100000,
     baseSelection=1,
@@ -264,6 +277,7 @@ def runBatch(
         numberOfInsertionSites,
         baseRecombinationRate,
         NumberOfIndividual,
+        InsertIntoOne,
         NumberOfTransposonInsertions,
         NumberOfGenerations,
         baseSelection,
