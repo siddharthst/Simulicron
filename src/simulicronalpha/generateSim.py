@@ -54,25 +54,44 @@ def generatePopulation(
     transposonMatrix,
     NumberOfIndividual=1000,
     NumberOfTransposonInsertions=2,
+    InsertIntoOne=True,
 ):
     population = np.zeros((NumberOfIndividual, 3), dtype=np.ndarray)
-    infectedIndividuals = np.random.choice(
-        range(1, NumberOfIndividual),
-        NumberOfTransposonInsertions,
-        replace=False,
-    )
     # Set base fitness
     population[0:, 2] = 1
 
-    # Insert transposons and change fitness
-    counter = 1
-    for i in list(range(NumberOfTransposonInsertions)):
-        allele = random.choice([0, 1])
-        population[infectedIndividuals[i]][allele] = [counter]
-        population[infectedIndividuals[i]][2] = 1 + (
-            transposonMatrix[i + 1][2]
+    if InsertIntoOne == True:
+        infectedIndividual = random.choice(
+            range(1, NumberOfIndividual)
         )
-        counter += 1
+        # Choose the maternal or paternal chromosome
+        allele = random.choice([0, 1])
+        population[infectedIndividual][allele] = list(
+            range(1, NumberOfTransposonInsertions + 1)
+        )
+        population[infectedIndividual][2] = 1 + sum(
+            [
+                transposonMatrix[i][2]
+                for i in range(1, len(transposonMatrix))
+            ]
+        )
+
+    else:
+        infectedIndividuals = np.random.choice(
+            range(1, NumberOfIndividual),
+            NumberOfTransposonInsertions,
+            replace=False,
+        )
+
+        # Insert transposons and change fitness
+        counter = 1
+        for i in list(range(NumberOfTransposonInsertions)):
+            allele = random.choice([0, 1])
+            population[infectedIndividuals[i]][allele] = [counter]
+            population[infectedIndividuals[i]][2] = 1 + (
+                transposonMatrix[i + 1][2]
+            )
+            counter += 1
 
     return population
 
@@ -109,9 +128,9 @@ def generateTransposon(
 
     # If there is a requirment to change the recombination rate
     # at transposon insertion site
-    # This changes the recombination on index position + 1 
+    # This changes the recombination on index position + 1
     if changeRecombination == True:
-        genomeArray[insertionSites[-1], 2] = RecombinationRate
+        genomeArray[insertionSites[-2], 2] = RecombinationRate
 
     counter = 1
     for i in insertionSites:
@@ -128,5 +147,5 @@ def generateTransposon(
     # Create sets to store transposon propogation
     TEset = {}
     for i in list(range(NumberOfTransposonInsertions)):
-        TEset[i+1] = set([i+1])
+        TEset[i + 1] = set([i + 1])
     return transposons, genomeArray, TEset
