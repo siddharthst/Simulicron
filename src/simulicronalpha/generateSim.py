@@ -54,13 +54,34 @@ def generatePopulation(
     transposonMatrix,
     NumberOfIndividual=1000,
     NumberOfTransposonInsertions=2,
-    InsertIntoOne=True,
+    InsertIntoOne=False,
+    insertionFrequency=False,
 ):
     population = np.zeros((NumberOfIndividual, 3), dtype=np.ndarray)
     # Set base fitness
     population[0:, 2] = 1
 
-    if InsertIntoOne == True:
+    if insertionFrequency != False:
+        # Calculate the number of insertions
+        numberOfInsertions = int(
+            NumberOfIndividual * insertionFrequency
+        )
+        infectedIndividuals = np.random.choice(
+            range(1, numberOfInsertions),
+            NumberOfTransposonInsertions,
+            replace=False,
+        )
+        # Insert transposons and change fitness
+        counter = 1
+        for i in list(range(NumberOfTransposonInsertions)):
+            allele = random.choice([0, 1])
+            population[infectedIndividuals[i]][allele] = [counter]
+            population[infectedIndividuals[i]][2] = 1 + (
+                transposonMatrix[i + 1][2]
+            )
+            counter += 1
+
+    elif InsertIntoOne == True:
         infectedIndividual = random.choice(
             range(1, NumberOfIndividual)
         )
@@ -103,7 +124,14 @@ def generateTransposon(
     consecutiveTransposons=False,
     changeRecombination=False,
     RecombinationRate=0.01,
+    insertionFrequency=False,
+    NumberOfIndividual=None,
 ):
+    if insertionFrequency != False:
+        NumberOfTransposonInsertions = int(
+            NumberOfIndividual * insertionFrequency
+        )
+
     transposons = np.zeros(
         (NumberOfTransposonInsertions + 1, 4), dtype=np.ndarray
     )

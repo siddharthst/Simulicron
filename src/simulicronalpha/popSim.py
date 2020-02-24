@@ -230,6 +230,7 @@ def createData(
     consecutiveTransposons=False,
     changeRecombination=False,
     baseTrRecombination=0.1,
+    insertionFrequency=False,
 ):
     for i in range(numberOfSimulations):
         gen = generateGenome(
@@ -245,12 +246,15 @@ def createData(
             consecutiveTransposons=consecutiveTransposons,
             changeRecombination=changeRecombination,
             RecombinationRate=baseTrRecombination,
+            insertionFrequency=insertionFrequency,
+            NumberOfIndividual=NumberOfIndividual,
         )
         pop = generatePopulation(
             transposonMatrix=tr,
             NumberOfIndividual=NumberOfIndividual,
             NumberOfTransposonInsertions=NumberOfTransposonInsertions,
             InsertIntoOne=InsertIntoOne,
+            insertionFrequency=insertionFrequency,
         )
 
         yield ((gen, pop, tr, TEset, NumberOfTransposonInsertions,))
@@ -270,6 +274,7 @@ def runBatch(
     consecutiveTransposons=False,
     changeRecombination=False,
     baseTrRecombination=0.1,
+    insertionFrequency=False,
 ):
     dataSet = createData(
         numberOfSimulations,
@@ -285,6 +290,7 @@ def runBatch(
         consecutiveTransposons,
         changeRecombination,
         baseTrRecombination,
+        insertionFrequency,
     )
     inputSet = []
     for i in dataSet:
