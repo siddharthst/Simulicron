@@ -26,7 +26,7 @@ from popSim import (
     runSim,
     runBatch,
 )
-
+'''
 sim   = runBatch(numberOfSimulations=100000, NumberOfTransposonInsertions=1, baseSelection=0.01, 
                     baseTransposition=0, numberOfChromosomes=1, baseRecombinationRate=0.0, 
                     NumberOfIndividual=10, insertionFrequency=0.4)
@@ -204,4 +204,41 @@ sim   = runBatch(numberOfSimulations=100000, NumberOfTransposonInsertions=1, bas
                     baseTransposition=0, numberOfChromosomes=1, baseRecombinationRate=0.0, 
                     NumberOfIndividual=500, insertionFrequency=0.1)
 with open("c1P500C0-5.pickle", "wb") as f:
+    pickle.dump((sim), f)
+'''
+
+sim   = runBatch(numberOfSimulations=100000, NumberOfTransposonInsertions=1, baseSelection=0.00, 
+                    baseTransposition=0, numberOfChromosomes=1, baseRecombinationRate=0.0, 
+                    NumberOfIndividual=10, insertionFrequency=0.4)
+with open("c1P10C00-00.pickle", "wb") as f:
+    pickle.dump((sim), f)
+    
+sim   = runBatch(numberOfSimulations=100000, NumberOfTransposonInsertions=1, baseSelection=0.00, 
+                    baseTransposition=0, numberOfChromosomes=1, baseRecombinationRate=0.0, 
+                    NumberOfIndividual=30, insertionFrequency=0.6)
+with open("c1P30C00-00.pickle", "wb") as f:
+    pickle.dump((sim), f)
+    
+sim   = runBatch(numberOfSimulations=100000, NumberOfTransposonInsertions=1, baseSelection=0.00, 
+                    baseTransposition=0, numberOfChromosomes=1, baseRecombinationRate=0.0, 
+                    NumberOfIndividual=50, insertionFrequency=0.4)
+with open("c1P50C00-00.pickle", "wb") as f:
+    pickle.dump((sim), f)
+    
+sim   = runBatch(numberOfSimulations=100000, NumberOfTransposonInsertions=1, baseSelection=0.00, 
+                    baseTransposition=0, numberOfChromosomes=1, baseRecombinationRate=0.0, 
+                    NumberOfIndividual=70, insertionFrequency=0.3)
+with open("c1P70C00-00.pickle", "wb") as f:
+    pickle.dump((sim), f)
+    
+sim   = runBatch(numberOfSimulations=100000, NumberOfTransposonInsertions=1, baseSelection=0.00, 
+                    baseTransposition=0, numberOfChromosomes=1, baseRecombinationRate=0.0, 
+                    NumberOfIndividual=100, insertionFrequency=0.5)
+with open("c1P100C00-00.pickle", "wb") as f:
+    pickle.dump((sim), f)
+    
+sim   = runBatch(numberOfSimulations=100000, NumberOfTransposonInsertions=1, baseSelection=0.00, 
+                    baseTransposition=0, numberOfChromosomes=1, baseRecombinationRate=0.0, 
+                    NumberOfIndividual=10, insertionFrequency=0.1)
+with open("c1P200C00-00.pickle", "wb") as f:
     pickle.dump((sim), f)
