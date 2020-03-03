@@ -2,6 +2,7 @@ import numpy as np
 from numpy import cumsum
 from numpy import concatenate as c
 import random
+from math import exp
 
 
 def generateGenome(
@@ -73,13 +74,10 @@ def generatePopulation(
         )
         # Insert transposons and change fitness
         counter = 1
-        for i in list(range(NumberOfTransposonInsertions)):
+        for i in infectedIndividuals:
             allele = random.choice([0, 1])
-            population[infectedIndividuals[i]][allele] = [counter]
-            population[infectedIndividuals[i]][2] = 1 + (
-                transposonMatrix[i + 1][2]
-            )
-            counter += 1
+            population[i][allele] = [counter]
+            population[i][2] = exp(transposonMatrix[1][2])
 
     elif InsertIntoOne == True:
         infectedIndividual = random.choice(
@@ -127,10 +125,10 @@ def generateTransposon(
     insertionFrequency=False,
     NumberOfIndividual=None,
 ):
-    if insertionFrequency != False:
-        NumberOfTransposonInsertions = int(
-            NumberOfIndividual * insertionFrequency
-        )
+    # if insertionFrequency != False:
+    #    NumberOfTransposonInsertions = int(
+    #        NumberOfIndividual * insertionFrequency
+    #    )
 
     transposons = np.zeros(
         (NumberOfTransposonInsertions + 1, 4), dtype=np.ndarray
