@@ -2,6 +2,7 @@ import numpy as np
 from numpy import cumsum
 from numpy import concatenate as c
 import random
+from random import shuffle
 from math import exp
 
 
@@ -57,12 +58,41 @@ def generatePopulation(
     NumberOfTransposonInsertions=2,
     InsertIntoOne=False,
     insertionFrequency=False,
+    HardyWeinberg=False,
 ):
     population = np.zeros((NumberOfIndividual, 3), dtype=np.ndarray)
     # Set base fitness
     population[0:, 2] = 1
 
-    if insertionFrequency != False:
+    if HardyWeinberg != False and insertionFrequency != False:
+        # Calculate the number of insertions
+        NumhomozygousInsertion = int(
+            NumberOfIndividual * (insertionFrequency ** 2)
+        )
+        NumheterozygousInsertion = int(
+            NumberOfIndividual
+            * (2 * insertionFrequency * (1 - insertionFrequency))
+        )
+        indices = list(range(1, NumberOfIndividual))
+        shuffle(indices)
+        homozygousInsertionSites = indices[0:NumhomozygousInsertion]
+        heterozygousInsertionSites = indices[
+            NumhomozygousInsertion : NumhomozygousInsertion
+            + NumheterozygousInsertion
+        ]
+        # Insert transposons and change fitness
+        counter = 1
+        for i in homozygousInsertionSites:
+            population[i][0] = [counter]
+            population[i][1] = [counter]
+            population[i][2] = exp(2 * transposonMatrix[1][2])
+
+        for i in heterozygousInsertionSites:
+            allele = random.choice([0, 1])
+            population[i][allele] = [counter]
+            population[i][2] = exp(transposonMatrix[1][2])
+
+    elif insertionFrequency != False:
         # Calculate the number of insertions
         numberOfInsertions = int(
             NumberOfIndividual * insertionFrequency

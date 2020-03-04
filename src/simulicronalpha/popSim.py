@@ -231,6 +231,7 @@ def createData(
     changeRecombination=False,
     baseTrRecombination=0.1,
     insertionFrequency=False,
+    HardyWeinberg=False,
 ):
     for i in range(numberOfSimulations):
         gen = generateGenome(
@@ -255,6 +256,7 @@ def createData(
             NumberOfTransposonInsertions=NumberOfTransposonInsertions,
             InsertIntoOne=InsertIntoOne,
             insertionFrequency=insertionFrequency,
+            HardyWeinberg=HardyWeinberg,
         )
 
         yield ((gen, pop, tr, TEset, NumberOfTransposonInsertions,))
@@ -275,6 +277,7 @@ def runBatch(
     changeRecombination=False,
     baseTrRecombination=0.1,
     insertionFrequency=False,
+    HardyWeinberg=False,
 ):
     dataSet = createData(
         numberOfSimulations,
@@ -291,6 +294,7 @@ def runBatch(
         changeRecombination,
         baseTrRecombination,
         insertionFrequency,
+        HardyWeinberg,
     )
     inputSet = []
     for i in dataSet:
