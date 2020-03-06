@@ -20,61 +20,87 @@ from popSim import (
     generatePopulation,
     calculateFitness,
     generateGenome,
-    generateFitness,
     recombination,
+    createData,
     transposition,
     runSim,
     runBatch,
 )
 
-simP10   = runBatch(numberOfSimulations=100000, NumberOfTransposonInsertions=5, baseSelection=0, baseTransposition=0, numberOfChromosomes=1, baseRecombinationRate=0.0, NumberOfIndividual=10)
-with open("a2simP10.pickle", "wb") as f:
-    pickle.dump((simP10), f)
-
-simP30   = runBatch(numberOfSimulations=100000, NumberOfTransposonInsertions=15, baseSelection=0, baseTransposition=0, numberOfChromosomes=1, baseRecombinationRate=0.0, NumberOfIndividual=30)
-with open("a2simP30.pickle", "wb") as f:
-    pickle.dump((simP30), f)
+sim   = runBatch(numberOfSimulations=100000, NumberOfTransposonInsertions=1, baseSelection=0.0, 
+                    baseTransposition=0, numberOfChromosomes=1, baseRecombinationRate=0.0, 
+                    NumberOfIndividual=10, insertionFrequency=0.5, HardyWeinberg=True)
+with open("a2P10C0-0.pickle", "wb") as f:
+    pickle.dump((sim), f)
     
-simP50   = runBatch(numberOfSimulations=100000, NumberOfTransposonInsertions=25, baseSelection=0, baseTransposition=0, numberOfChromosomes=1, baseRecombinationRate=0.0, NumberOfIndividual=50)
-with open("a2simP50.pickle", "wb") as f:
-    pickle.dump((simP50), f)
-  
-simP70   = runBatch(numberOfSimulations=100000, NumberOfTransposonInsertions=25, baseSelection=0, baseTransposition=0, numberOfChromosomes=1, baseRecombinationRate=0.0, NumberOfIndividual=70)
-with open("a2simP70.pickle", "wb") as f:
-    pickle.dump((simP70), f)
+sim   = runBatch(numberOfSimulations=100000, NumberOfTransposonInsertions=1, baseSelection=0.0, 
+                    baseTransposition=0, numberOfChromosomes=1, baseRecombinationRate=0.0, 
+                    NumberOfIndividual=30, insertionFrequency=0.5, HardyWeinberg=True)
+with open("a2P30C0-0.pickle", "wb") as f:
+    pickle.dump((sim), f)
+
+sim   = runBatch(numberOfSimulations=100000, NumberOfTransposonInsertions=1, baseSelection=0.0, 
+                    baseTransposition=0, numberOfChromosomes=1, baseRecombinationRate=0.0, 
+                    NumberOfIndividual=50, insertionFrequency=0.5, HardyWeinberg=True)
+with open("a2P50C0-0.pickle", "wb") as f:
+    pickle.dump((sim), f)
     
-simP100  = runBatch(numberOfSimulations=100000, NumberOfTransposonInsertions=25, baseSelection=0, baseTransposition=0, numberOfChromosomes=1, baseRecombinationRate=0.0, NumberOfIndividual=100)
-with open("a2simP100.pickle", "wb") as f:
-    pickle.dump((simP100), f)
+sim   = runBatch(numberOfSimulations=100000, NumberOfTransposonInsertions=1, baseSelection=0.0, 
+                    baseTransposition=0, numberOfChromosomes=1, baseRecombinationRate=0.0, 
+                    NumberOfIndividual=70, insertionFrequency=0.5, HardyWeinberg=True)
+with open("a2P70C0-0.pickle", "wb") as f:
+    pickle.dump((sim), f)
+
+sim   = runBatch(numberOfSimulations=100000, NumberOfTransposonInsertions=1, baseSelection=0.0, 
+                    baseTransposition=0, numberOfChromosomes=1, baseRecombinationRate=0.0, 
+                    NumberOfIndividual=100, insertionFrequency=0.5, HardyWeinberg=True)
+with open("a2P100C0-0.pickle", "wb") as f:
+    pickle.dump((sim), f)
+
+sim   = runBatch(numberOfSimulations=100000, NumberOfTransposonInsertions=1, baseSelection=0.0, 
+                    baseTransposition=0, numberOfChromosomes=1, baseRecombinationRate=0.0, 
+                    NumberOfIndividual=200, insertionFrequency=0.5, HardyWeinberg=True)
+with open("a2P200C0-0.pickle", "wb") as f:
+    pickle.dump((sim), f)
+
+
+sim   = runBatch(numberOfSimulations=100000, NumberOfTransposonInsertions=1, baseSelection=0.0, 
+                    baseTransposition=0, numberOfChromosomes=1, baseRecombinationRate=0.0, 
+                    NumberOfIndividual=300, insertionFrequency=0.5, HardyWeinberg=True)
+with open("a2P300C0-0.pickle", "wb") as f:
+    pickle.dump((sim), f)
     
-simP150  = runBatch(numberOfSimulations=100000, NumberOfTransposonInsertions=25, baseSelection=0, baseTransposition=0, numberOfChromosomes=1, baseRecombinationRate=0.0, NumberOfIndividual=150)
-with open("a2simP150.pickle", "wb") as f:
-    pickle.dump((simP150), f)
 
-simP200  = runBatch(numberOfSimulations=100000, NumberOfTransposonInsertions=25, baseSelection=0, baseTransposition=0, numberOfChromosomes=1, baseRecombinationRate=0.0, NumberOfIndividual=200)
-with open("a2simP200.pickle", "wb") as f:
-    pickle.dump((simP200), f)
+sim   = runBatch(numberOfSimulations=100000, NumberOfTransposonInsertions=1, baseSelection=0.0, 
+                    baseTransposition=0, numberOfChromosomes=1, baseRecombinationRate=0.0, 
+                    NumberOfIndividual=400, insertionFrequency=0.5, HardyWeinberg=True)
+with open("a2P400C0-0.pickle", "wb") as f:
+    pickle.dump((sim), f)
     
-simP300  = runBatch(numberOfSimulations=100000, NumberOfTransposonInsertions=25, baseSelection=0, baseTransposition=0, numberOfChromosomes=1, baseRecombinationRate=0.0, NumberOfIndividual=300)
-with open("a2simP300.pickle", "wb") as f:
-    pickle.dump((simP300), f)
+
+sim   = runBatch(numberOfSimulations=100000, NumberOfTransposonInsertions=1, baseSelection=0.0, 
+                    baseTransposition=0, numberOfChromosomes=1, baseRecombinationRate=0.0, 
+                    NumberOfIndividual=500, insertionFrequency=0.5, HardyWeinberg=True)
+with open("a2P500C0-0.pickle", "wb") as f:
+    pickle.dump((sim), f)
+
+
+sim   = runBatch(numberOfSimulations=100000, NumberOfTransposonInsertions=1, baseSelection=0.0, 
+                    baseTransposition=0, numberOfChromosomes=1, baseRecombinationRate=0.0, 
+                    NumberOfIndividual=600, insertionFrequency=0.5, HardyWeinberg=True)
+with open("a2P600C0-0.pickle", "wb") as f:
+    pickle.dump((sim), f)
     
-simP400  = runBatch(numberOfSimulations=100000, NumberOfTransposonInsertions=25, baseSelection=0, baseTransposition=0, numberOfChromosomes=1, baseRecombinationRate=0.0, NumberOfIndividual=400)
-with open("a2simP400.pickle", "wb") as f:
-    pickle.dump((simP400), f)
 
-simP500  = runBatch(numberOfSimulations=100000, NumberOfTransposonInsertions=25, baseSelection=0, baseTransposition=0, numberOfChromosomes=1, baseRecombinationRate=0.0, NumberOfIndividual=500)
-with open("a2simP500.pickle", "wb") as f:
-    pickle.dump((simP500), f)
+sim   = runBatch(numberOfSimulations=100000, NumberOfTransposonInsertions=1, baseSelection=0.0, 
+                    baseTransposition=0, numberOfChromosomes=1, baseRecombinationRate=0.0, 
+                    NumberOfIndividual=700, insertionFrequency=0.5, HardyWeinberg=True)
+with open("a2P700C0-0.pickle", "wb") as f:
+    pickle.dump((sim), f)
+    
 
-simP700  = runBatch(numberOfSimulations=100000, NumberOfTransposonInsertions=1, baseSelection=0, baseTransposition=0, numberOfChromosomes=1, baseRecombinationRate=0.0, NumberOfIndividual=700)
-with open("a1simP700.pickle", "wb") as f:
-    pickle.dump((simP700), f)
-
-simP700  = runBatch(numberOfSimulations=100000, NumberOfTransposonInsertions=25, baseSelection=0, baseTransposition=0, numberOfChromosomes=1, baseRecombinationRate=0.0, NumberOfIndividual=700)
-with open("a2simP700.pickle", "wb") as f:
-    pickle.dump((simP700), f)
-
-simP1000 = runBatch(numberOfSimulations=100000, NumberOfTransposonInsertions=25, baseSelection=0, baseTransposition=0, numberOfChromosomes=1, baseRecombinationRate=0.0, NumberOfIndividual=1000)
-with open("a2simP1000.pickle", "wb") as f:
-    pickle.dump((simP1000), f)
+sim   = runBatch(numberOfSimulations=100000, NumberOfTransposonInsertions=1, baseSelection=0.0, 
+                    baseTransposition=0, numberOfChromosomes=1, baseRecombinationRate=0.0, 
+                    NumberOfIndividual=1000, insertionFrequency=0.5, HardyWeinberg=True)
+with open("a2P1000C0-0.pickle", "wb") as f:
+    pickle.dump((sim), f)
