@@ -27,34 +27,34 @@ from popSim import (
     runBatch,
 )
 
-# 30
+# 50
+sim   = runBatch(numberOfSimulations=100000, NumberOfTransposonInsertions=1, baseSelection=-0.01, 
+                    baseTransposition=0, numberOfChromosomes=1, baseRecombinationRate=0.0, 
+                    NumberOfIndividual=50, insertionFrequency=0.2, HardyWeinberg=True)
+with open("c1P50C1-01.pickle", "wb") as f:
+    pickle.dump((sim), f)
+
+sim   = runBatch(numberOfSimulations=100000, NumberOfTransposonInsertions=1, baseSelection=0.00, 
+                    baseTransposition=0, numberOfChromosomes=1, baseRecombinationRate=0.0, 
+                    NumberOfIndividual=50, insertionFrequency=0.2, HardyWeinberg=True)
+with open("c1P50C0-00.pickle", "wb") as f:
+    pickle.dump((sim), f)
+
 sim   = runBatch(numberOfSimulations=100000, NumberOfTransposonInsertions=1, baseSelection=0.01, 
                     baseTransposition=0, numberOfChromosomes=1, baseRecombinationRate=0.0, 
-                    NumberOfIndividual=30, insertionFrequency=0.2, HardyWeinberg=True)
-with open("c1P30C0-01.pickle", "wb") as f:
+                    NumberOfIndividual=50, insertionFrequency=0.2, HardyWeinberg=True)
+with open("c1P50C0-01.pickle", "wb") as f:
     pickle.dump((sim), f)
 
 sim   = runBatch(numberOfSimulations=100000, NumberOfTransposonInsertions=1, baseSelection=0.05, 
                     baseTransposition=0, numberOfChromosomes=1, baseRecombinationRate=0.0, 
-                    NumberOfIndividual=30, insertionFrequency=0.2, HardyWeinberg=True)
-with open("c1P30C0-05.pickle", "wb") as f:
+                    NumberOfIndividual=50, insertionFrequency=0.2, HardyWeinberg=True)
+with open("c1P50C0-05.pickle", "wb") as f:
     pickle.dump((sim), f)
     
 sim   = runBatch(numberOfSimulations=100000, NumberOfTransposonInsertions=1, baseSelection=0.10, 
                     baseTransposition=0, numberOfChromosomes=1, baseRecombinationRate=0.0, 
-                    NumberOfIndividual=30, insertionFrequency=0.2, HardyWeinberg=True)
-with open("c1P30C0-10.pickle", "wb") as f:
+                    NumberOfIndividual=50, insertionFrequency=0.2, HardyWeinberg=True)
+with open("c1P50C0-10.pickle", "wb") as f:
     pickle.dump((sim), f)
-    
-sim   = runBatch(numberOfSimulations=100000, NumberOfTransposonInsertions=1, baseSelection=0.00, 
-                    baseTransposition=0, numberOfChromosomes=1, baseRecombinationRate=0.0, 
-                    NumberOfIndividual=30, insertionFrequency=0.2, HardyWeinberg=True)
-with open("c1P30C0-00.pickle", "wb") as f:
-    pickle.dump((sim), f)
-
-    
-sim   = runBatch(numberOfSimulations=100000, NumberOfTransposonInsertions=1, baseSelection=-0.01, 
-                    baseTransposition=0, numberOfChromosomes=1, baseRecombinationRate=0.0, 
-                    NumberOfIndividual=30, insertionFrequency=0.2, HardyWeinberg=True)
-with open("c1P30C1-01.pickle", "wb") as f:
-    pickle.dump((sim), f)
+        
