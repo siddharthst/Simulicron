@@ -30,7 +30,7 @@ def runSim(
     TEset,
     NumberOfTransposonInsertions,
     generations=1000,
-    ignoreFixation=False,
+    ignoreFixation=True,
 ):
     # ------------------#
     # lambda/macros
