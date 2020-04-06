@@ -29,7 +29,7 @@ def runSim(
     transposonMatrix,
     TEset,
     NumberOfTransposonInsertions,
-    generations=100,
+    generations=200,
     ignoreFixation=True,
 ):
     # ------------------#

@@ -28,19 +28,19 @@ from popSim import (
 )
 
 
-# 100
+# 1000
 sim   = runBatch(numberOfSimulations=1000, NumberOfTransposonInsertions=1, baseSelection=0, 
                     baseExcision=0.02, numberOfChromosomes=1, baseRecombinationRate=0.0, 
-                    NumberOfIndividual=100, InsertIntoAll=True)
-with open("d1P100u02.pickle", "wb") as f:
+                    NumberOfIndividual=1000, InsertIntoAll=True)
+with open("d1P1000u02.pickle", "wb") as f:
     pickle.dump((sim), f)
 
-# 200
+# 1000
 sim   = runBatch(numberOfSimulations=1000, NumberOfTransposonInsertions=1, baseSelection=0, 
-                    baseExcision=0.02, numberOfChromosomes=1, baseRecombinationRate=0.0, 
-                    NumberOfIndividual=200, InsertIntoAll=True)
-with open("d1P200u02.pickle", "wb") as f:
+                    baseExcision=0.04, numberOfChromosomes=1, baseRecombinationRate=0.0, 
+                    NumberOfIndividual=1000, InsertIntoAll=True)
+with open("d1P1000u04.pickle", "wb") as f:
     pickle.dump((sim), f)
-    
 
-        
+
+               
