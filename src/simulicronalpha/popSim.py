@@ -128,7 +128,7 @@ def runSim(
                 lostTE,
                 i + 2,
                 transposonMatrixCopy.size / 4 - 1,
-                populationMatrixCopy,
+                0,
             )
 
         # Check if all members of population contain transposon
@@ -165,13 +165,11 @@ def runSim(
                     del TEset[TE]
 
                 # If all transposons are fixed
-                if counter == len(TEset):
+                if counter == len(TEset) and ignoreFixation==False:
                     # If we want to ignore fixation.
                     ######!!!!!!!!!!######
                     # Proceed with caution
                     ######!!!!!!!!!!######
-                    if ignoreFixation == True:
-                        pass
                     # Cleanup the output
                     fixedTE = list(set(fixedTE))
                     return (
