@@ -45,6 +45,8 @@ def runSim(
     unfixedTE = []
     # for storing transposons which are lost
     lostTE = []
+    # For storing the average copy number per generation
+    averageCopyNumber = []
 
     transposonMatrixCopy = transposonMatrix
     populationMatrixCopy = populationMatrix
@@ -128,7 +130,7 @@ def runSim(
                 lostTE,
                 i + 2,
                 transposonMatrixCopy.size / 4 - 1,
-                0,
+                averageCopyNumber,
             )
 
         # Check if all members of population contain transposon
@@ -165,7 +167,7 @@ def runSim(
                     del TEset[TE]
 
                 # If all transposons are fixed
-                if counter == len(TEset) and ignoreFixation==False:
+                if counter == len(TEset) and ignoreFixation == False:
                     # If we want to ignore fixation.
                     ######!!!!!!!!!!######
                     # Proceed with caution
@@ -179,7 +181,7 @@ def runSim(
                         lostTE,
                         i + 2,
                         transposonMatrixCopy.size / 4 - 1,
-                        checkCopyNumber(populationMatrixCopy),
+                        averageCopyNumber,
                     )
         # Major bug in numpy - forced to use pandas
         # Refer to the question
@@ -187,6 +189,7 @@ def runSim(
         populationMatrixCopy = pd.DataFrame(
             [populationV1, populationV2, populationFit]
         ).T.to_numpy()
+        averageCopyNumber.append(checkCopyNumber(populationMatrixCopy))
 
     # Quit simulation if there in a transient state
     # i.e. no fixation or loss
@@ -197,7 +200,7 @@ def runSim(
         lostTE,
         i + 2,
         transposonMatrixCopy.size / 4 - 1,
-        checkCopyNumber(populationMatrixCopy),
+        averageCopyNumber,
     )
 
 
@@ -251,7 +254,7 @@ def createData(
             HardyWeinberg=HardyWeinberg,
         )
 
-        yield ((gen, pop, tr, TEset, NumberOfTransposonInsertions,))
+        yield ((gen, pop, tr, TEset, NumberOfTransposonInsertions,NumberOfGenerations))
 
 
 def runBatch(
@@ -275,24 +278,24 @@ def runBatch(
     HardyWeinberg=False,
 ):
     dataSet = createData(
-    numberOfSimulations,
-    numberOfChromosomes,
-    numberOfInsertionSites,
-    baseRecombinationRate,
-    NumberOfIndividual,
-    InsertIntoOne,
-    InsertIntoAll,
-    NumberOfTransposonInsertions,
-    NumberOfGenerations,
-    baseSelection,
-    baseExcision,
-    baseRepair,
-    baseInsertion,
-    consecutiveTransposons,
-    changeRecombination,
-    baseTrRecombination,
-    insertionFrequency,
-    HardyWeinberg,
+        numberOfSimulations,
+        numberOfChromosomes,
+        numberOfInsertionSites,
+        baseRecombinationRate,
+        NumberOfIndividual,
+        InsertIntoOne,
+        InsertIntoAll,
+        NumberOfTransposonInsertions,
+        NumberOfGenerations,
+        baseSelection,
+        baseExcision,
+        baseRepair,
+        baseInsertion,
+        consecutiveTransposons,
+        changeRecombination,
+        baseTrRecombination,
+        insertionFrequency,
+        HardyWeinberg,
     )
     inputSet = []
     for i in dataSet:

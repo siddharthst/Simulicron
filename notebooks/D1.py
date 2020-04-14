@@ -28,19 +28,35 @@ from popSim import (
 )
 
 
-# 1000
-sim   = runBatch(numberOfSimulations=1000, NumberOfTransposonInsertions=1, baseSelection=0, 
-                    baseExcision=0.02, numberOfChromosomes=1, baseRecombinationRate=0.0, 
-                    NumberOfIndividual=1000, InsertIntoAll=True)
-with open("d1P1000u02.pickle", "wb") as f:
+# 100
+sim   = runBatch(numberOfSimulations=1, NumberOfTransposonInsertions=3, baseSelection=0, 
+                    baseExcision=0.025, numberOfChromosomes=1, baseRecombinationRate=0.0, 
+                    NumberOfIndividual=1000, InsertIntoAll=True, NumberOfGenerations=100)
+with open("d1P1000u025.pickle", "wb") as f:
     pickle.dump((sim), f)
 
-# 1000
-sim   = runBatch(numberOfSimulations=1000, NumberOfTransposonInsertions=1, baseSelection=0, 
-                    baseExcision=0.04, numberOfChromosomes=1, baseRecombinationRate=0.0, 
-                    NumberOfIndividual=1000, InsertIntoAll=True)
-with open("d1P1000u04.pickle", "wb") as f:
+# 100
+sim   = runBatch(numberOfSimulations=1, NumberOfTransposonInsertions=3, baseSelection=0, 
+                    baseExcision=0.035, numberOfChromosomes=1, baseRecombinationRate=0.0, 
+                    NumberOfIndividual=1000, InsertIntoAll=True, NumberOfGenerations=100)
+with open("d1P1000u035.pickle", "wb") as f:
     pickle.dump((sim), f)
+
+# 100
+sim   = runBatch(numberOfSimulations=1, NumberOfTransposonInsertions=3, baseSelection=0, 
+                    baseExcision=0.045, numberOfChromosomes=1, baseRecombinationRate=0.0, 
+                    NumberOfIndividual=1000, InsertIntoAll=True, NumberOfGenerations=100)
+with open("d1P1000u045.pickle", "wb") as f:
+    pickle.dump((sim), f)
+
+# 100
+sim   = runBatch(numberOfSimulations=1, NumberOfTransposonInsertions=3, baseSelection=0, 
+                    baseExcision=0.055, numberOfChromosomes=1, baseRecombinationRate=0.0, 
+                    NumberOfIndividual=1000, InsertIntoAll=True, NumberOfGenerations=100)
+with open("d1P1000u055.pickle", "wb") as f:
+    pickle.dump((sim), f)
+
+
 
 
                

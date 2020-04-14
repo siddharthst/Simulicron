@@ -4,6 +4,7 @@ from numpy import concatenate as c
 import random
 from random import shuffle
 from math import exp
+from fitness import calculateFitness
 
 
 def generateGenome(
@@ -95,10 +96,19 @@ def generatePopulation(
     elif InsertIntoAll != False:
         # Choose the maternal or paternal chromosome
         for i in range(NumberOfIndividual):
-            allele = random.choice([0, 1])
-            transposon = random.choice(range(1, NumberOfTransposonInsertions + 1))
-            population[i][allele] = [transposon]
-            population[i][2] = exp(transposonMatrix[transposon][2])
+            for tr in list(range(1, 1 + NumberOfTransposonInsertions)):
+                # Choose the maternal or paternal chromosome
+                allele = random.choice([0, 1])
+                transposon = tr
+                if population[i][allele] == 0:
+                    population[i][allele] = [transposon]
+                    population[i][2] = exp(transposonMatrix[transposon][2])
+                else:
+                    population[i][allele].append(transposon)
+                    # population[i][2] = exp(transposonMatrix[transposon][2])
+                    population[i][2] = calculateFitness(
+                        transposonMatrix, v1=population[i][0], v2=population[i][1]
+                    )
 
     elif InsertIntoOne == True:
         infectedIndividual = random.choice(range(1, NumberOfIndividual))
@@ -172,9 +182,7 @@ def generateTransposon(
     for i in insertionSites:
         transposons[counter][5] = baseInsertion
         transposons[counter][4] = baseRepair
-        transposons[counter][3] = (
-            0 if baseExcision == 0 else baseExcision
-        )
+        transposons[counter][3] = 0 if baseExcision == 0 else baseExcision
         transposons[counter][2] = genomeArray[i][0]
         transposons[counter][1] = i
         transposons[counter][0] = "%030x" % random.randrange(16 ** 30)
