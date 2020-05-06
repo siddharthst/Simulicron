@@ -13,6 +13,11 @@ def generateGenome(
     numberOfInsertionSites=1000,
     numberOfChromosomes=10,
     baseRecombinationRate=0.01,
+    baseTau=0.0,
+    numberOfPiRNA = 6,
+    piPercentage = 3,
+    distributePi = False,
+    enablePiRecombination = False
 ):
     # Define selection penalty for the insertion site
     if baseSelection == None:
@@ -39,6 +44,12 @@ def generateGenome(
     # Only insert more chromosomes if needed
     if numberOfChromosomes > 1:
         RecombinationRates[chromosomeLocation] = 0.5
+
+    
+    # Generate piRNA cluster information
+    # If distributePi is set to true, piRNA will be distribute uniformly in each chromosome
+    # if (distributePi != False):
+        
     genome = np.vstack((SelectionCoef, insertionProbability, RecombinationRates)).T
     return genome
 

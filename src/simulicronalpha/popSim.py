@@ -47,6 +47,8 @@ def runSim(
     lostTE = []
     # For storing the average copy number per generation
     averageCopyNumber = []
+    # For storing the copy number variance per generation
+    varianceCopyNumber = []
 
     transposonMatrixCopy = transposonMatrix
     populationMatrixCopy = populationMatrix
@@ -131,6 +133,7 @@ def runSim(
                 i + 2,
                 transposonMatrixCopy.size / 4 - 1,
                 averageCopyNumber,
+                varianceCopyNumber,
             )
 
         # Check if all members of population contain transposon
@@ -182,6 +185,7 @@ def runSim(
                         i + 2,
                         transposonMatrixCopy.size / 4 - 1,
                         averageCopyNumber,
+                        varianceCopyNumber,
                     )
         # Major bug in numpy - forced to use pandas
         # Refer to the question
@@ -189,8 +193,9 @@ def runSim(
         populationMatrixCopy = pd.DataFrame(
             [populationV1, populationV2, populationFit]
         ).T.to_numpy()
-        averageCopyNumber.append(checkCopyNumber(populationMatrixCopy))
-
+        copyNumber, varianceNumber = checkCopyNumber(populationMatrixCopy)
+        averageCopyNumber.append(copyNumber)
+        varianceCopyNumber.append(varianceNumber)
     # Quit simulation if there in a transient state
     # i.e. no fixation or loss
     return (
@@ -201,6 +206,7 @@ def runSim(
         i + 2,
         transposonMatrixCopy.size / 4 - 1,
         averageCopyNumber,
+        varianceCopyNumber,
     )
 
 
@@ -254,7 +260,7 @@ def createData(
             HardyWeinberg=HardyWeinberg,
         )
 
-        yield ((gen, pop, tr, TEset, NumberOfTransposonInsertions,NumberOfGenerations))
+        yield ((gen, pop, tr, TEset, NumberOfTransposonInsertions, NumberOfGenerations))
 
 
 def runBatch(
@@ -276,6 +282,7 @@ def runBatch(
     baseTrRecombination=0.1,
     insertionFrequency=False,
     HardyWeinberg=False,
+    numberOfThreads=1
 ):
     dataSet = createData(
         numberOfSimulations,
@@ -301,7 +308,7 @@ def runBatch(
     for i in dataSet:
         inputSet.append(i)
 
-    with multiprocessing.Pool(processes=8) as pool:
+    with multiprocessing.Pool(processes=numberOfThreads) as pool:
         results = pool.starmap(runSim, inputSet)
 
     return results
