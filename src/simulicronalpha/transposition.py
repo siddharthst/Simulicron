@@ -67,9 +67,24 @@ def transposition(
         emptySitesProb = genomeMatrix[emptySiteIndices, 1].tolist()
         probSum = sum(emptySitesProb)
         InsertionProb = [float(i) / probSum for i in emptySitesProb]
-        sites = np.random.choice(
-            emptySiteIndices, size=sum(Transoposecheck), replace=False, p=InsertionProb,
-        )
+
+        # Conditions to handle over crowding of genome
+        if len(emptySiteIndices) > sum(Transoposecheck):
+            sites = np.random.choice(
+                emptySiteIndices,
+                size=sum(Transoposecheck),
+                replace=False,
+                p=InsertionProb,
+            )
+        elif len(filledSites) == len(genomeMatrix):
+            print("All sites filled - can't proceed further")
+            return (allele1Index, allele2Index, transposonMatrix, TEset)
+        else:
+            # Subsample the transposons down to available insertion sites
+            Transoposecheck = np.random.choice(
+                Transoposecheck, size=len(emptySiteIndices), replace=False,
+            )
+            transposonsToTranspose = transposonIndices[Transoposecheck]
 
         # Choose the allele for tranposition
         progenyAllele = random.choices(["v1", "v2"], k=sum(Transoposecheck))

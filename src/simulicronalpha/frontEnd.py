@@ -44,7 +44,7 @@ import click
     "--ng", default=100000, help="Maximum number of generations", show_default=True
 )
 @click.option(
-    "--be", default=1, help="Base excision rate for transposons", show_default=True
+    "--be", default=0.01, help="Base excision rate for transposons", show_default=True
 )
 @click.option(
     "--ifr",
