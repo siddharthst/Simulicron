@@ -11,12 +11,12 @@ def generateGenome(
     baseSelection=None,
     baseInsertionProb=1,
     numberOfInsertionSites=1000,
-    numberOfChromosomes=10,
+    numberOfChromosomes=6,
     baseRecombinationRate=0.01,
-    baseTau=0.0,
+    baseTau=1,
     numberOfPiRNA = 6,
     piPercentage = 3,
-    distributePi = False,
+    distributePi = True,
     enablePiRecombination = False
 ):
     # Define selection penalty for the insertion site
@@ -45,12 +45,34 @@ def generateGenome(
     if numberOfChromosomes > 1:
         RecombinationRates[chromosomeLocation] = 0.5
 
-    
     # Generate piRNA cluster information
+    # Create piRNA array
+    piRNArray = np.zeros(numberOfInsertionSites)
     # If distributePi is set to true, piRNA will be distribute uniformly in each chromosome
-    # if (distributePi != False):
-        
-    genome = np.vstack((SelectionCoef, insertionProbability, RecombinationRates)).T
+    if (distributePi != False):
+        # Find the average length of piRNA
+        totalPiRNALength = int(numberOfInsertionSites * (piPercentage/100))
+        individualPiRNALength = int(totalPiRNALength/numberOfChromosomes)
+        # Create windows from chromosome locations
+        chromosomeLocation = np.insert(chromosomeLocation, 0, 0, axis=0)
+        chromosomeLocation = np.append(chromosomeLocation, numberOfInsertionSites)
+        chromosomeLocation = np.sort(chromosomeLocation)
+        # print (chromosomeLocation)
+        for i in range(1, len(chromosomeLocation)):
+            edge1 = chromosomeLocation[i-1]
+            edge2 = chromosomeLocation[i]
+            # print (edge1)
+            piRNAstart = np.random.choice(np.arange(edge1, edge2), replace=False,)
+            # Check if there is enough space for piRNA
+            if (piRNAstart + individualPiRNALength > edge2):
+                piRNAstart = piRNAstart - (piRNAstart - edge2)
+            # print (piRNAstart)
+            # print (edge2)
+            # print ("--------")
+            piRNArray[piRNAstart:piRNAstart+individualPiRNALength] = baseTau
+    else:
+        print ("Not yet implemented")
+    genome = np.vstack((SelectionCoef, insertionProbability, RecombinationRates, piRNArray)).T
     return genome
 
 
