@@ -35,7 +35,11 @@ def runSim(
     # ------------------#
     # lambda/macros
     flatten = lambda *n: (
-        e for a in n for e in (flatten(*a) if isinstance(a, (tuple, list)) else (a,))
+        e
+        for a in n
+        for e in (
+            flatten(*a) if isinstance(a, (tuple, list)) else (a,)
+        )
     )
     # ------------------#
     # ------------------#
@@ -49,6 +53,10 @@ def runSim(
     averageCopyNumber = []
     # For storing the copy number variance per generation
     varianceCopyNumber = []
+    # Create a insertionSiteSepecific array
+    insertionSiteFrequencyArray = np.zeros(
+        (len(genomeMatrix), NumberOfTransposonInsertions,)
+    )
 
     transposonMatrixCopy = transposonMatrix
     populationMatrixCopy = populationMatrix
@@ -60,13 +68,18 @@ def runSim(
             fitness = list(populationMatrixCopy[0:, 2])
 
             p1, p2 = random.choices(
-                list(range(populationMatrixCopy.shape[0])), weights=fitness, k=2,
+                list(range(populationMatrixCopy.shape[0])),
+                weights=fitness,
+                k=2,
             )
 
             # Since recombination function only accepts arrays,
             # checking and forcing type conversion as needed
             # for the respective alleles
-            if populationMatrixCopy[p1, 0] == 0 and populationMatrixCopy[p1, 1] == 0:
+            if (
+                populationMatrixCopy[p1, 0] == 0
+                and populationMatrixCopy[p1, 1] == 0
+            ):
                 v1 = 0
             else:
                 cP1V1 = populationMatrixCopy[p1, 0]
@@ -81,10 +94,16 @@ def runSim(
                     cP1V2 = np.asarray([cP1V2])
 
                 v1 = recombination(
-                    genomeMatrix[0:, 2], transposonMatrixCopy, v1=cP1V1, v2=cP1V2,
+                    genomeMatrix[0:, 2],
+                    transposonMatrixCopy,
+                    v1=cP1V1,
+                    v2=cP1V2,
                 )
 
-            if populationMatrixCopy[p2, 0] == 0 and populationMatrixCopy[p2, 1] == 0:
+            if (
+                populationMatrixCopy[p2, 0] == 0
+                and populationMatrixCopy[p2, 1] == 0
+            ):
                 v2 = 0
             else:
                 cP2V1 = populationMatrixCopy[p2, 0]
@@ -99,7 +118,10 @@ def runSim(
                     cP2V2 = np.asarray([cP2V2])
 
                 v2 = recombination(
-                    genomeMatrix[0:, 2], transposonMatrixCopy, v1=cP2V1, v2=cP2V2,
+                    genomeMatrix[0:, 2],
+                    transposonMatrixCopy,
+                    v1=cP2V1,
+                    v2=cP2V2,
                 )
 
             if v1 == 0 and v2 == 0:
@@ -114,7 +136,9 @@ def runSim(
                     v1=v1,
                     v2=v2,
                 )
-                indFitness = calculateFitness(transposonMatrixCopy, v1, v2)
+                indFitness = calculateFitness(
+                    transposonMatrixCopy, v1, v2
+                )
 
             populationV1.append(v1)
             populationV2.append(v2)
@@ -124,7 +148,10 @@ def runSim(
         # n-1, hence i + 1 + 1
 
         # Check if there are no transposons left
-        if all(np.array_equal(v, [0, 0]) for v in np.c_[populationV1, populationV2]):
+        if all(
+            np.array_equal(v, [0, 0])
+            for v in np.c_[populationV1, populationV2]
+        ):
             return (
                 "LOSS",
                 fixedTE,
@@ -135,69 +162,32 @@ def runSim(
                 averageCopyNumber,
                 varianceCopyNumber,
             )
+        else:
+            continue
 
-        # Check if all members of population contain transposon
-        if not any(
-            any(k == 0 for k in z)
-            for z in [
-                list(flatten(v.flatten().tolist()))
-                for v in np.c_[populationV1, populationV2]
-            ]
-        ):
-            counter = 0
-            for TE in list(TEset):
-                if all(
-                    bool(set(k).intersection(TEset[TE]))
-                    for k in populationV1 + populationV2
-                ):
-                    # Check if the TE appears in
-                    # unfixed array and remove it
-                    # from that array
-                    unfixedTE = list(filter((TE).__ne__, unfixedTE))
-                    fixedTE.append(TE)
-                    counter += 1
-                elif any(
-                    bool(set(k).intersection(TEset[TE]))
-                    for k in populationV1 + populationV2
-                ):
-                    unfixedTE.append(TE)
-                else:
-                    # Check if the TE appears in
-                    # unfixed array and remove it
-                    # from that array
-                    unfixedTE = list(filter((TE).__ne__, unfixedTE))
-                    lostTE.append(TE)
-                    del TEset[TE]
-
-                # If all transposons are fixed
-                if counter == len(TEset) and ignoreFixation == False:
-                    # If we want to ignore fixation.
-                    ######!!!!!!!!!!######
-                    # Proceed with caution
-                    ######!!!!!!!!!!######
-                    # Cleanup the output
-                    fixedTE = list(set(fixedTE))
-                    return (
-                        "FIXED",
-                        fixedTE,
-                        unfixedTE,
-                        lostTE,
-                        i + 2,
-                        transposonMatrixCopy.size / 4 - 1,
-                        averageCopyNumber,
-                        varianceCopyNumber,
-                    )
         # Major bug in numpy - forced to use pandas
         # Refer to the question
         # https://stackoverflow.com/questions/60210897
         populationMatrixCopy = pd.DataFrame(
             [populationV1, populationV2, populationFit]
         ).T.to_numpy()
-        copyNumber, varianceNumber = checkCopyNumber(populationMatrixCopy)
+        (
+            compyNumber,
+            varianceNumber,
+            insertionSiteFrequencyArray,
+        ) = statistics(
+            populationMatrixCopy,
+            transposonMatrixCopy,
+            TEset,
+            insertionSiteFrequencyArray,
+        )
+        copyNumber, varianceNumber = checkCopyNumber(
+            populationMatrixCopy
+        )
         averageCopyNumber.append(copyNumber)
         varianceCopyNumber.append(varianceNumber)
     # Quit simulation if there in a transient state
-    # i.e. no fixation or loss
+    # i.e. no loss
     return (
         "FLUX",
         fixedTE,
@@ -260,7 +250,16 @@ def createData(
             HardyWeinberg=HardyWeinberg,
         )
 
-        yield ((gen, pop, tr, TEset, NumberOfTransposonInsertions, NumberOfGenerations))
+        yield (
+            (
+                gen,
+                pop,
+                tr,
+                TEset,
+                NumberOfTransposonInsertions,
+                NumberOfGenerations,
+            )
+        )
 
 
 def runBatch(
@@ -282,7 +281,7 @@ def runBatch(
     baseTrRecombination=0.1,
     insertionFrequency=False,
     HardyWeinberg=False,
-    numberOfThreads=1
+    numberOfThreads=1,
 ):
     dataSet = createData(
         numberOfSimulations,

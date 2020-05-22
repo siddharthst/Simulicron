@@ -41,6 +41,7 @@ def transposition(
     transposonRepairRates = np.array(allele1RepairRate + allele2RepairRate)
     transposonInsertionRates = np.array(allele1InsertionRate + allele2InsertionRate)
 
+    filledSites = allele1Sites + allele2Sites
     exicsionCheck = transposonExcisionRates > np.random.uniform(
         0, 1, len(transposonExcisionRates)
     )
@@ -60,31 +61,6 @@ def transposition(
         return (v1, v2, transposonMatrix, TEset)
     else:
         transposonsToTranspose = transposonIndices[Transoposecheck]
-        # If transposons share the same site - replace the old transposon
-        # with new transposon
-        # Choose the allele for tranposition
-        progenyAllele = random.choices(["v1", "v2"], k=sum(Transoposecheck))
-        if len(emptySiteIndices) > sum(Transoposecheck):
-            sites = np.random.choice(
-            range(),
-            size=sum(Transoposecheck),
-            replace=False,)
-        for i in list(range(len(transposonsToTranspose))):
-            transposonToAdd = [
-                "%030x" % random.randrange(16 ** 30),
-                sites[i],
-                genomeMatrix[sites[i]][0],
-                transposonMatrix[transposonsToTranspose[i], 3],
-                transposonMatrix[transposonsToTranspose[i], 4],
-                transposonMatrix[transposonsToTranspose[i], 5],
-            ]
-
-        
-        
-        
-        
-        
-        emptySiteIndices = set(range(len(genomeMatrix))) - set(filledSites)
         emptySiteIndices = [
             x for x in list(range(len(genomeMatrix))) if x not in filledSites
         ]
