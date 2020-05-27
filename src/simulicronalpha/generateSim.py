@@ -164,7 +164,7 @@ def generatePopulation(
         TEset[i + 1] = set()
 
     # Empty population array
-    population = np.zeros((NumberOfIndividual, 4), dtype=np.ndarray,)
+    population = np.zeros((NumberOfIndividual, 3), dtype=np.ndarray,)
 
     # Set base fitness
     population[0:, 2] = 1
@@ -179,35 +179,6 @@ def generatePopulation(
     if HardyWeinberg != False:
         print("Not yet implemented")
         pass
-        # NumhomozygousInsertion = int(
-        #     NumberOfIndividual * (FrequencyOfInsertions[0] ** 2)
-        # )
-        # NumheterozygousInsertion = int(
-        #     NumberOfIndividual
-        #     * (
-        #         2
-        #         * FrequencyOfInsertions[0]
-        #         * (1 - FrequencyOfInsertions[0])
-        #     )
-        # )
-        # indices = list(range(1, NumberOfIndividual))
-        # shuffle(indices)
-        # homozygousInsertionSites = indices[0:NumhomozygousInsertion]
-        # heterozygousInsertionSites = indices[
-        #     NumhomozygousInsertion : NumhomozygousInsertion
-        #     + NumheterozygousInsertion
-        # ]
-        # # Insert transposons and change fitness
-        # counter = 1
-        # for i in homozygousInsertionSites:
-        #     population[i][0] = [counter]
-        #     population[i][1] = [counter]
-        #     population[i][2] = exp(2 * transposonMatrix[1][2])
-
-        # for i in heterozygousInsertionSites:
-        #     allele = random.choice([0, 1])
-        #     population[i][allele] = [counter]
-        #     population[i][2] = exp(transposonMatrix[1][2])
 
     else:
         # Performing this for each transposon independently
@@ -219,8 +190,10 @@ def generatePopulation(
             for k in range(
                 int(NumberOfIndividual * FrequencyOfInsertions[i])
             ):
+                indices = indices[0:int(NumberOfIndividual * FrequencyOfInsertions[i])]
                 for l in range(NumberOfInsertionsPerType[i]):
                     # Create transposon
+                    shuffle(indices)
                     transposonID.append(0)
                     transposonInsertionSite.append(
                         random.choice(
@@ -264,7 +237,7 @@ def generatePopulation(
                         v2=population[indices[k]][1],
                     )
                     counter += 1
-
+            indices = list(range(1, NumberOfIndividual))
     transposonMatrix = pd.DataFrame(
         [
             transposonID,
@@ -279,58 +252,58 @@ def generatePopulation(
     return population, transposonMatrix, TEset
 
 
-def generateTransposon(
-    genomeArray,
-    piRNAindices,
-    baseExcision=[0, 0],
-    baseRepair=[1, 1],
-    baseInsertion=[1, 1],
-    NumberOfTransposonTypes=2,
-    NumberOfInsertionsPerType=[2, 2],
-    FrequencyOfInsertions=[0.5, 0.5],
-    NumberOfIndividual=1000,
-    preventPiRNAatStart=True,
-    NumberOfInsertionSites=1000,
-):
-    # Calculate total number of transposon insertions:
-    NumberOfTransposonInsertions = int(
-        sum([i * NumberOfIndividual for i in FrequencyOfInsertions])
-    )
-    transposons = np.zeros(
-        (NumberOfTransposonInsertions + 1, 6), dtype=np.ndarray
-    )
-    # Create sets to store transposon pedigree
-    TEset = {}
-    for i in range(NumberOfTransposonTypes):
-        TEset[i + 1] = set()
+# def generateTransposon(
+#     genomeArray,
+#     piRNAindices,
+#     baseExcision=[0, 0],
+#     baseRepair=[1, 1],
+#     baseInsertion=[1, 1],
+#     NumberOfTransposonTypes=2,
+#     NumberOfInsertionsPerType=[2, 2],
+#     FrequencyOfInsertions=[0.5, 0.5],
+#     NumberOfIndividual=1000,
+#     preventPiRNAatStart=True,
+#     NumberOfInsertionSites=1000,
+# ):
+#     # Calculate total number of transposon insertions:
+#     NumberOfTransposonInsertions = int(
+#         sum([i * NumberOfIndividual for i in FrequencyOfInsertions])
+#     )
+#     transposons = np.zeros(
+#         (NumberOfTransposonInsertions + 1, 6), dtype=np.ndarray
+#     )
+#     # Create sets to store transposon pedigree
+#     TEset = {}
+#     for i in range(NumberOfTransposonTypes):
+#         TEset[i + 1] = set()
 
-    counter = 1
-    # Performing this for each transposon independently
-    for i in list(range(NumberOfTransposonTypes)):
-        for k in range(
-            int(NumberOfIndividual * FrequencyOfInsertions[i])
-        ):
-            for l in range(NumberOfInsertionsPerType[i]):
-                transposons[counter][5] = baseInsertion[i]
-                transposons[counter][4] = baseRepair[i]
-                transposons[counter][3] = (
-                    0 if baseExcision[i] == 0 else baseExcision[i]
-                )
-                transposons[counter][2] = genomeArray[i][0]
-                transposons[counter][1] = random.choice(
-                    [
-                        i
-                        for i in range(NumberOfInsertionSites)
-                        if i not in piRNAindices
-                    ]
-                )
-                transposons[counter][0] = "%030x" % random.randrange(
-                    16 ** 30
-                )
-                counter += 1
-                TEset[i + 1].add(counter)
+#     counter = 1
+#     # Performing this for each transposon independently
+#     for i in list(range(NumberOfTransposonTypes)):
+#         for k in range(
+#             int(NumberOfIndividual * FrequencyOfInsertions[i])
+#         ):
+#             for l in range(NumberOfInsertionsPerType[i]):
+#                 transposons[counter][5] = baseInsertion[i]
+#                 transposons[counter][4] = baseRepair[i]
+#                 transposons[counter][3] = (
+#                     0 if baseExcision[i] == 0 else baseExcision[i]
+#                 )
+#                 transposons[counter][2] = genomeArray[i][0]
+#                 transposons[counter][1] = random.choice(
+#                     [
+#                         i
+#                         for i in range(NumberOfInsertionSites)
+#                         if i not in piRNAindices
+#                     ]
+#                 )
+#                 transposons[counter][0] = "%030x" % random.randrange(
+#                     16 ** 30
+#                 )
+#                 counter += 1
+#                 TEset[i + 1].add(counter)
 
-    return transposons, genomeArray, TEset
+#     return transposons, genomeArray, TEset
     # # Performing this for each transposon independently
     # # Select sites in advance base on insertion frequency
     # indices = list(range(1, NumberOfIndividual))
@@ -368,3 +341,36 @@ def generateTransposon(
     # This changes the recombination on index position
     # if changeRecombination == True:
     #    genomeArray[insertionSites[-2], 2] = RecombinationRate
+
+
+
+# HW
+        # NumhomozygousInsertion = int(
+        #     NumberOfIndividual * (FrequencyOfInsertions[0] ** 2)
+        # )
+        # NumheterozygousInsertion = int(
+        #     NumberOfIndividual
+        #     * (
+        #         2
+        #         * FrequencyOfInsertions[0]
+        #         * (1 - FrequencyOfInsertions[0])
+        #     )
+        # )
+        # indices = list(range(1, NumberOfIndividual))
+        # shuffle(indices)
+        # homozygousInsertionSites = indices[0:NumhomozygousInsertion]
+        # heterozygousInsertionSites = indices[
+        #     NumhomozygousInsertion : NumhomozygousInsertion
+        #     + NumheterozygousInsertion
+        # ]
+        # # Insert transposons and change fitness
+        # counter = 1
+        # for i in homozygousInsertionSites:
+        #     population[i][0] = [counter]
+        #     population[i][1] = [counter]
+        #     population[i][2] = exp(2 * transposonMatrix[1][2])
+
+        # for i in heterozygousInsertionSites:
+        #     allele = random.choice([0, 1])
+        #     population[i][allele] = [counter]
+        #     population[i][2] = exp(transposonMatrix[1][2])

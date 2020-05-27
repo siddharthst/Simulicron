@@ -7,6 +7,7 @@ def statistics(
     TEset,
     insertionSiteFrequencyArray,
 ):
+    
     # Create a empty matrix where rows =  individuals
     # and columns = transposons
     for i in len(populationMatrix):
