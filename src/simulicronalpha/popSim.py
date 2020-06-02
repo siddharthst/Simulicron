@@ -7,7 +7,6 @@ import random
 from generateSim import (
     generateGenome,
     generatePopulation,
-    generateTransposon,
 )
 from recombination import recombination
 from fitness import calculateFitness
@@ -29,17 +28,12 @@ def runSim(
     transposonMatrix,
     TEset,
     NumberOfTransposonInsertions,
-    generations=200,
-    ignoreFixation=True,
+    generations,
 ):
     # ------------------#
     # lambda/macros
     flatten = lambda *n: (
-        e
-        for a in n
-        for e in (
-            flatten(*a) if isinstance(a, (tuple, list)) else (a,)
-        )
+        e for a in n for e in (flatten(*a) if isinstance(a, (tuple, list)) else (a,))
     )
     # ------------------#
     # ------------------#
@@ -57,9 +51,15 @@ def runSim(
     insertionSiteFrequencyArray = np.zeros(
         (len(genomeMatrix), NumberOfTransposonInsertions,)
     )
-
     transposonMatrixCopy = transposonMatrix
     populationMatrixCopy = populationMatrix
+    
+    # Calculate the CN and CNV for generation 0
+    copyNumber, varianceNumber = checkCopyNumber(populationMatrixCopy)
+    averageCopyNumber.append(copyNumber)
+    varianceCopyNumber.append(varianceNumber)    
+    
+    # Driver loop
     for i in range(generations):
         populationV1 = []
         populationV2 = []
@@ -68,18 +68,13 @@ def runSim(
             fitness = list(populationMatrixCopy[0:, 2])
 
             p1, p2 = random.choices(
-                list(range(populationMatrixCopy.shape[0])),
-                weights=fitness,
-                k=2,
+                list(range(populationMatrixCopy.shape[0])), weights=fitness, k=2,
             )
 
             # Since recombination function only accepts arrays,
             # checking and forcing type conversion as needed
             # for the respective alleles
-            if (
-                populationMatrixCopy[p1, 0] == 0
-                and populationMatrixCopy[p1, 1] == 0
-            ):
+            if populationMatrixCopy[p1, 0] == 0 and populationMatrixCopy[p1, 1] == 0:
                 v1 = 0
             else:
                 cP1V1 = populationMatrixCopy[p1, 0]
@@ -94,16 +89,10 @@ def runSim(
                     cP1V2 = np.asarray([cP1V2])
 
                 v1 = recombination(
-                    genomeMatrix[0:, 2],
-                    transposonMatrixCopy,
-                    v1=cP1V1,
-                    v2=cP1V2,
+                    genomeMatrix[0:, 2], transposonMatrixCopy, v1=cP1V1, v2=cP1V2,
                 )
 
-            if (
-                populationMatrixCopy[p2, 0] == 0
-                and populationMatrixCopy[p2, 1] == 0
-            ):
+            if populationMatrixCopy[p2, 0] == 0 and populationMatrixCopy[p2, 1] == 0:
                 v2 = 0
             else:
                 cP2V1 = populationMatrixCopy[p2, 0]
@@ -118,10 +107,7 @@ def runSim(
                     cP2V2 = np.asarray([cP2V2])
 
                 v2 = recombination(
-                    genomeMatrix[0:, 2],
-                    transposonMatrixCopy,
-                    v1=cP2V1,
-                    v2=cP2V2,
+                    genomeMatrix[0:, 2], transposonMatrixCopy, v1=cP2V1, v2=cP2V2,
                 )
 
             if v1 == 0 and v2 == 0:
@@ -136,9 +122,7 @@ def runSim(
                     v1=v1,
                     v2=v2,
                 )
-                indFitness = calculateFitness(
-                    transposonMatrixCopy, v1, v2
-                )
+                indFitness = calculateFitness(transposonMatrixCopy, v1, v2)
 
             populationV1.append(v1)
             populationV2.append(v2)
@@ -148,160 +132,139 @@ def runSim(
         # n-1, hence i + 1 + 1
 
         # Check if there are no transposons left
-        if all(
-            np.array_equal(v, [0, 0])
-            for v in np.c_[populationV1, populationV2]
-        ):
-            return (
-                "LOSS",
-                fixedTE,
-                unfixedTE,
-                lostTE,
-                i + 2,
-                transposonMatrixCopy.size / 4 - 1,
-                averageCopyNumber,
-                varianceCopyNumber,
-            )
+        if all(np.array_equal(v, [0, 0]) for v in np.c_[populationV1, populationV2]):
+            return {
+                "State": "LOSS",
+                "Generatrion": i + 2,
+                "NTE": transposonMatrixCopy.size / 4 - 1,
+                "AvgCopyNum": averageCopyNumber,
+                "CopyNumVar": varianceCopyNumber,
+            }
         else:
-            continue
-
+            pass
         # Major bug in numpy - forced to use pandas
         # Refer to the question
         # https://stackoverflow.com/questions/60210897
         populationMatrixCopy = pd.DataFrame(
             [populationV1, populationV2, populationFit]
         ).T.to_numpy()
-        (
-            compyNumber,
-            varianceNumber,
-            insertionSiteFrequencyArray,
-        ) = statistics(
-            populationMatrixCopy,
-            transposonMatrixCopy,
-            TEset,
-            insertionSiteFrequencyArray,
-        )
-        copyNumber, varianceNumber = checkCopyNumber(
-            populationMatrixCopy
-        )
+        # (
+        #     compyNumber,
+        #     varianceNumber,
+        #     insertionSiteFrequencyArray,
+        # ) = statistics(
+        #     populationMatrixCopy,
+        #     transposonMatrixCopy,
+        #     TEset,
+        #     insertionSiteFrequencyArray,
+        # )
+        copyNumber, varianceNumber = checkCopyNumber(populationMatrixCopy)
         averageCopyNumber.append(copyNumber)
         varianceCopyNumber.append(varianceNumber)
     # Quit simulation if there in a transient state
     # i.e. no loss
-    return (
-        "FLUX",
-        fixedTE,
-        unfixedTE,
-        lostTE,
-        i + 2,
-        transposonMatrixCopy.size / 4 - 1,
-        averageCopyNumber,
-        varianceCopyNumber,
-    )
+    return {
+        "State": "FLUX",
+        "Generatrion": i + 2,
+        "NTE": transposonMatrixCopy.size / 4 - 1,
+        "AvgCopyNum": averageCopyNumber,
+        "CopyNumVar": varianceCopyNumber,
+    }
 
 
 # Creating a generator for the dataset
 def createData(
     numberOfSimulations=1000,
-    numberOfChromosomes=4,
-    numberOfInsertionSites=1000,
-    baseRecombinationRate=0.1,
-    NumberOfIndividual=1000,
-    InsertIntoOne=False,
-    InsertIntoAll=False,
-    NumberOfTransposonInsertions=2,
-    NumberOfGenerations=100000,
     baseSelection=1,
-    baseExcision=1,
-    baseRepair=1,
-    baseInsertion=1,
-    consecutiveTransposons=False,
-    changeRecombination=False,
-    baseTrRecombination=0.1,
-    insertionFrequency=False,
+    baseInsertionProb=1,
+    numberOfInsertionSites=1000,
+    numberOfChromosomes=6,
+    baseRecombinationRate=0.01,
+    baseTau=1,
+    numberOfPiRNA=6,
+    piPercentage=3,
+    enablePiRecombination=False,
+    NumberOfIndividual=1000,
+    NumberOfTransposonTypes=2,
+    NumberOfInsertionsPerType=[2, 2],
+    FrequencyOfInsertions=[0.5, 0.5],
+    ExcisionRates=[0, 0],
+    RepairRates=[1, 1],
+    InsertionRates=[1, 1],
     HardyWeinberg=False,
+    NumberOfGenerations=10000,
 ):
     for i in range(numberOfSimulations):
-        gen = generateGenome(
+        gen, piset, piIndice = generateGenome(
+            baseSelection=baseSelection,
+            baseInsertionProb=1,
             numberOfInsertionSites=numberOfInsertionSites,
             numberOfChromosomes=numberOfChromosomes,
             baseRecombinationRate=baseRecombinationRate,
-            baseSelection=baseSelection,
+            baseTau=baseTau,
+            numberOfPiRNA=numberOfPiRNA,
+            piPercentage=piPercentage,
+            enablePiRecombination=False,
         )
-        tr, gen, TEset = generateTransposon(
-            genomeArray=gen,
-            NumberOfTransposonInsertions=NumberOfTransposonInsertions,
-            baseExcision=baseExcision,
-            baseRepair=baseRepair,
-            baseInsertion=baseInsertion,
-            consecutiveTransposons=consecutiveTransposons,
-            changeRecombination=changeRecombination,
-            RecombinationRate=baseTrRecombination,
-            insertionFrequency=insertionFrequency,
+        pop, tr, TEset = generatePopulation(
+            genomeMatrix=gen,
+            piRNAindices=piIndice,
             NumberOfIndividual=NumberOfIndividual,
-        )
-        pop = generatePopulation(
-            transposonMatrix=tr,
-            NumberOfIndividual=NumberOfIndividual,
-            NumberOfTransposonInsertions=NumberOfTransposonInsertions,
-            InsertIntoOne=InsertIntoOne,
-            InsertIntoAll=InsertIntoAll,
-            insertionFrequency=insertionFrequency,
-            HardyWeinberg=HardyWeinberg,
+            NumberOfTransposonTypes=NumberOfTransposonTypes,
+            NumberOfInsertionsPerType=NumberOfInsertionsPerType,
+            FrequencyOfInsertions=FrequencyOfInsertions,
+            ExcisionRates=ExcisionRates,
+            RepairRates=RepairRates,
+            InsertionRates=InsertionRates,
+            HardyWeinberg=False,
+            numberOfPiRNA=numberOfPiRNA,
         )
 
-        yield (
-            (
-                gen,
-                pop,
-                tr,
-                TEset,
-                NumberOfTransposonInsertions,
-                NumberOfGenerations,
-            )
-        )
+        yield ((gen, pop, tr, TEset, NumberOfTransposonTypes, NumberOfGenerations,))
 
 
 def runBatch(
-    numberOfSimulations=1000,
-    numberOfChromosomes=4,
-    numberOfInsertionSites=1000,
-    baseRecombinationRate=0.1,
-    NumberOfIndividual=1000,
-    InsertIntoOne=False,
-    InsertIntoAll=False,
-    NumberOfTransposonInsertions=2,
-    NumberOfGenerations=100000,
+    numberOfSimulations=1,
     baseSelection=1,
-    baseExcision=1,
-    baseRepair=1,
-    baseInsertion=1,
-    consecutiveTransposons=False,
-    changeRecombination=False,
-    baseTrRecombination=0.1,
-    insertionFrequency=False,
+    baseInsertionProb=1,
+    numberOfInsertionSites=1000,
+    numberOfChromosomes=6,
+    baseRecombinationRate=0.01,
+    baseTau=1,
+    numberOfPiRNA=6,
+    piPercentage=3,
+    enablePiRecombination=False,
+    NumberOfIndividual=1000,
+    NumberOfTransposonTypes=2,
+    NumberOfInsertionsPerType=[2, 2],
+    FrequencyOfInsertions=[0.5, 0.5],
+    ExcisionRates=[0, 0],
+    RepairRates=[1, 1],
+    InsertionRates=[1, 1],
     HardyWeinberg=False,
+    NumberOfGenerations=100,
     numberOfThreads=1,
 ):
     dataSet = createData(
-        numberOfSimulations,
-        numberOfChromosomes,
-        numberOfInsertionSites,
-        baseRecombinationRate,
-        NumberOfIndividual,
-        InsertIntoOne,
-        InsertIntoAll,
-        NumberOfTransposonInsertions,
-        NumberOfGenerations,
-        baseSelection,
-        baseExcision,
-        baseRepair,
-        baseInsertion,
-        consecutiveTransposons,
-        changeRecombination,
-        baseTrRecombination,
-        insertionFrequency,
-        HardyWeinberg,
+        numberOfSimulations=numberOfSimulations,
+        baseSelection=baseSelection,
+        baseInsertionProb=baseInsertionProb,
+        numberOfInsertionSites=numberOfInsertionSites,
+        numberOfChromosomes=numberOfChromosomes,
+        baseRecombinationRate=baseRecombinationRate,
+        baseTau=baseTau,
+        numberOfPiRNA=numberOfPiRNA,
+        piPercentage=piPercentage,
+        enablePiRecombination=enablePiRecombination,
+        NumberOfIndividual=NumberOfIndividual,
+        NumberOfTransposonTypes=NumberOfTransposonTypes,
+        NumberOfInsertionsPerType=NumberOfInsertionsPerType,
+        FrequencyOfInsertions=FrequencyOfInsertions,
+        ExcisionRates=ExcisionRates,
+        RepairRates=RepairRates,
+        InsertionRates=InsertionRates,
+        HardyWeinberg=False,
+        NumberOfGenerations=NumberOfGenerations,
     )
     inputSet = []
     for i in dataSet:

@@ -1,6 +1,7 @@
 import numpy as np
 from numpy import cumsum
 from numpy import concatenate as c
+from regulation import regulation
 import random
 
 
@@ -18,7 +19,7 @@ def transposition(
         allele1ExicsionRate = transposonMatrix[[v1], 3].tolist()[0]
         allele1RepairRate = transposonMatrix[[v1], 4].tolist()[0]
         allele1InsertionRate = transposonMatrix[[v1], 5].tolist()[0]
-        allele1Sites = transposonMatrix[[v1], 1].tolist()[0]
+        allele1Sites = transposonMatrix[[v1], 1].astype(int).tolist()[0]
         allele1Index = v1
 
     if v2 == 0:
@@ -33,11 +34,17 @@ def transposition(
         allele2ExicsionRate = transposonMatrix[[v2], 3].tolist()[0]
         allele2RepairRate = transposonMatrix[[v2], 4].tolist()[0]
         allele2InsertionRate = transposonMatrix[[v2], 5].tolist()[0]
-        allele2Sites = transposonMatrix[[v2], 1].tolist()[0]
+        allele2Sites = transposonMatrix[[v2], 1].astype(int).tolist()[0]
         allele2Index = v2
 
     transposonIndices = np.array(allele1Index + allele2Index)
-    transposonExcisionRates = np.array(allele1ExicsionRate + allele2ExicsionRate)
+    # Find effective ExcisionRates
+    transposonExcisionRates = regulation(
+        transposons=transposonIndices,
+        TEset=TEset,
+        transposonMatrix=transposonMatrix,
+        genomeMatrix=genomeMatrix,
+    )
     transposonRepairRates = np.array(allele1RepairRate + allele2RepairRate)
     transposonInsertionRates = np.array(allele1InsertionRate + allele2InsertionRate)
 
@@ -64,14 +71,12 @@ def transposition(
         # with new transposon
         # Choose the allele for tranposition
         progenyAllele = random.choices(["v1", "v2"], k=sum(Transoposecheck))
-        if len(emptySiteIndices) > sum(Transoposecheck):
-            sites = np.random.choice(
-            range(),
-            size=sum(Transoposecheck),
-            replace=False,)
+        # probSum = sum(emptySitesProb)
+        # InsertionProb = [float(i) / probSum for i in emptySitesProb]
+        sites = np.random.choice(list(range(len(genomeMatrix))), size=sum(Transoposecheck), replace=False)
         for i in list(range(len(transposonsToTranspose))):
             transposonToAdd = [
-                "%030x" % random.randrange(16 ** 30),
+                0,
                 sites[i],
                 genomeMatrix[sites[i]][0],
                 transposonMatrix[transposonsToTranspose[i], 3],
@@ -79,48 +84,6 @@ def transposition(
                 transposonMatrix[transposonsToTranspose[i], 5],
             ]
 
-        
-        
-        
-        
-        
-        emptySiteIndices = set(range(len(genomeMatrix))) - set(filledSites)
-        emptySiteIndices = [
-            x for x in list(range(len(genomeMatrix))) if x not in filledSites
-        ]
-        emptySitesProb = genomeMatrix[emptySiteIndices, 1].tolist()
-        probSum = sum(emptySitesProb)
-        InsertionProb = [float(i) / probSum for i in emptySitesProb]
-
-        # Conditions to handle over crowding of genome
-        if len(emptySiteIndices) > sum(Transoposecheck):
-            sites = np.random.choice(
-                emptySiteIndices,
-                size=sum(Transoposecheck),
-                replace=False,
-                p=InsertionProb,
-            )
-        elif len(filledSites) == len(genomeMatrix):
-            print("All sites filled - can't proceed further")
-            return (allele1Index, allele2Index, transposonMatrix, TEset)
-        else:
-            # Subsample the transposons down to available insertion sites
-            Transoposecheck = np.random.choice(
-                Transoposecheck, size=len(emptySiteIndices), replace=False,
-            )
-            transposonsToTranspose = transposonIndices[Transoposecheck]
-
-        # Choose the allele for tranposition
-        progenyAllele = random.choices(["v1", "v2"], k=sum(Transoposecheck))
-        for i in list(range(len(transposonsToTranspose))):
-            transposonToAdd = [
-                "%030x" % random.randrange(16 ** 30),
-                sites[i],
-                genomeMatrix[sites[i]][0],
-                transposonMatrix[transposonsToTranspose[i], 3],
-                transposonMatrix[transposonsToTranspose[i], 4],
-                transposonMatrix[transposonsToTranspose[i], 5],
-            ]
             transposonMatrix = np.vstack(
                 [transposonMatrix, np.asarray(transposonToAdd, object),]
             )
@@ -132,9 +95,19 @@ def transposition(
 
             # Assign TE to the choosen allele
             if progenyAllele[i] == "v1":
+                # First check if the transposon is replacing another transposon on same allele
+                # If yes, we need to remove the replaced transposon from the said allele
+                if sites[i] in allele1Sites:
+                    vIndex = allele1Sites.index(sites[i])
+                    del allele1Index[vIndex]
                 allele1Index.append(len(transposonMatrix) - 1)
             if progenyAllele[i] == "v2":
+                # Same as above
+                if sites[i] in allele2Sites:
+                    vIndex = allele2Sites.index(sites[i])
+                    del allele2Index[vIndex]
                 allele2Index.append(len(transposonMatrix) - 1)
+
     if allele1Index == []:
         allele1Index = 0
     if allele2Index == []:
