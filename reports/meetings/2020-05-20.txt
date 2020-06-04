@@ -1,0 +1,17 @@
+Meeting width Siddharth, Wed May 20 2020
+
+* Bug reported by Arnaud on GitHub : not reproducible, provide a backtrace of the conda environment.
+* Making bug reports easier: set the random seed?
+* ODD model description; a skeleton is available
+* Summary statistics: still too complicated and not convienent
+  - use named tuples to be able to pick an output statistic with a name
+  - compute marginal TE counts: #TE by individual, #TE by insertion site (for each TE types, but there shouldn't be many TE types at the same time). 
+* Discussion again about the recombination algorithm (but no need to change it now)
+* Change the transposition algorithm : drawing an insertion site in a vector of empty sites is too slow, just draw a random site and replace the copy if one is present (this should not happen often if the number of copies is reasonably low compared to the insertion sites, and otherwise the simulation probably does not make a lot of biological sense).
+
+
+Next steps:
+
+* Implement piRNA regulation
+* Check the implementation by reproducing Kofler's fig 1
+* Check the algorithmic complexity (it should be O(n) for number of individuals, copy number, number of insertion sites, and transposition rate). 
