@@ -38,7 +38,7 @@ sim   = runBatch(
     RepairRates=[1],
     InsertionRates=[1],
     HardyWeinberg=False,
-    NumberOfGenerations=1000,
+    NumberOfGenerations=10000,
     numberOfThreads=8,
 )
 with open("K2u100.pickle", "wb") as f:
@@ -65,7 +65,7 @@ sim   = runBatch(
     RepairRates=[1],
     InsertionRates=[1],
     HardyWeinberg=False,
-    NumberOfGenerations=1000,
+    NumberOfGenerations=10000,
     numberOfThreads=8,
 )
 with open("K2U001.pickle", "wb") as f:
@@ -91,7 +91,7 @@ sim   = runBatch(
     RepairRates=[1],
     InsertionRates=[1],
     HardyWeinberg=False,
-    NumberOfGenerations=1000,
+    NumberOfGenerations=10000,
     numberOfThreads=8,
 )
 with open("K2U010.pickle", "wb") as f:
