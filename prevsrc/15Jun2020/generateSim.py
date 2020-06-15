@@ -27,9 +27,7 @@ def generateGenome(
     if baseSelection == None:
         SelectionCoef = np.zeros(numberOfInsertionSites)
     elif baseSelection == "Random":
-        SelectionCoef = np.random.normal(
-            -0.02, 0.01, numberOfInsertionSites
-        )
+        SelectionCoef = np.random.normal(-0.02, 0.01, numberOfInsertionSites)
     else:
         SelectionCoef = np.full(numberOfInsertionSites, baseSelection)
 
@@ -37,21 +35,15 @@ def generateGenome(
     if baseInsertionProb == None:
         insertionProbability = np.zeros(numberOfInsertionSites)
     elif baseInsertionProb == "Random":
-        insertionProbability = np.random.uniform(
-            0.01, 0.99, numberOfInsertionSites
-        )
+        insertionProbability = np.random.uniform(0.01, 0.99, numberOfInsertionSites)
     else:
-        insertionProbability = np.full(
-            numberOfInsertionSites, baseInsertionProb
-        )
+        insertionProbability = np.full(numberOfInsertionSites, baseInsertionProb)
 
     RecombinationRates = np.full(
         numberOfInsertionSites, baseRecombinationRate, dtype=float
     )
     # Generate piRNA information
-    totalPiRNALength = int(
-        numberOfInsertionSites * (piPercentage / 100)
-    )
+    totalPiRNALength = int(numberOfInsertionSites * (piPercentage / 100))
     individualPiRNALength = int(totalPiRNALength / numberOfPiRNA)
     # Make chromosomes of equal lengths
     chromosomeLocation = [
@@ -66,28 +58,17 @@ def generateGenome(
     # )
     # Only insert more chromosomes if needed and randomly insert piRNA clusters
     if numberOfChromosomes > 1:
-        RecombinationRates[chromosomeLocation[1:-1]] = 0.499
+        RecombinationRates[chromosomeLocation[1:-1]] = 0.5
         # Insert piRNA uniformly in chromosomes
         counter = 1
-        for prime5, prime3 in zip(
-            chromosomeLocation, chromosomeLocation[1:]
-        ):
+        for prime5, prime3 in zip(chromosomeLocation, chromosomeLocation[1:]):
             piRNALocation = np.random.choice(
-                np.arange(
-                    prime5 + 1, prime3 - individualPiRNALength - 1
-                ),
+                np.arange(prime5 + 1, prime3 - individualPiRNALength - 1),
                 replace=False,
             )
-            piRNArray[
-                piRNALocation : piRNALocation + individualPiRNALength
-            ] = baseTau
+            piRNArray[piRNALocation : piRNALocation + individualPiRNALength] = baseTau
             piRNAcoord.append(
-                {
-                    counter: (
-                        piRNALocation,
-                        piRNALocation + individualPiRNALength,
-                    )
-                }
+                {counter: (piRNALocation, piRNALocation + individualPiRNALength,)}
             )
             counter += 1
             if counter > numberOfPiRNA:
@@ -101,10 +82,7 @@ def generateGenome(
             for i, x in enumerate(
                 sorted(
                     random.sample(
-                        range(
-                            numberOfInsertionSites
-                            - individualPiRNALength
-                        ),
+                        range(numberOfInsertionSites - individualPiRNALength),
                         numberOfPiRNA,
                     )
                 )
@@ -123,22 +101,10 @@ def generateGenome(
                 }
             )
     piRNAindices = np.nonzero(piRNAcoord)[0].tolist()
-    rate2Map = np.insert(
-        np.cumsum(-0.5 * np.log(1 - (2 * RecombinationRates))),
-        0,
-        0,
-        axis=0,
-    )
     genome = np.vstack(
-        (
-            SelectionCoef,
-            insertionProbability,
-            RecombinationRates,
-            piRNArray,
-        )
+        (SelectionCoef, insertionProbability, RecombinationRates, piRNArray,)
     ).T
-    return genome, piRNAcoord, piRNAindices, rate2Map,
-
+    return genome, piRNAcoord, piRNAindices
 
 
 def generatePopulation(
@@ -194,13 +160,9 @@ def generatePopulation(
         shuffle(indices)
         for i in list(range(NumberOfTransposonTypes)):
             shuffle(indices)
-            for k in range(
-                int(NumberOfIndividual * FrequencyOfInsertions[i])
-            ):
+            for k in range(int(NumberOfIndividual * FrequencyOfInsertions[i])):
                 indices = indices[
-                    0 : int(
-                        NumberOfIndividual * FrequencyOfInsertions[i]
-                    )
+                    0 : int(NumberOfIndividual * FrequencyOfInsertions[i])
                 ]
                 for l in range(NumberOfInsertionsPerType[i]):
                     # Create transposon
@@ -210,9 +172,7 @@ def generatePopulation(
                         random.choice(
                             [
                                 o
-                                for o in list(
-                                    range(NumberOfInsertionSites)
-                                )
+                                for o in list(range(NumberOfInsertionSites))
                                 if o not in piRNAindices
                             ]
                         )
@@ -386,3 +346,4 @@ def generatePopulation(
 #     allele = random.choice([0, 1])
 #     population[i][allele] = [counter]
 #     population[i][2] = exp(transposonMatrix[1][2])
+
