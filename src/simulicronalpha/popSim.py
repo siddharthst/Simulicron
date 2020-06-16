@@ -29,6 +29,7 @@ def runSim(
     TEset,
     NumberOfTransposonInsertions,
     generations,
+    genMap,
 ):
     # ------------------#
     # lambda/macros
@@ -53,15 +54,15 @@ def runSim(
     )
     transposonMatrixCopy = transposonMatrix
     populationMatrixCopy = populationMatrix
-    
+
     # Calculate the CN and CNV for generation 0
     copyNumber, varianceNumber = checkCopyNumber(populationMatrixCopy)
     averageCopyNumber.append(copyNumber)
-    varianceCopyNumber.append(varianceNumber)    
-    
+    varianceCopyNumber.append(varianceNumber)
+
     # Driver loop
     for i in range(generations):
-        print (i)
+        print(i)
         populationV1 = []
         populationV2 = []
         populationFit = []
@@ -89,9 +90,7 @@ def runSim(
                 else:
                     cP1V2 = np.asarray([cP1V2])
 
-                v1 = recombination(
-                    genomeMatrix[0:, 2], transposonMatrixCopy, v1=cP1V1, v2=cP1V2,
-                )
+                v1 = recombination(genMap, transposonMatrixCopy, v1=cP1V1, v2=cP1V2,)
 
             if populationMatrixCopy[p2, 0] == 0 and populationMatrixCopy[p2, 1] == 0:
                 v2 = 0
@@ -107,9 +106,7 @@ def runSim(
                 else:
                     cP2V2 = np.asarray([cP2V2])
 
-                v2 = recombination(
-                    genomeMatrix[0:, 2], transposonMatrixCopy, v1=cP2V1, v2=cP2V2,
-                )
+                v2 = recombination(genMap, transposonMatrixCopy, v1=cP2V1, v2=cP2V2,)
 
             if v1 == 0 and v2 == 0:
                 indFitness = 1
@@ -196,7 +193,7 @@ def createData(
     NumberOfGenerations=10000,
 ):
     for i in range(numberOfSimulations):
-        gen, piset, piIndice = generateGenome(
+        gen, piset, piIndice, rate2Map = generateGenome(
             baseSelection=baseSelection,
             baseInsertionProb=1,
             numberOfInsertionSites=numberOfInsertionSites,
@@ -221,7 +218,17 @@ def createData(
             numberOfPiRNA=numberOfPiRNA,
         )
 
-        yield ((gen, pop, tr, TEset, NumberOfTransposonTypes, NumberOfGenerations,))
+        yield (
+            (
+                gen,
+                pop,
+                tr,
+                TEset,
+                NumberOfTransposonTypes,
+                NumberOfGenerations,
+                rate2Map,
+            )
+        )
 
 
 def runBatch(

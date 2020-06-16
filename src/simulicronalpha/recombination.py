@@ -3,6 +3,7 @@ from numpy import cumsum
 from numpy import concatenate as c
 import random
 
+
 def recombination(rates, transposonMatrix, v1, v2):
     # Empty vectors to store result
     r1 = []
@@ -10,18 +11,18 @@ def recombination(rates, transposonMatrix, v1, v2):
     # Creating lambda (macro)
     # "Match" does not exist in python
     # match = lambda a, b: [ b.index(x) if x in b else 0 for x in a ]
-    # Get the postion of transposons 
-    positionV1 = transposonMatrix[v1,1].astype(int).tolist()
-    positionV2 = transposonMatrix[v2,1].astype(int).tolist()
-    # This step sorts the locations and adds another location, 
+    # Get the postion of transposons
+    positionV1 = transposonMatrix[v1, 1].astype(int).tolist()
+    positionV2 = transposonMatrix[v2, 1].astype(int).tolist()
+    # This step sorts the locations and adds another location,
     # 0 if not already present
-    unqiquePos = list(set(positionV1+positionV2) | set([0]))
+    unqiquePos = list(set(positionV1 + positionV2) | set([0]))
     unqiquePos.sort()
     # Calculate the effective rate from genome map
-    effectiveRates = 0.5*(1-np.exp(-2*np.diff(rates[unqiquePos])))
+    effectiveRates = 0.5 * (1 - np.exp(-2 * np.diff(rates[unqiquePos])))
     # print (effectiveRates)
     # Performing "Recombination"
-    rec = (np.random.uniform(size=len(effectiveRates)) < effectiveRates)
+    rec = np.random.uniform(size=len(effectiveRates)) < effectiveRates
     # Select the direction to start from
     start = [(np.random.uniform() < 0.5)]
     # Concat. start and recombination
@@ -35,7 +36,7 @@ def recombination(rates, transposonMatrix, v1, v2):
     # Also checking if there is no transposon left
     # In the case above, return a (int) 0
     # Else return the array containing transposons
-    if (positionV1 == [0]):
+    if positionV1 == [0]:
         r1 = []
     else:
         if not any(whichhaplo == 1):
@@ -43,9 +44,9 @@ def recombination(rates, transposonMatrix, v1, v2):
         else:
             pos = unqiquePos[whichhaplo == 1]
             for i in v1:
-                if (int(transposonMatrix[i,1]) in pos):
+                if int(transposonMatrix[i, 1]) in pos:
                     r1.append(i)
-    if (positionV2 == [0]):
+    if positionV2 == [0]:
         r2 = []
     else:
         if not any(whichhaplo == 2):
@@ -53,12 +54,12 @@ def recombination(rates, transposonMatrix, v1, v2):
         else:
             pos = unqiquePos[whichhaplo == 2]
             for i in v2:
-                if (int(transposonMatrix[i,1]) in pos):
+                if int(transposonMatrix[i, 1]) in pos:
                     r2.append(i)
     # Merge to create gamate
     r = r1 + r2
     # Return 0 if no transposon remains
     if not r:
-        return (0)
+        return 0
     else:
         return r
