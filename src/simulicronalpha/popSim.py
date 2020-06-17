@@ -62,7 +62,7 @@ def runSim(
 
     # Driver loop
     for i in range(generations):
-        print(i)
+        # print(i)
         populationV1 = []
         populationV2 = []
         populationFit = []
