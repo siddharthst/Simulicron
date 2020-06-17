@@ -1,0 +1,11 @@
+Meeting Siddharth, Wednesday 17 June 2020
+
+* Meetings every Wednesday 9:30
+* Next week: journal club, new Kofler paper
+* Send reminder emails?
+
+* New recombination algorithm
+- implemented in python
+- benchmark confirms that the new version is on O(1) with the number of sites, and O(n) for the number of copies (it works)!
+
+* Still takes ~5 sec per simulation for a N=100 G=100 setting (-> further optimization). More benchmark?
