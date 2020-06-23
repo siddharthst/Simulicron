@@ -19,8 +19,8 @@ def generateGenome(
     piPercentage=3,
     enablePiRecombination=False,
 ):
-    # Create piRNA array storing the coordinates
-    piRNAcoord = []
+    # Create piRNA dictionary storing the coordinates
+    piRNAcoord = {}
     # Create piRNA array
     piRNArray = np.zeros(numberOfInsertionSites)
     # Define selection penalty for the insertion site
@@ -81,14 +81,7 @@ def generateGenome(
             piRNArray[
                 piRNALocation : piRNALocation + individualPiRNALength
             ] = baseTau
-            piRNAcoord.append(
-                {
-                    counter: (
-                        piRNALocation,
-                        piRNALocation + individualPiRNALength,
-                    )
-                }
-            )
+            piRNAcoord[counter] = (piRNALocation, piRNALocation + individualPiRNALength,)
             counter += 1
             if counter > numberOfPiRNA:
                 break
@@ -113,15 +106,7 @@ def generateGenome(
         for i in piRNAcoordinates:
             piRNArray[i : i + individualPiRNALength] = baseTau
         for i in range(numberOfPiRNA):
-            piRNAcoord.append(
-                {
-                    i
-                    + 1: (
-                        piRNAcoordinates[i],
-                        piRNAcoordinates[i] + individualPiRNALength,
-                    )
-                }
-            )
+            piRNAcoord[counter] = (piRNALocation, piRNALocation + individualPiRNALength,)
     piRNAindices = np.nonzero(piRNAcoord)[0].tolist()
     rate2Map = np.insert(
         np.cumsum(-0.5 * np.log(1 - (2 * RecombinationRates))),

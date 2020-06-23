@@ -30,6 +30,7 @@ def runSim(
     NumberOfTransposonInsertions,
     generations,
     genMap,
+    piSet,
 ):
     # ------------------#
     # lambda/macros
@@ -55,6 +56,11 @@ def runSim(
     transposonMatrixCopy = transposonMatrix
     populationMatrixCopy = populationMatrix
 
+    # Calculate piRNA coordinates
+    piCoord = []
+    for i in piSet.values():
+        piCoord = piCoord + (list(range(i[0],i[1])))
+
     # Calculate the CN and CNV for generation 0
     copyNumber, varianceNumber = checkCopyNumber(populationMatrixCopy)
     averageCopyNumber.append(copyNumber)
@@ -62,7 +68,7 @@ def runSim(
 
     # Driver loop
     for i in range(generations):
-        # print(i)
+        print(i)
         populationV1 = []
         populationV2 = []
         populationFit = []
@@ -117,6 +123,7 @@ def runSim(
                     genomeMatrix=genomeMatrix,
                     NumberOfTransposonInsertions=NumberOfTransposonInsertions,
                     TEset=TEset,
+                    piCoord=piCoord,
                     v1=v1,
                     v2=v2,
                 )
@@ -227,6 +234,7 @@ def createData(
                 NumberOfTransposonTypes,
                 NumberOfGenerations,
                 rate2Map,
+                piset,
             )
         )
 
