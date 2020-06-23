@@ -17,7 +17,7 @@ from numpy import concatenate as c
 
 from popSim import runBatch
 
-'''
+
 # 100
 sim   = runBatch(    
     numberOfSimulations=20,
@@ -41,9 +41,9 @@ sim   = runBatch(
     NumberOfGenerations=1000,
     numberOfThreads=8,
 )
-with open("K1.pickle", "wb") as f:
+with open("K1U100.pickle", "wb") as f:
     pickle.dump((sim), f)
-'''
+
 
 # 100
 sim   = runBatch(    
