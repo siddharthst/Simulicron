@@ -45,6 +45,29 @@ The RNA regulation model identifies regulatory loci that are heritable and follo
 * Understanding the metapopulation context requires a good understanding of the mono-population dynamics, which is not established knowledge for this kind of models. 
 * The risk of being scooped is substantial, given that R. Kofler is working on tracking TE during the invasion wave in a species (based on sequence data and/or experimental evolution). 
 
+### Project P1.3 Co-invasion by several TE families
+
+So far, what happens when two (or more) TE families invade the genome at the same time has not be seriously studied. Although this might not be a frequent event, it is likely that co-invasions happen (for instance, after an introgression across two close species, which might carry different TE families). Co-invasion will also be the focus on some experimental evolution in the lab, which makes the question relevant. 
+
+Two different TE families may interact at several levels : (i) through classical population-genetics mechanisms (epistasis on fitness), (ii) through sharing the transposition machinery (e.g. autonomous vs non-autonomous copiesà, and (iii) through co-regulation. 
+
+Interactions through selection are not specific to transposable elements, the same issue arise with several alleles segregating at the same time. Basically, if the effects on fitness are independent (log-additive), the dynamics of both families will be exactly the same as when they invade alone. If there is negative epistasis on fitness, deleterious effects will be synergistic, and both families will interact negatively (the opposite for positive selection, but the situation is less realistic). 
+
+Interactions through sharing part of the transposition machinery is interesting, but it is questionable whether these are really two TE families (isn't cross-mobilization by defintion mean that the two kinds of sequences belong to the same family?)
+
+Interactions through regulation is probably the interesting part of the question. Two completely independent families may interact through the dynamics of pi-clusters, but the effect is probably small. However, several close TE families can probably cross-repress, because pi-RNA are small sequences that may match several families. This cross-repression effect could be modeled by a parameter between 0 (independent regulation) and 1 (any TE regulate both families). 
+
+#### Pros
+
+* The question is original
+* It might be associated with data analysis (probability for a small RNA to match different families in the genome of some species)
+* Interesting side questions can be addressed (e.g. what happens if both invasions do not start at the same time?)
+
+#### Cons
+
+* Only the co-repression part may lead to non-trivial results
+* The occurence of co-invasion in natural species is probably low, because invasion is very fast (the question may not be biologically very relevant). 
+
 ## Project P2: Modelling genome dynamics
 
 ### Background
