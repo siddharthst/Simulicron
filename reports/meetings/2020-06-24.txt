@@ -1,0 +1,24 @@
+Meeting Siddharth June 24, 2020
+
+* optimization: transposition is a bit slow, especially when excision rates are high.
+- Discussion about container storages. How are NumPy matrices organised (by rows or columns?). 
+  Adding a row seems costly. 
+- An alternative would be to find a way to pre-reserve some space for NumPy arrays 
+  (e.g. 1e7 transposons?). 
+
+* Kofler 2020
+- Overall, it makes a lot of sense
+- Perhaps an interpretation issue: the parameter is not genome size %, but probability of 
+  TE insertion into a cluster
+- The arbitrary threshold on fitness can be problematic: extinction thresholds should depend 
+  on species growth rates and life history traits
+- Data comparison between Drosophila & mice is weak (many differences in both genome size and 
+  life history traits). Need better data to validate the results.
+- A lot of features in the simulation software are shared with us
+
+* WHat to do next? 
+- Several TEs, perhaps class I vs class II -> Interaction through fitness and regulation, consequences 
+  in terms of site frequency spectrum, invasion probabilities
+- Specific regulation mechanisms
+- Evolution of clustrer size (raises interesting questions)
+- Role of mutations in the TE sequence
