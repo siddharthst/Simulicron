@@ -190,7 +190,7 @@ def generatePopulation(
                 for l in range(NumberOfInsertionsPerType[i]):
                     # Create transposon
                     shuffle(indices)
-                    transposonID.append(0)
+                    transposonID.append(i+1)
                     transposonInsertionSite.append(
                         random.choice(
                             [
@@ -208,16 +208,12 @@ def generatePopulation(
                     transposonExcision.append(ExcisionRates[i])
                     transposonRepair.append(RepairRates[i])
                     transposonInsertion.append(InsertionRates[i])
-                    transposonMatrix = np.vstack(
-                        (
-                            transposonID,
+                    transposonMatrix = np.array([transposonID,
                             transposonInsertionSite,
                             transposonSelectionPenalty,
                             transposonExcision,
                             transposonRepair,
-                            transposonInsertion,
-                        )
-                    ).T
+                            transposonInsertion,], dtype="object").T
 
                     # Add transposon to set
                     TEset[i + 1].add(counter)
@@ -236,17 +232,13 @@ def generatePopulation(
                     )
                     counter += 1
             indices = list(range(NumberOfIndividual))
-    transposonMatrix = pd.DataFrame(
-        [
-            transposonID,
+    # Some cleaning
+    transposonMatrix = np.array([transposonID,
             transposonInsertionSite,
             transposonSelectionPenalty,
             transposonExcision,
             transposonRepair,
-            transposonInsertion,
-        ]
-    ).T.to_numpy()
-
+            transposonInsertion,], dtype="object").T
     return population, transposonMatrix, TEset
 
 
