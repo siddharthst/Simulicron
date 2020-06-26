@@ -24,7 +24,7 @@ def transposition(
     else:
         allele1RepairRate = transposonMatrix[[v1], 4].tolist()[0]
         allele1InsertionRate = transposonMatrix[[v1], 5].tolist()[0]
-        allele1Sites = transposonMatrix[[v1], 1].astype(int).tolist()[0]
+        allele1Sites = transposonMatrix[[v1], 1].tolist()[0]
         allele1Index = v1
 
     if v2 == 0:
@@ -36,7 +36,7 @@ def transposition(
     else:
         allele2RepairRate = transposonMatrix[[v2], 4].tolist()[0]
         allele2InsertionRate = transposonMatrix[[v2], 5].tolist()[0]
-        allele2Sites = transposonMatrix[[v2], 1].astype(int).tolist()[0]
+        allele2Sites = transposonMatrix[[v2], 1].tolist()[0]
         allele2Index = v2
 
     transposonIndices = np.array(allele1Index + allele2Index)
@@ -78,7 +78,7 @@ def transposition(
         sites = random.sample(genomeSites, sum(Transoposecheck))
         for i in list(range(len(transposonsToTranspose))):
             transposonToAdd = [
-                0,
+                transposonMatrix[transposonsToTranspose[i], 0],
                 sites[i],
                 genomeMatrix[sites[i]][0],
                 transposonMatrix[transposonsToTranspose[i], 3],

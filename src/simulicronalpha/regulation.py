@@ -1,6 +1,6 @@
 import numpy as np
 
-def regulation(transposons, TEset, transposonMatrix, genomeMatrix, piRNAindices, fast=True):
+def regulation(transposons, TEset, transposonMatrix, genomeMatrix, piRNAindices, fast=False):
   # Create an empty array to store transposon locations
   TElocations = []
   # Create an empty array to store their actual excision rates
