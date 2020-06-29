@@ -52,9 +52,10 @@ def regulation(transposons, TEset, transposonMatrix, genomeMatrix, piRNAindices,
 
   else:
     # Identify the family
-    for i in transposons:
-      TEfamily.append([a for a, b in TEset.items() if i in b][0]) 
-    TEfamily = np.array(TEfamily)
+    #for i in transposons:
+    #  TEfamily.append([a for a, b in TEset.items() if i in b][0]) 
+    TEfamily = transposonMatrix[transposons, 0]
+    #TEfamily = np.array(TEfamily)
     # Fill of the tau array
     GenomeTau = genomeMatrix[TElocations,3]
     # Calculate effective excision rates

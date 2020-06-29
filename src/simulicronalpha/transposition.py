@@ -11,6 +11,7 @@ def transposition(
     NumberOfTransposonInsertions,
     TEset,
     piCoord,
+    numberOfTranspositionEvents,
     v1,
     v2,
 ):
@@ -48,8 +49,12 @@ def transposition(
         genomeMatrix=genomeMatrix,
         piRNAindices=piCoord,
     )
-    transposonRepairRates = np.array(allele1RepairRate + allele2RepairRate)
-    transposonInsertionRates = np.array(allele1InsertionRate + allele2InsertionRate)
+    transposonRepairRates = np.array(
+        allele1RepairRate + allele2RepairRate
+    )
+    transposonInsertionRates = np.array(
+        allele1InsertionRate + allele2InsertionRate
+    )
 
     exicsionCheck = transposonExcisionRates > np.random.uniform(
         0, 1, len(transposonExcisionRates)
@@ -64,7 +69,13 @@ def transposition(
     Transoposecheck = exicsionCheck & repairCheck & insertionCheck
     # Return alleles as they are if no transposition happens
     if not any(Transoposecheck):
-        return (v1, v2, transposonMatrix, TEset)
+        return (
+            v1,
+            v2,
+            transposonMatrix,
+            TEset,
+            numberOfTranspositionEvents,
+        )
     else:
         # Create a vector to choose sites from
         genomeSites = list(range(len(genomeMatrix)))
@@ -72,30 +83,43 @@ def transposition(
         # If transposons share the same site - replace the old transposon
         # with new transposon
         # Choose the allele for tranposition
-        progenyAllele = random.choices(["v1", "v2"], k=sum(Transoposecheck))
+        progenyAllele = random.choices(
+            ["v1", "v2"], k=sum(Transoposecheck)
+        )
         # probSum = sum(emptySitesProb)
         # InsertionProb = [float(i) / probSum for i in emptySitesProb]
         sites = random.sample(genomeSites, sum(Transoposecheck))
         for i in list(range(len(transposonsToTranspose))):
-            transposonToAdd = [
-                transposonMatrix[transposonsToTranspose[i], 0],
-                sites[i],
-                genomeMatrix[sites[i]][0],
-                transposonMatrix[transposonsToTranspose[i], 3],
-                transposonMatrix[transposonsToTranspose[i], 4],
-                transposonMatrix[transposonsToTranspose[i], 5],
+            numberOfTranspositionEvents += 1
+            transposonMatrix[
+                numberOfTranspositionEvents, 0
+            ] = transposonMatrix[transposonsToTranspose[i], 0]
+            transposonMatrix[numberOfTranspositionEvents, 1] = sites[
+                i
             ]
+            transposonMatrix[
+                numberOfTranspositionEvents, 2
+            ] = genomeMatrix[sites[i]][0]
+            transposonMatrix[
+                numberOfTranspositionEvents, 3
+            ] = transposonMatrix[transposonsToTranspose[i], 3]
+            transposonMatrix[
+                numberOfTranspositionEvents, 4
+            ] = transposonMatrix[transposonsToTranspose[i], 4]
+            transposonMatrix[
+                numberOfTranspositionEvents, 5
+            ] = transposonMatrix[transposonsToTranspose[i], 5]
 
             # transposonMatrix = np.vstack(
             #    [transposonMatrix, np.asarray(transposonToAdd, object),]
             # )
-            transposonMatrix = np.append(
-                transposonMatrix, np.array([transposonToAdd]), axis=0
-            )
+            # transposonMatrix = np.append(
+            #    transposonMatrix, np.array([transposonToAdd]), axis=0
+            # )
             # Code to track the genealogy of TE
             for k in range(NumberOfTransposonInsertions):
                 if transposonsToTranspose[i] in TEset[k + 1]:
-                    TEset[k + 1].add(len(transposonMatrix) - 1)
+                    TEset[k + 1].add(numberOfTranspositionEvents)
                     pass
 
             # Assign TE to the choosen allele
@@ -105,17 +129,23 @@ def transposition(
                 if sites[i] in allele1Sites:
                     vIndex = allele1Sites.index(sites[i])
                     del allele1Index[vIndex]
-                allele1Index.append(len(transposonMatrix) - 1)
+                allele1Index.append(numberOfTranspositionEvents)
             if progenyAllele[i] == "v2":
                 # Same as above
                 if sites[i] in allele2Sites:
                     vIndex = allele2Sites.index(sites[i])
                     del allele2Index[vIndex]
-                allele2Index.append(len(transposonMatrix) - 1)
+                allele2Index.append(numberOfTranspositionEvents)
 
     if allele1Index == []:
         allele1Index = 0
     if allele2Index == []:
         allele2Index = 0
 
-    return (allele1Index, allele2Index, transposonMatrix, TEset)
+    return (
+        allele1Index,
+        allele2Index,
+        transposonMatrix,
+        TEset,
+        numberOfTranspositionEvents,
+    )

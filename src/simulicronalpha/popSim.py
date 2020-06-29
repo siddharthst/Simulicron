@@ -35,7 +35,11 @@ def runSim(
     # ------------------#
     # lambda/macros
     flatten = lambda *n: (
-        e for a in n for e in (flatten(*a) if isinstance(a, (tuple, list)) else (a,))
+        e
+        for a in n
+        for e in (
+            flatten(*a) if isinstance(a, (tuple, list)) else (a,)
+        )
     )
     # ------------------#
     # ------------------#
@@ -56,10 +60,20 @@ def runSim(
     transposonMatrixCopy = transposonMatrix
     populationMatrixCopy = populationMatrix
 
+    # Create a fixed size array for storing transposon information
+    # Also add a "counter" - with a large fixed array, it is not
+    # possible to use len(transposons) to find the last filled index
+    transposonMatrixCopy = np.append(
+        transposonMatrix,
+        np.zeros((10000000, 6), dtype=object),
+        axis=0,
+    )
+    numberOfTranspositionEvents = len(transposonMatrix)
+
     # Calculate piRNA coordinates
     piCoord = []
     for i in piSet.values():
-        piCoord = piCoord + (list(range(i[0],i[1])))
+        piCoord = piCoord + (list(range(i[0], i[1])))
 
     # Calculate the CN and CNV for generation 0
     copyNumber, varianceNumber = checkCopyNumber(populationMatrixCopy)
@@ -68,7 +82,7 @@ def runSim(
 
     # Driver loop
     for i in range(generations):
-        print(i)
+        # print(i)
         populationV1 = []
         populationV2 = []
         populationFit = []
@@ -76,13 +90,18 @@ def runSim(
             fitness = list(populationMatrixCopy[0:, 2])
 
             p1, p2 = random.choices(
-                list(range(populationMatrixCopy.shape[0])), weights=fitness, k=2,
+                list(range(populationMatrixCopy.shape[0])),
+                weights=fitness,
+                k=2,
             )
 
             # Since recombination function only accepts arrays,
             # checking and forcing type conversion as needed
             # for the respective alleles
-            if populationMatrixCopy[p1, 0] == 0 and populationMatrixCopy[p1, 1] == 0:
+            if (
+                populationMatrixCopy[p1, 0] == 0
+                and populationMatrixCopy[p1, 1] == 0
+            ):
                 v1 = 0
             else:
                 cP1V1 = populationMatrixCopy[p1, 0]
@@ -96,9 +115,14 @@ def runSim(
                 else:
                     cP1V2 = np.asarray([cP1V2])
 
-                v1 = recombination(genMap, transposonMatrixCopy, v1=cP1V1, v2=cP1V2,)
+                v1 = recombination(
+                    genMap, transposonMatrixCopy, v1=cP1V1, v2=cP1V2,
+                )
 
-            if populationMatrixCopy[p2, 0] == 0 and populationMatrixCopy[p2, 1] == 0:
+            if (
+                populationMatrixCopy[p2, 0] == 0
+                and populationMatrixCopy[p2, 1] == 0
+            ):
                 v2 = 0
             else:
                 cP2V1 = populationMatrixCopy[p2, 0]
@@ -112,22 +136,33 @@ def runSim(
                 else:
                     cP2V2 = np.asarray([cP2V2])
 
-                v2 = recombination(genMap, transposonMatrixCopy, v1=cP2V1, v2=cP2V2,)
+                v2 = recombination(
+                    genMap, transposonMatrixCopy, v1=cP2V1, v2=cP2V2,
+                )
 
             if v1 == 0 and v2 == 0:
                 indFitness = 1
 
             else:
-                v1, v2, transposonMatrixCopy, TEset = transposition(
+                (
+                    v1,
+                    v2,
+                    transposonMatrixCopy,
+                    TEset,
+                    numberOfTranspositionEvents,
+                ) = transposition(
                     transposonMatrix=transposonMatrixCopy,
                     genomeMatrix=genomeMatrix,
                     NumberOfTransposonInsertions=NumberOfTransposonInsertions,
                     TEset=TEset,
                     piCoord=piCoord,
+                    numberOfTranspositionEvents=numberOfTranspositionEvents,
                     v1=v1,
                     v2=v2,
                 )
-                indFitness = calculateFitness(transposonMatrixCopy, v1, v2)
+                indFitness = calculateFitness(
+                    transposonMatrixCopy, v1, v2
+                )
 
             populationV1.append(v1)
             populationV2.append(v2)
@@ -137,11 +172,14 @@ def runSim(
         # n-1, hence i + 1 + 1
 
         # Check if there are no transposons left
-        if all(np.array_equal(v, [0, 0]) for v in np.c_[populationV1, populationV2]):
+        if all(
+            np.array_equal(v, [0, 0])
+            for v in np.c_[populationV1, populationV2]
+        ):
             return {
                 "State": "LOSS",
                 "Generatrion": i + 2,
-                "NTE": transposonMatrixCopy.size / 4 - 1,
+                "NTE": numberOfTranspositionEvents,
                 "AvgCopyNum": averageCopyNumber,
                 "CopyNumVar": varianceCopyNumber,
             }
@@ -163,7 +201,9 @@ def runSim(
         #     TEset,
         #     insertionSiteFrequencyArray,
         # )
-        copyNumber, varianceNumber = checkCopyNumber(populationMatrixCopy)
+        copyNumber, varianceNumber = checkCopyNumber(
+            populationMatrixCopy
+        )
         averageCopyNumber.append(copyNumber)
         varianceCopyNumber.append(varianceNumber)
     # Quit simulation if there in a transient state
@@ -171,7 +211,7 @@ def runSim(
     return {
         "State": "FLUX",
         "Generatrion": i + 2,
-        "NTE": transposonMatrixCopy.size / 4 - 1,
+        "NTE": numberOfTranspositionEvents,
         "AvgCopyNum": averageCopyNumber,
         "CopyNumVar": varianceCopyNumber,
     }
