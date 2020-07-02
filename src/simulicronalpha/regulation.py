@@ -1,6 +1,7 @@
 import numpy as np
 
-def regulation(transposons, TEset, transposonMatrix, genomeMatrix, piRNAindices, fast=False):
+def regulation(transposons, TEset, transposonMatrix, genomeMatrix, piRNAindices, fast=False, sigma=0.0):
+  # sigma = co-regulation coefficient
   # Create an empty array to store transposon locations
   TElocations = []
   # Create an empty array to store their actual excision rates
@@ -20,35 +21,36 @@ def regulation(transposons, TEset, transposonMatrix, genomeMatrix, piRNAindices,
   # classical piRNA effect is being studied (Kofler, 2019)
   if fast == True:
     # Check if any transposon is present in the piRNA cluster
-    if any(e in TElocations for e in piRNAindices):
-      # Check which family has piRNA insertion
-      inPiRNA = np.in1d(TElocations,piRNAindices)
-      transposonsInPiRNA = transposons[inPiRNA]
-      # Above ^
-      # Check if at least one member from each family is present
-      # in piRNA
-      count = 0
-      for i in TEset.keys():
-        if bool(set(transposonsInPiRNA) & TEset[i]):
-          count += 1 
-      if count == len(TEset.keys()):
-        # All excision rates in this condition are 
-        # effectivly zero 
-        return ((TEexcision * 0).tolist())
-      else:
-        # Find which TE family is in piRNA and change the
-        # effective excision rates to 0
-        for i in TEset.keys():
-          if bool(set(transposonsInPiRNA) & TEset[i]):
-            counter = 0
-            for k in transposons:
-              if k in TEset[i]:
-                TEexcision[i] = 0
-              counter += 1 
-        return (TEexcision.tolist())
-    else:
-      # Return the normal excision rates
-      return(transposonMatrix[transposons,3].tolist())
+    # if any(e in TElocations for e in piRNAindices):
+    #   # Check which family has piRNA insertion
+    #   inPiRNA = np.in1d(TElocations,piRNAindices)
+    #   transposonsInPiRNA = transposons[inPiRNA]
+    #   # Above ^
+    #   # Check if at least one member from each family is present
+    #   # in piRNA
+    #   count = 0
+    #   for i in TEset.keys():
+    #     if bool(set(transposonsInPiRNA) & TEset[i]):
+    #       count += 1 
+    #   if count == len(TEset.keys()):
+    #     # All excision rates in this condition are 
+    #     # effectivly zero 
+    #     return ((TEexcision * 0).tolist())
+    #   else:
+    #     # Find which TE family is in piRNA and change the
+    #     # effective excision rates to 0
+    #     for i in TEset.keys():
+    #       if bool(set(transposonsInPiRNA) & TEset[i]):
+    #         counter = 0
+    #         for k in transposons:
+    #           if k in TEset[i]:
+    #             TEexcision[i] = 0
+    #           counter += 1 
+    #     return (TEexcision.tolist())
+    # else:
+    #   # Return the normal excision rates
+    #   return(transposonMatrix[transposons,3].tolist())
+    pass
 
   else:
     # Identify the family
@@ -58,7 +60,36 @@ def regulation(transposons, TEset, transposonMatrix, genomeMatrix, piRNAindices,
     #TEfamily = np.array(TEfamily)
     # Fill of the tau array
     GenomeTau = genomeMatrix[TElocations,3]
-    # Calculate effective excision rates
+    # Identify the families present and create a set
+    # Also create a list to store effect regulation factor
+    tauList = []
+    TEfamilySet = set(TEfamily)
+
+    # Calculate effective excision rates per family
+    for i in list(TEfamilySet):
+      indices = (TEfamily == i).nonzero()[0]
+      netTau = sum(GenomeTau[indices])
+      if netTau > 1:
+        netTau = 1
+      tauList.append(netTau)
+    # Implement co-regulation if only one out of n 
+    # families is present in piRNA/KRAB-ZfP
+    # And if only one family is present, no need
+    # to go through co-regulation
+    if ((len(TEfamilySet)) == 1):
+      TEexcEffective = TEexcision - (TEexcision * tauList[0])
+    elif(netTau == [1] * len(netTau)):
+      # If there are multiple families - but they 
+      # are completely regulated by piRNA
+      TEexcEffective = TEexcision - (TEexcision * tauList[0])
+    else:
+      # Only one family is regulated, either partially or 
+      # completely - coregulation is only applicable in 
+      # this condition
+      pass
+
+
+    
     for i in list(set(TEfamily)):
       indices = (TEfamily == i).nonzero()[0]
       netTau = sum(GenomeTau[indices])
