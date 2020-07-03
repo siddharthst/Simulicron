@@ -1,24 +1,33 @@
 import numpy as np
 
 
-def checkCopyNumber(populationMatrix):
+def checkCopyNumber(populationMatrix, TEset, transposonMatrix):
     # The local flatten lambda
     flatten = lambda *n: (
         e for a in n for e in (flatten(*a) if isinstance(a, (tuple, list)) else (a,))
     )
     # Convert the list to flat list and remove 0
-    v1 = list(filter((0).__ne__, list(flatten(populationMatrix[:, 0].tolist()))))
-    v2 = list(filter((0).__ne__, list(flatten(populationMatrix[:, 1].tolist()))))
-    # Calculate variance
-    perIndividualCount = []
+    # if present.
+    # Also create a dictionary counting 
+    # each family type
+    TEfamilyCount = {k: [] for k in range(1, len(TEset.keys()) + 1)}
+    TEfamilyVar = {k: [] for k in range(1, len(TEset.keys()) + 1)}
+    TETotal = []
     for i in range(len(populationMatrix)):
-        perIndividualCount.append(
-            len(
-                list(filter((0).__ne__, list(flatten(populationMatrix[i, 0]))))
-                + list(
-                    filter((0).__ne__, list(flatten(populationMatrix[i, 1])))
-                )
-            )
-        )
-    # Return the average number of transposon copies per individual and the variance
-    return ((len(v1 + v2) / len(populationMatrix)), np.var(perIndividualCount))
+        v1 = populationMatrix[i, 0] if type(populationMatrix[i, 0]) is list else []
+        v2 = populationMatrix[i, 1] if type(populationMatrix[i, 1]) is list else []
+        if (v1 + v2 == []):
+            TETotal.append(0)
+            for k in TEset.keys():
+                TEfamilyCount[k].append(0)
+        else:
+            # Check the occupancy for each family
+            TEfamilies = transposonMatrix[v1+v2, 0].tolist()
+            TETotal.append(len(TEfamilies))
+            for k in TEset.keys():
+                TEfamilyCount[k].append(TEfamilies.count(k))
+    # Calculate variance per family and sum the count
+    for k in TEset.keys():
+        TEfamilyVar[k].append(np.var(TEfamilyCount[k]))
+        TEfamilyCount[k] = sum(TEfamilyCount[k])
+    return sum(TETotal), np.var(TETotal), TEfamilyCount, TEfamilyVar

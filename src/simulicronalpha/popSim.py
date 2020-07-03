@@ -53,6 +53,9 @@ def runSim(
     averageCopyNumber = []
     # For storing the copy number variance per generation
     varianceCopyNumber = []
+    # Per family statistics
+    TEfamilyCountArr = []
+    TEfamilyVarArr = []
     # Create a insertionSiteSepecific array
     insertionSiteFrequencyArray = np.zeros(
         (len(genomeMatrix), NumberOfTransposonInsertions,)
@@ -76,9 +79,18 @@ def runSim(
         piCoord = piCoord + (list(range(i[0], i[1])))
 
     # Calculate the CN and CNV for generation 0
-    copyNumber, varianceNumber = checkCopyNumber(populationMatrixCopy)
+    (
+        copyNumber,
+        varianceNumber,
+        TEfamilyCount,
+        TEfamilyVar,
+    ) = checkCopyNumber(
+        populationMatrixCopy, TEset, transposonMatrixCopy
+    )
     averageCopyNumber.append(copyNumber)
     varianceCopyNumber.append(varianceNumber)
+    TEfamilyCountArr.append(TEfamilyCount)
+    TEfamilyVarArr.append(TEfamilyVar)
 
     # Driver loop
     for i in range(generations):
@@ -182,6 +194,8 @@ def runSim(
                 "NTE": numberOfTranspositionEvents,
                 "AvgCopyNum": averageCopyNumber,
                 "CopyNumVar": varianceCopyNumber,
+                "TEfamilyCN": TEfamilyCountArr,
+                "TEfamilyVR": TEfamilyVarArr,
             }
         else:
             pass
@@ -201,11 +215,19 @@ def runSim(
         #     TEset,
         #     insertionSiteFrequencyArray,
         # )
-        copyNumber, varianceNumber = checkCopyNumber(
-            populationMatrixCopy
+        (
+            copyNumber,
+            varianceNumber,
+            TEfamilyCount,
+            TEfamilyVar,
+        ) = checkCopyNumber(
+            populationMatrixCopy, TEset, transposonMatrixCopy
         )
         averageCopyNumber.append(copyNumber)
         varianceCopyNumber.append(varianceNumber)
+        TEfamilyCountArr.append(TEfamilyCount)
+        TEfamilyVarArr.append(TEfamilyVar)
+
     # Quit simulation if there in a transient state
     # i.e. no loss
     return {
@@ -214,6 +236,8 @@ def runSim(
         "NTE": numberOfTranspositionEvents,
         "AvgCopyNum": averageCopyNumber,
         "CopyNumVar": varianceCopyNumber,
+        "TEfamilyCN": TEfamilyCountArr,
+        "TEfamilyVR": TEfamilyVarArr,
     }
 
 
