@@ -202,9 +202,12 @@ def runSim(
         # Major bug in numpy - forced to use pandas
         # Refer to the question
         # https://stackoverflow.com/questions/60210897
-        populationMatrixCopy = pd.DataFrame(
-            [populationV1, populationV2, populationFit]
-        ).T.to_numpy()
+        # populationMatrixCopy = pd.DataFrame(
+        #    [populationV1, populationV2, populationFit]
+        # ).T.to_numpy()
+        populationMatrixCopy= np.array([populationV1,
+            populationV2,
+            populationFit,], dtype="object").T
         # (
         #     compyNumber,
         #     varianceNumber,
