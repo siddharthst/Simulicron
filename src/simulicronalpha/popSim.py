@@ -3,6 +3,7 @@ from numpy import cumsum
 from numpy import concatenate as c
 import pandas as pd
 import random
+import time
 
 from generateSim import (
     generateGenome,
@@ -94,6 +95,8 @@ def runSim(
 
     # Driver loop
     for i in range(generations):
+        # Start the clock
+        # timeStart = time.time()
         # print(i)
         populationV1 = []
         populationV2 = []
@@ -188,14 +191,23 @@ def runSim(
             np.array_equal(v, [0, 0])
             for v in np.c_[populationV1, populationV2]
         ):
+            # Make the family information "flat"
+            # https://stackoverflow.com/questions/5946236/how-to-merge-multiple-dicts-with-same-key
+            dict1 = {}
+            dict2 = {}
+            for k in TEset.keys():
+                dict1[k] = tuple(dict1[k] for dict1 in TEfamilyCountArr)
+                dict2[k] = tuple(dict2[k] for dict2 in TEfamilyCountArr)
+            TEfamilyCountArrRes = dict1
+            TEfamilyVarArrRes = dict2
             return {
                 "State": "LOSS",
                 "Generatrion": i + 2,
                 "NTE": numberOfTranspositionEvents,
                 "AvgCopyNum": averageCopyNumber,
                 "CopyNumVar": varianceCopyNumber,
-                "TEfamilyCN": TEfamilyCountArr,
-                "TEfamilyVR": TEfamilyVarArr,
+                "TEfamilyCN": TEfamilyCountArrRes,
+                "TEfamilyVR": TEfamilyVarArrRes,
             }
         else:
             pass
@@ -230,18 +242,41 @@ def runSim(
         varianceCopyNumber.append(varianceNumber)
         TEfamilyCountArr.append(TEfamilyCount)
         TEfamilyVarArr.append(TEfamilyVar)
+        # Stop the timer
+        # timeStop = time.time()
+        # Terminate the loop if it runs for more than 
+        # 8 seconds! 
+        # if (timeStop-timeStart) > 10.0:
+        #    return {
+        #        "State": "TIMEXC",
+        #        "Generatrion": i + 2,
+        #        "NTE": numberOfTranspositionEvents,
+        #        "AvgCopyNum": averageCopyNumber,
+        #        "CopyNumVar": varianceCopyNumber,
+        #        "TEfamilyCN": TEfamilyCountArr,
+        #        "TEfamilyVR": TEfamilyVarArr,
+        #    }
 
     # Quit simulation if there in a transient state
     # i.e. no loss
+    dict1 = {}
+    dict2 = {}
+    for k in TEset.keys():
+        dict1[k] = tuple(dict1[k] for dict1 in TEfamilyCountArr)
+        dict2[k] = tuple(dict2[k] for dict2 in TEfamilyCountArr)
+    TEfamilyCountArrRes = dict1
+    TEfamilyVarArrRes = dict2
     return {
-        "State": "FLUX",
-        "Generatrion": i + 2,
-        "NTE": numberOfTranspositionEvents,
-        "AvgCopyNum": averageCopyNumber,
-        "CopyNumVar": varianceCopyNumber,
-        "TEfamilyCN": TEfamilyCountArr,
-        "TEfamilyVR": TEfamilyVarArr,
+            "State": "FLUX",
+            "Generatrion": i + 2,
+            "NTE": numberOfTranspositionEvents,
+            "AvgCopyNum": averageCopyNumber,
+            "CopyNumVar": varianceCopyNumber,
+            "TEfamilyCN": TEfamilyCountArrRes,
+            "TEfamilyVR": TEfamilyVarArrRes,
     }
+
+
 
 
 # Creating a generator for the dataset

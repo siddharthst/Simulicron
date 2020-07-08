@@ -2,10 +2,6 @@ import numpy as np
 
 
 def checkCopyNumber(populationMatrix, TEset, transposonMatrix):
-    # The local flatten lambda
-    flatten = lambda *n: (
-        e for a in n for e in (flatten(*a) if isinstance(a, (tuple, list)) else (a,))
-    )
     # Convert the list to flat list and remove 0
     # if present.
     # Also create a dictionary counting 

@@ -42,9 +42,9 @@ def recombination(rates, transposonMatrix, v1, v2):
         if not any(whichhaplo == 1):
             pass
         else:
-            pos = unqiquePos[whichhaplo == 1]
+            pos = set(unqiquePos[whichhaplo == 1])
             for i in v1:
-                if int(transposonMatrix[i, 1]) in pos:
+                if (transposonMatrix[i, 1]) in pos:
                     r1.append(i)
     if positionV2 == [0]:
         r2 = []
@@ -52,9 +52,9 @@ def recombination(rates, transposonMatrix, v1, v2):
         if not any(whichhaplo == 2):
             pass
         else:
-            pos = unqiquePos[whichhaplo == 2]
+            pos = set(unqiquePos[whichhaplo == 2])
             for i in v2:
-                if int(transposonMatrix[i, 1]) in pos:
+                if (transposonMatrix[i, 1]) in pos:
                     r2.append(i)
     # Merge to create gamate
     r = r1 + r2
