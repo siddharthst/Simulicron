@@ -20,7 +20,7 @@ from popSim import runBatch
 
 # 100
 sim   = runBatch(    
-    numberOfSimulations=8,
+    numberOfSimulations=1,
     baseSelection=0,
     baseInsertionProb=1,
     numberOfInsertionSites=10000,
@@ -39,7 +39,7 @@ sim   = runBatch(
     InsertionRates=[1],
     HardyWeinberg=False,
     NumberOfGenerations=10000,
-    numberOfThreads=8,
+    numberOfThreads=1,
 )
 with open("K2u100.pickle", "wb") as f:
     pickle.dump((sim), f)
@@ -47,7 +47,7 @@ with open("K2u100.pickle", "wb") as f:
 
 # 100
 sim   = runBatch(    
-    numberOfSimulations=8,
+    numberOfSimulations=1,
     baseSelection=0,
     baseInsertionProb=1,
     numberOfInsertionSites=10000,
@@ -66,14 +66,14 @@ sim   = runBatch(
     InsertionRates=[1],
     HardyWeinberg=False,
     NumberOfGenerations=10000,
-    numberOfThreads=8,
+    numberOfThreads=1,
 )
 with open("K2U001.pickle", "wb") as f:
     pickle.dump((sim), f)
 
 # 100
 sim   = runBatch(    
-    numberOfSimulations=8,
+    numberOfSimulations=1,
     baseSelection=0,
     baseInsertionProb=1,
     numberOfInsertionSites=10000,
@@ -92,7 +92,7 @@ sim   = runBatch(
     InsertionRates=[1],
     HardyWeinberg=False,
     NumberOfGenerations=10000,
-    numberOfThreads=8,
+    numberOfThreads=1,
 )
 with open("K2U010.pickle", "wb") as f:
     pickle.dump((sim), f)
