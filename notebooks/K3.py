@@ -20,7 +20,7 @@ from popSim import runBatch
 
 # 100
 sim   = runBatch(    
-    numberOfSimulations=1,
+    numberOfSimulations=50,
     baseSelection=0,
     baseInsertionProb=1,
     numberOfInsertionSites=10000,
@@ -33,13 +33,13 @@ sim   = runBatch(
     NumberOfIndividual=1000,
     NumberOfTransposonTypes=1,
     NumberOfInsertionsPerType=[1],
-    FrequencyOfInsertions=[1.0],
-    ExcisionRates=[1.0],
+    FrequencyOfInsertions=[0.5],
+    ExcisionRates=[0.2],
     RepairRates=[1],
     InsertionRates=[1],
     HardyWeinberg=False,
     NumberOfGenerations=10000,
-    numberOfThreads=1,
+    numberOfThreads=50,
 )
 with open("K2u100.pickle", "wb") as f:
     pickle.dump((sim), f)
@@ -47,7 +47,7 @@ with open("K2u100.pickle", "wb") as f:
 
 # 100
 sim   = runBatch(    
-    numberOfSimulations=1,
+    numberOfSimulations=50,
     baseSelection=0,
     baseInsertionProb=1,
     numberOfInsertionSites=10000,
@@ -60,20 +60,20 @@ sim   = runBatch(
     NumberOfIndividual=1000,
     NumberOfTransposonTypes=1,
     NumberOfInsertionsPerType=[1],
-    FrequencyOfInsertions=[1.0],
-    ExcisionRates=[0.01],
+    FrequencyOfInsertions=[0.5],
+    ExcisionRates=[0.5],
     RepairRates=[1],
     InsertionRates=[1],
     HardyWeinberg=False,
     NumberOfGenerations=10000,
-    numberOfThreads=1,
+    numberOfThreads=50,
 )
 with open("K2U001.pickle", "wb") as f:
     pickle.dump((sim), f)
 
 # 100
 sim   = runBatch(    
-    numberOfSimulations=1,
+    numberOfSimulations=50,
     baseSelection=0,
     baseInsertionProb=1,
     numberOfInsertionSites=10000,
@@ -84,15 +84,15 @@ sim   = runBatch(
     piPercentage=3,
     enablePiRecombination=False,
     NumberOfIndividual=1000,
-    NumberOfTransposonTypes=1,
-    NumberOfInsertionsPerType=[1],
-    FrequencyOfInsertions=[1.0],
-    ExcisionRates=[0.10],
-    RepairRates=[1],
-    InsertionRates=[1],
+    NumberOfTransposonTypes=2,
+    NumberOfInsertionsPerType=[1,1],
+    FrequencyOfInsertions=[0.5,0.5],
+    ExcisionRates=[0.2,0.5],
+    RepairRates=[1,1],
+    InsertionRates=[1,1],
     HardyWeinberg=False,
     NumberOfGenerations=10000,
-    numberOfThreads=1,
+    numberOfThreads=50,
 )
 with open("K2U010.pickle", "wb") as f:
     pickle.dump((sim), f)
