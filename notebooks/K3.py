@@ -20,60 +20,7 @@ from popSim import runBatch
 
 # 100
 sim   = runBatch(    
-    numberOfSimulations=50,
-    baseSelection=0,
-    baseInsertionProb=1,
-    numberOfInsertionSites=10000,
-    numberOfChromosomes=6,
-    baseRecombinationRate=0.01,
-    baseTau=1,
-    numberOfPiRNA=6,
-    piPercentage=3,
-    enablePiRecombination=False,
-    NumberOfIndividual=1000,
-    NumberOfTransposonTypes=1,
-    NumberOfInsertionsPerType=[1],
-    FrequencyOfInsertions=[0.5],
-    ExcisionRates=[0.2],
-    RepairRates=[1],
-    InsertionRates=[1],
-    HardyWeinberg=False,
-    NumberOfGenerations=10000,
-    numberOfThreads=50,
-)
-with open("K2u100.pickle", "wb") as f:
-    pickle.dump((sim), f)
-
-
-# 100
-sim   = runBatch(    
-    numberOfSimulations=50,
-    baseSelection=0,
-    baseInsertionProb=1,
-    numberOfInsertionSites=10000,
-    numberOfChromosomes=6,
-    baseRecombinationRate=0.01,
-    baseTau=1,
-    numberOfPiRNA=6,
-    piPercentage=3,
-    enablePiRecombination=False,
-    NumberOfIndividual=1000,
-    NumberOfTransposonTypes=1,
-    NumberOfInsertionsPerType=[1],
-    FrequencyOfInsertions=[0.5],
-    ExcisionRates=[0.5],
-    RepairRates=[1],
-    InsertionRates=[1],
-    HardyWeinberg=False,
-    NumberOfGenerations=10000,
-    numberOfThreads=50,
-)
-with open("K2U001.pickle", "wb") as f:
-    pickle.dump((sim), f)
-
-# 100
-sim   = runBatch(    
-    numberOfSimulations=50,
+    numberOfSimulations=8,
     baseSelection=0,
     baseInsertionProb=1,
     numberOfInsertionSites=10000,
@@ -92,8 +39,7 @@ sim   = runBatch(
     InsertionRates=[1,1],
     HardyWeinberg=False,
     NumberOfGenerations=10000,
-    numberOfThreads=50,
+    numberOfThreads=8,
 )
-with open("K2U010.pickle", "wb") as f:
+with open("K3U0205.pickle", "wb") as f:
     pickle.dump((sim), f)
-

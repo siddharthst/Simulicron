@@ -64,6 +64,7 @@ def regulation(
         pass
 
     else:
+        # print ("-------")
         # Identify the family
         # for i in transposons:
         #  TEfamily.append([a for a, b in TEset.items() if i in b][0])
@@ -88,12 +89,20 @@ def regulation(
         # And if only one family is present, no need
         # to go through co-regulation
         if (len(TEfamilySet)) == 1:
+            # print ('True1')
             TEexcEffective = TEexcision - (TEexcision * tauList[0])
-        elif tauList == [1] * len(tauList):
+        elif tauList == [1.0] * len(tauList):
+            # print ('True2')
             # If there are multiple families - but they
             # are completely regulated by piRNA
             TEexcEffective = TEexcision - (TEexcision * tauList[0])
+        elif tauList == [0.0] * len(tauList):
+            # print ('True3')
+            # If there are multiple families - but they
+            # are completely NOT regulated by piRNA
+            TEexcEffective = TEexcision
         else:
+            # print ('True4')
             # Only one family is regulated, either partially or
             # completely - coregulation is only applicable in
             # this condition
@@ -105,7 +114,13 @@ def regulation(
                     * eta
                 )
                 indices = (TEfamily == list(TEfamilySet)[i]).nonzero()[0]
-                TEexcEffective[indices] = netTau
-
+                # TEexcEffective[indices] = netTau
+                TEexcEffective[indices] = TEexcision[indices] - (TEexcision[indices] * netTau)
+        # print (TEfamily)
+        # print (TEfamilySet)
+        # print (tauList)
+        # print (TEexcision)
+        # print (TEexcEffective)
+        # print ("-------")
         return TEexcEffective.tolist()
 
