@@ -42,19 +42,15 @@ def transposition(
 
     transposonIndices = np.array(allele1Index + allele2Index)
     # Find effective ExcisionRates
-    transposonExcisionRates = regulation(
+    transposonExcisionRates, RegulationStrengthSet = regulation(
         transposons=transposonIndices,
         TEset=TEset,
         transposonMatrix=transposonMatrix,
         genomeMatrix=genomeMatrix,
         piRNAindices=piCoord,
     )
-    transposonRepairRates = np.array(
-        allele1RepairRate + allele2RepairRate
-    )
-    transposonInsertionRates = np.array(
-        allele1InsertionRate + allele2InsertionRate
-    )
+    transposonRepairRates = np.array(allele1RepairRate + allele2RepairRate)
+    transposonInsertionRates = np.array(allele1InsertionRate + allele2InsertionRate)
 
     exicsionCheck = transposonExcisionRates > np.random.uniform(
         0, 1, len(transposonExcisionRates)
@@ -75,6 +71,7 @@ def transposition(
             transposonMatrix,
             TEset,
             numberOfTranspositionEvents,
+            RegulationStrengthSet,
         )
     else:
         # Create a vector to choose sites from
@@ -83,32 +80,26 @@ def transposition(
         # If transposons share the same site - replace the old transposon
         # with new transposon
         # Choose the allele for tranposition
-        progenyAllele = random.choices(
-            ["v1", "v2"], k=sum(Transoposecheck)
-        )
+        progenyAllele = random.choices(["v1", "v2"], k=sum(Transoposecheck))
         # probSum = sum(emptySitesProb)
         # InsertionProb = [float(i) / probSum for i in emptySitesProb]
         sites = random.sample(genomeSites, sum(Transoposecheck))
         for i in list(range(len(transposonsToTranspose))):
             numberOfTranspositionEvents += 1
-            transposonMatrix[
-                numberOfTranspositionEvents, 0
-            ] = transposonMatrix[transposonsToTranspose[i], 0]
-            transposonMatrix[numberOfTranspositionEvents, 1] = sites[
-                i
+            transposonMatrix[numberOfTranspositionEvents, 0] = transposonMatrix[
+                transposonsToTranspose[i], 0
             ]
-            transposonMatrix[
-                numberOfTranspositionEvents, 2
-            ] = genomeMatrix[sites[i]][0]
-            transposonMatrix[
-                numberOfTranspositionEvents, 3
-            ] = transposonMatrix[transposonsToTranspose[i], 3]
-            transposonMatrix[
-                numberOfTranspositionEvents, 4
-            ] = transposonMatrix[transposonsToTranspose[i], 4]
-            transposonMatrix[
-                numberOfTranspositionEvents, 5
-            ] = transposonMatrix[transposonsToTranspose[i], 5]
+            transposonMatrix[numberOfTranspositionEvents, 1] = sites[i]
+            transposonMatrix[numberOfTranspositionEvents, 2] = genomeMatrix[sites[i]][0]
+            transposonMatrix[numberOfTranspositionEvents, 3] = transposonMatrix[
+                transposonsToTranspose[i], 3
+            ]
+            transposonMatrix[numberOfTranspositionEvents, 4] = transposonMatrix[
+                transposonsToTranspose[i], 4
+            ]
+            transposonMatrix[numberOfTranspositionEvents, 5] = transposonMatrix[
+                transposonsToTranspose[i], 5
+            ]
 
             # transposonMatrix = np.vstack(
             #    [transposonMatrix, np.asarray(transposonToAdd, object),]
@@ -148,4 +139,5 @@ def transposition(
         transposonMatrix,
         TEset,
         numberOfTranspositionEvents,
+        RegulationStrengthSet,
     )

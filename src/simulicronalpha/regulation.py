@@ -27,7 +27,10 @@ def regulation(
     )
     # Find their actual exision rates
     TEexcision = transposonMatrix[transposons, 3]
-
+    # Create empty set to store regulation values for each family
+    TERegulationSet = {}
+    for i in range(len(TEset)):
+        TERegulationSet[i + 1] = 0.0
     # Implementing a "faster" version of regulation when only
     # classical piRNA effect is being studied (Kofler, 2019)
     if fast == True:
@@ -84,6 +87,7 @@ def regulation(
             if netTau > 1:
                 netTau = 1
             tauList.append(netTau)
+            TERegulationSet[i] = netTau
         # Implement co-regulation if only one out of n
         # families is present in piRNA/KRAB-ZfP
         # And if only one family is present, no need
@@ -122,5 +126,9 @@ def regulation(
         # print (TEexcision)
         # print (TEexcEffective)
         # print ("-------")
-        return TEexcEffective.tolist()
+        # Since the code above only calculates the effective regulation for
+        # the transposons present in a individual, we need to fill in 
+        # regulation values for the other families (0 - since they are not present)
+
+        return (TEexcEffective.tolist(), TERegulationSet)
 

@@ -36,11 +36,7 @@ def runSim(
     # ------------------#
     # lambda/macros
     flatten = lambda *n: (
-        e
-        for a in n
-        for e in (
-            flatten(*a) if isinstance(a, (tuple, list)) else (a,)
-        )
+        e for a in n for e in (flatten(*a) if isinstance(a, (tuple, list)) else (a,))
     )
     # ------------------#
     # ------------------#
@@ -57,6 +53,7 @@ def runSim(
     # Per family statistics
     TEfamilyCountArr = []
     TEfamilyVarArr = []
+    TEregulationArr = []
     # Create a insertionSiteSepecific array
     insertionSiteFrequencyArray = np.zeros(
         (len(genomeMatrix), NumberOfTransposonInsertions,)
@@ -68,9 +65,7 @@ def runSim(
     # Also add a "counter" - with a large fixed array, it is not
     # possible to use len(transposons) to find the last filled index
     transposonMatrixCopy = np.append(
-        transposonMatrix,
-        np.zeros((10000000, 6), dtype=object),
-        axis=0,
+        transposonMatrix, np.zeros((10000000, 6), dtype=object), axis=0,
     )
     numberOfTranspositionEvents = len(transposonMatrix)
 
@@ -80,12 +75,7 @@ def runSim(
         piCoord = piCoord + (list(range(i[0], i[1])))
 
     # Calculate the CN and CNV for generation 0
-    (
-        copyNumber,
-        varianceNumber,
-        TEfamilyCount,
-        TEfamilyVar,
-    ) = checkCopyNumber(
+    (copyNumber, varianceNumber, TEfamilyCount, TEfamilyVar,) = checkCopyNumber(
         populationMatrixCopy, TEset, transposonMatrixCopy
     )
     averageCopyNumber.append(copyNumber)
@@ -98,25 +88,22 @@ def runSim(
         # Start the clock
         # timeStart = time.time()
         # print(i)
+        # Create arrays to store information
         populationV1 = []
         populationV2 = []
         populationFit = []
+        populationRegulation = {k: [] for k in range(1, len(TEset.keys()) + 1)}
         for k in list(range(populationMatrixCopy.shape[0])):
             fitness = list(populationMatrixCopy[0:, 2])
 
             p1, p2 = random.choices(
-                list(range(populationMatrixCopy.shape[0])),
-                weights=fitness,
-                k=2,
+                list(range(populationMatrixCopy.shape[0])), weights=fitness, k=2,
             )
 
             # Since recombination function only accepts arrays,
             # checking and forcing type conversion as needed
             # for the respective alleles
-            if (
-                populationMatrixCopy[p1, 0] == 0
-                and populationMatrixCopy[p1, 1] == 0
-            ):
+            if populationMatrixCopy[p1, 0] == 0 and populationMatrixCopy[p1, 1] == 0:
                 v1 = 0
             else:
                 cP1V1 = populationMatrixCopy[p1, 0]
@@ -130,14 +117,9 @@ def runSim(
                 else:
                     cP1V2 = np.asarray([cP1V2])
 
-                v1 = recombination(
-                    genMap, transposonMatrixCopy, v1=cP1V1, v2=cP1V2,
-                )
+                v1 = recombination(genMap, transposonMatrixCopy, v1=cP1V1, v2=cP1V2,)
 
-            if (
-                populationMatrixCopy[p2, 0] == 0
-                and populationMatrixCopy[p2, 1] == 0
-            ):
+            if populationMatrixCopy[p2, 0] == 0 and populationMatrixCopy[p2, 1] == 0:
                 v2 = 0
             else:
                 cP2V1 = populationMatrixCopy[p2, 0]
@@ -151,12 +133,12 @@ def runSim(
                 else:
                     cP2V2 = np.asarray([cP2V2])
 
-                v2 = recombination(
-                    genMap, transposonMatrixCopy, v1=cP2V1, v2=cP2V2,
-                )
+                v2 = recombination(genMap, transposonMatrixCopy, v1=cP2V1, v2=cP2V2,)
 
             if v1 == 0 and v2 == 0:
                 indFitness = 1
+                for key in TEset.keys():
+                    populationRegulation[key].append(0)
 
             else:
                 (
@@ -165,6 +147,7 @@ def runSim(
                     transposonMatrixCopy,
                     TEset,
                     numberOfTranspositionEvents,
+                    RegulationStrength
                 ) = transposition(
                     transposonMatrix=transposonMatrixCopy,
                     genomeMatrix=genomeMatrix,
@@ -175,9 +158,9 @@ def runSim(
                     v1=v1,
                     v2=v2,
                 )
-                indFitness = calculateFitness(
-                    transposonMatrixCopy, v1, v2
-                )
+                indFitness = calculateFitness(transposonMatrixCopy, v1, v2)
+                for key in TEset.keys():
+                    populationRegulation[key].append(RegulationStrength[key])
 
             populationV1.append(v1)
             populationV2.append(v2)
@@ -187,19 +170,19 @@ def runSim(
         # n-1, hence i + 1 + 1
 
         # Check if there are no transposons left
-        if all(
-            np.array_equal(v, [0, 0])
-            for v in np.c_[populationV1, populationV2]
-        ):
+        if all(np.array_equal(v, [0, 0]) for v in np.c_[populationV1, populationV2]):
             # Make the family information "flat"
             # https://stackoverflow.com/questions/5946236/how-to-merge-multiple-dicts-with-same-key
             dict1 = {}
             dict2 = {}
+            dict3 = {}
             for k in TEset.keys():
                 dict1[k] = tuple(dict1[k] for dict1 in TEfamilyCountArr)
-                dict2[k] = tuple(dict2[k] for dict2 in TEfamilyCountArr)
+                dict2[k] = tuple(dict2[k] for dict2 in TEfamilyVarArr)
+                dict3[k] = tuple(dict3[k] for dict3 in TEregulationArr)
             TEfamilyCountArrRes = dict1
             TEfamilyVarArrRes = dict2
+            TEregulationArrRes = dict3
             return {
                 "State": "LOSS",
                 "Generatrion": i + 2,
@@ -208,6 +191,7 @@ def runSim(
                 "CopyNumVar": varianceCopyNumber,
                 "TEfamilyCN": TEfamilyCountArrRes,
                 "TEfamilyVR": TEfamilyVarArrRes,
+                "TEfamilyRg": TEregulationArrRes,
             }
         else:
             pass
@@ -217,9 +201,15 @@ def runSim(
         # populationMatrixCopy = pd.DataFrame(
         #    [populationV1, populationV2, populationFit]
         # ).T.to_numpy()
-        populationMatrixCopy= np.array([populationV1,
-            populationV2,
-            populationFit,], dtype="object").T
+        populationMatrixCopy = np.array(
+            [populationV1, populationV2, populationFit,], dtype="object"
+        ).T
+        # Regulation strength for each family
+        for key in TEset.keys():
+            populationRegulation[key] = sum(populationRegulation[key]) / len(
+                populationMatrixCopy
+            )
+        TEregulationArr.append(populationRegulation)
         # (
         #     compyNumber,
         #     varianceNumber,
@@ -230,12 +220,7 @@ def runSim(
         #     TEset,
         #     insertionSiteFrequencyArray,
         # )
-        (
-            copyNumber,
-            varianceNumber,
-            TEfamilyCount,
-            TEfamilyVar,
-        ) = checkCopyNumber(
+        (copyNumber, varianceNumber, TEfamilyCount, TEfamilyVar,) = checkCopyNumber(
             populationMatrixCopy, TEset, transposonMatrixCopy
         )
         averageCopyNumber.append(copyNumber)
@@ -244,8 +229,8 @@ def runSim(
         TEfamilyVarArr.append(TEfamilyVar)
         # Stop the timer
         # timeStop = time.time()
-        # Terminate the loop if it runs for more than 
-        # 8 seconds! 
+        # Terminate the loop if it runs for more than
+        # 8 seconds!
         # if (timeStop-timeStart) > 10.0:
         #    return {
         #        "State": "TIMEXC",
@@ -261,22 +246,24 @@ def runSim(
     # i.e. no loss
     dict1 = {}
     dict2 = {}
+    dict3 = {}
     for k in TEset.keys():
         dict1[k] = tuple(dict1[k] for dict1 in TEfamilyCountArr)
-        dict2[k] = tuple(dict2[k] for dict2 in TEfamilyCountArr)
+        dict2[k] = tuple(dict2[k] for dict2 in TEfamilyVarArr)
+        dict3[k] = tuple(dict3[k] for dict3 in TEregulationArr)
     TEfamilyCountArrRes = dict1
     TEfamilyVarArrRes = dict2
+    TEregulationArrRes = dict3
     return {
-            "State": "FLUX",
-            "Generatrion": i + 2,
-            "NTE": numberOfTranspositionEvents,
-            "AvgCopyNum": averageCopyNumber,
-            "CopyNumVar": varianceCopyNumber,
-            "TEfamilyCN": TEfamilyCountArrRes,
-            "TEfamilyVR": TEfamilyVarArrRes,
+        "State": "FLUX",
+        "Generatrion": i + 2,
+        "NTE": numberOfTranspositionEvents,
+        "AvgCopyNum": averageCopyNumber,
+        "CopyNumVar": varianceCopyNumber,
+        "TEfamilyCN": TEfamilyCountArrRes,
+        "TEfamilyVR": TEfamilyVarArrRes,
+        "TEfamilyRg": TEregulationArrRes,
     }
-
-
 
 
 # Creating a generator for the dataset

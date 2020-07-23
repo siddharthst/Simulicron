@@ -107,7 +107,7 @@ def generateGenome(
             piRNArray[i : i + individualPiRNALength] = baseTau
         for i in range(numberOfPiRNA):
             piRNAcoord[counter] = (piRNALocation, piRNALocation + individualPiRNALength,)
-    piRNAindices = np.nonzero(piRNAcoord)[0].tolist()
+    piRNAindices = np.nonzero(piRNArray)[0].tolist()
     rate2Map = np.insert(
         np.cumsum(-0.5 * np.log(1 - (2 * RecombinationRates))),
         0,
