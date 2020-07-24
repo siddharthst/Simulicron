@@ -27,7 +27,9 @@ def generateGenome(
     if baseSelection == None:
         SelectionCoef = np.zeros(numberOfInsertionSites)
     elif baseSelection == "Random":
-        SelectionCoef = np.random.normal(-0.02, 0.01, numberOfInsertionSites)
+        SelectionCoef = np.random.normal(
+            -0.02, 0.01, numberOfInsertionSites
+        )
     else:
         SelectionCoef = np.full(numberOfInsertionSites, baseSelection)
 
@@ -35,15 +37,21 @@ def generateGenome(
     if baseInsertionProb == None:
         insertionProbability = np.zeros(numberOfInsertionSites)
     elif baseInsertionProb == "Random":
-        insertionProbability = np.random.uniform(0.01, 0.99, numberOfInsertionSites)
+        insertionProbability = np.random.uniform(
+            0.01, 0.99, numberOfInsertionSites
+        )
     else:
-        insertionProbability = np.full(numberOfInsertionSites, baseInsertionProb)
+        insertionProbability = np.full(
+            numberOfInsertionSites, baseInsertionProb
+        )
 
     RecombinationRates = np.full(
         numberOfInsertionSites, baseRecombinationRate, dtype=float
     )
     # Generate piRNA information
-    totalPiRNALength = int(numberOfInsertionSites * (piPercentage / 100))
+    totalPiRNALength = int(
+        numberOfInsertionSites * (piPercentage / 100)
+    )
     individualPiRNALength = int(totalPiRNALength / numberOfPiRNA)
     # Make chromosomes of equal lengths
     chromosomeLocation = [
@@ -61,16 +69,19 @@ def generateGenome(
         RecombinationRates[chromosomeLocation[1:-1]] = 0.499
         # Insert piRNA uniformly in chromosomes
         counter = 1
-        for prime5, prime3 in zip(chromosomeLocation, chromosomeLocation[1:]):
+        for prime5, prime3 in zip(
+            chromosomeLocation, chromosomeLocation[1:]
+        ):
             piRNALocation = np.random.choice(
-                np.arange(prime5 + 1, prime3 - individualPiRNALength - 1),
+                np.arange(
+                    prime5 + 1, prime3 - individualPiRNALength - 1
+                ),
                 replace=False,
             )
-            piRNArray[piRNALocation : piRNALocation + individualPiRNALength] = baseTau
-            piRNAcoord[counter] = (
-                piRNALocation,
-                piRNALocation + individualPiRNALength,
-            )
+            piRNArray[
+                piRNALocation : piRNALocation + individualPiRNALength
+            ] = baseTau
+            piRNAcoord[counter] = (piRNALocation, piRNALocation + individualPiRNALength,)
             counter += 1
             if counter > numberOfPiRNA:
                 break
@@ -83,7 +94,10 @@ def generateGenome(
             for i, x in enumerate(
                 sorted(
                     random.sample(
-                        range(numberOfInsertionSites - individualPiRNALength),
+                        range(
+                            numberOfInsertionSites
+                            - individualPiRNALength
+                        ),
                         numberOfPiRNA,
                     )
                 )
@@ -92,23 +106,24 @@ def generateGenome(
         for i in piRNAcoordinates:
             piRNArray[i : i + individualPiRNALength] = baseTau
         for i in range(numberOfPiRNA):
-            piRNAcoord[counter] = (
-                piRNALocation,
-                piRNALocation + individualPiRNALength,
-            )
+            piRNAcoord[counter] = (piRNALocation, piRNALocation + individualPiRNALength,)
     piRNAindices = np.nonzero(piRNArray)[0].tolist()
     rate2Map = np.insert(
-        np.cumsum(-0.5 * np.log(1 - (2 * RecombinationRates))), 0, 0, axis=0,
+        np.cumsum(-0.5 * np.log(1 - (2 * RecombinationRates))),
+        0,
+        0,
+        axis=0,
     )
     genome = np.vstack(
-        (SelectionCoef, insertionProbability, RecombinationRates, piRNArray,)
+        (
+            SelectionCoef,
+            insertionProbability,
+            RecombinationRates,
+            piRNArray,
+        )
     ).T
-    return (
-        genome,
-        piRNAcoord,
-        piRNAindices,
-        rate2Map,
-    )
+    return genome, piRNAcoord, piRNAindices, rate2Map,
+
 
 
 def generatePopulation(
@@ -123,7 +138,6 @@ def generatePopulation(
     InsertionRates=[1, 1],
     HardyWeinberg=False,
     numberOfPiRNA=6,
-    HGT=False,
 ):
     # Generate arrays for managing transposon content
     transposonID = [0]
@@ -143,14 +157,6 @@ def generatePopulation(
 
     # Empty population array
     population = np.zeros((NumberOfIndividual, 3), dtype=np.ndarray,)
-    if HGT:
-        assert (
-            NumberOfTransposonTypes == 2
-        ), "Only two transposons are supported with HGT"
-        populationHGT = np.zeros(
-            (int(NumberOfIndividual * FrequencyOfInsertions[1]), 3), dtype=np.ndarray,
-        )
-        populationHGT[0:, 2] = 1
 
     # Set base fitness
     population[0:, 2] = 1
@@ -166,26 +172,32 @@ def generatePopulation(
         print("Not yet implemented")
         pass
 
-    elif HGT == False:
+    else:
         # Performing this for each transposon independently
         indices = list(range(NumberOfIndividual))
         counter = 1
         shuffle(indices)
         for i in list(range(NumberOfTransposonTypes)):
             shuffle(indices)
-            for k in range(int(NumberOfIndividual * FrequencyOfInsertions[i])):
+            for k in range(
+                int(NumberOfIndividual * FrequencyOfInsertions[i])
+            ):
                 indices = indices[
-                    0 : int(NumberOfIndividual * FrequencyOfInsertions[i])
+                    0 : int(
+                        NumberOfIndividual * FrequencyOfInsertions[i]
+                    )
                 ]
                 for l in range(NumberOfInsertionsPerType[i]):
                     # Create transposon
                     shuffle(indices)
-                    transposonID.append(i + 1)
+                    transposonID.append(i+1)
                     transposonInsertionSite.append(
                         random.choice(
                             [
                                 o
-                                for o in list(range(NumberOfInsertionSites))
+                                for o in list(
+                                    range(NumberOfInsertionSites)
+                                )
                                 if o not in piRNAindices
                             ]
                         )
@@ -196,17 +208,12 @@ def generatePopulation(
                     transposonExcision.append(ExcisionRates[i])
                     transposonRepair.append(RepairRates[i])
                     transposonInsertion.append(InsertionRates[i])
-                    transposonMatrix = np.array(
-                        [
-                            transposonID,
+                    transposonMatrix = np.array([transposonID,
                             transposonInsertionSite,
                             transposonSelectionPenalty,
                             transposonExcision,
                             transposonRepair,
-                            transposonInsertion,
-                        ],
-                        dtype="object",
-                    ).T
+                            transposonInsertion,], dtype="object").T
 
                     # Add transposon to set
                     TEset[i + 1].add(counter)
@@ -225,85 +232,13 @@ def generatePopulation(
                     )
                     counter += 1
             indices = list(range(NumberOfIndividual))
-
-    elif HGT:
-        # Creating two sets of population
-        counter = 1
-        for i in list(range(NumberOfTransposonTypes)):
-            if i == 0:
-                populationCur = population
-                indicesCur = list(range(NumberOfIndividual))
-                shuffle(indicesCur)
-            if i == 1:
-                populationCur = populationHGT
-                indicesCur = list(range(len(populationHGT)))
-                shuffle(indicesCur)
-            for k in range(int(len(populationCur) * FrequencyOfInsertions[i])):
-                indices = indicesCur[
-                    0 : int(len(populationCur) * FrequencyOfInsertions[i])
-                ]
-                for l in range(NumberOfInsertionsPerType[i]):
-                    shuffle(indices)
-                    transposonID.append(i + 1)
-                    transposonInsertionSite.append(
-                        random.choice(
-                            [
-                                o
-                                for o in list(range(NumberOfInsertionSites))
-                                if o not in piRNAindices
-                            ]
-                        )
-                    )
-                    transposonSelectionPenalty.append(
-                        genomeMatrix[transposonInsertionSite[-1]][0]
-                    )
-                    transposonExcision.append(ExcisionRates[i])
-                    transposonRepair.append(RepairRates[i])
-                    transposonInsertion.append(InsertionRates[i])
-                    transposonMatrix = np.array(
-                        [
-                            transposonID,
-                            transposonInsertionSite,
-                            transposonSelectionPenalty,
-                            transposonExcision,
-                            transposonRepair,
-                            transposonInsertion,
-                        ],
-                        dtype="object",
-                    ).T
-
-                    # Add transposon to set
-                    TEset[i + 1].add(counter)
-
-                    # Insert transposon into individuals
-                    allele = random.choice([0, 1])
-                    if populationCur[indices[k]][allele] == 0:
-                        populationCur[indices[k]][allele] = [counter]
-                    else:
-                        populationCur[indices[k]][allele].append(counter)
-                    # Calculate fitness
-                    populationCur[indices[k]][2] = calculateFitness(
-                        transposonMatrix,
-                        v1=population[indices[k]][0],
-                        v2=population[indices[k]][1],
-                    )
-                    counter += 1
-
     # Some cleaning
-    transposonMatrix = np.array(
-        [
-            transposonID,
+    transposonMatrix = np.array([transposonID,
             transposonInsertionSite,
             transposonSelectionPenalty,
             transposonExcision,
             transposonRepair,
-            transposonInsertion,
-        ],
-        dtype="object",
-    ).T
-    if HGT:
-        return population, populationHGT, transposonMatrix, TEset
-
+            transposonInsertion,], dtype="object").T
     return population, transposonMatrix, TEset
 
 

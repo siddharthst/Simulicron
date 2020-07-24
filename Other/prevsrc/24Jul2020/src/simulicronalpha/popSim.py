@@ -34,9 +34,12 @@ def runSim(
     piSet,
     simHGT=None,
     HGTgen=None,
-    HGTpop=None,
 ):
     # ------------------#
+    # lambda/macros
+    flatten = lambda *n: (
+        e for a in n for e in (flatten(*a) if isinstance(a, (tuple, list)) else (a,))
+    )
     # ------------------#
     # ------------------#
     # for storing transposons which are fixed
@@ -93,10 +96,8 @@ def runSim(
         populationFit = []
         populationRegulation = {k: [] for k in range(1, len(TEset.keys()) + 1)}
         for k in list(range(populationMatrixCopy.shape[0])):
-            if (HGTgen == i):
-                # Insert the supplied population
-                populationMatrixCopy[len(pop)-len(HGTpop):] = HGTpop
             fitness = list(populationMatrixCopy[0:, 2])
+
             p1, p2 = random.choices(
                 list(range(populationMatrixCopy.shape[0])), weights=fitness, k=2,
             )
