@@ -123,7 +123,7 @@ def generatePopulation(
     InsertionRates=[1, 1],
     HardyWeinberg=False,
     numberOfPiRNA=6,
-    HGT=False,
+    Mig=False,
 ):
     # Generate arrays for managing transposon content
     transposonID = [0]
@@ -143,14 +143,14 @@ def generatePopulation(
 
     # Empty population array
     population = np.zeros((NumberOfIndividual, 3), dtype=np.ndarray,)
-    if HGT:
+    if Mig:
         assert (
             NumberOfTransposonTypes == 2
-        ), "Only two transposons are supported with HGT"
-        populationHGT = np.zeros(
+        ), "Only two transposons are supported with unidirectional migration"
+        populationMig = np.zeros(
             (int(NumberOfIndividual * FrequencyOfInsertions[1]), 3), dtype=np.ndarray,
         )
-        populationHGT[0:, 2] = 1
+        populationMig[0:, 2] = 1
 
     # Set base fitness
     population[0:, 2] = 1
@@ -166,7 +166,7 @@ def generatePopulation(
         print("Not yet implemented")
         pass
 
-    elif HGT == False:
+    elif Mig == False:
         # Performing this for each transposon independently
         indices = list(range(NumberOfIndividual))
         counter = 1
@@ -226,7 +226,7 @@ def generatePopulation(
                     counter += 1
             indices = list(range(NumberOfIndividual))
 
-    elif HGT:
+    elif Mig:
         # Creating two sets of population
         counter = 1
         for i in list(range(NumberOfTransposonTypes)):
@@ -235,8 +235,8 @@ def generatePopulation(
                 indicesCur = list(range(NumberOfIndividual))
                 shuffle(indicesCur)
             if i == 1:
-                populationCur = populationHGT
-                indicesCur = list(range(len(populationHGT)))
+                populationCur = populationMig
+                indicesCur = list(range(len(populationMig)))
                 shuffle(indicesCur)
             for k in range(int(len(populationCur) * FrequencyOfInsertions[i])):
                 indices = indicesCur[
@@ -301,10 +301,56 @@ def generatePopulation(
         ],
         dtype="object",
     ).T
-    if HGT:
-        return population, populationHGT, transposonMatrix, TEset
+    if Mig:
+        return population, populationMig, transposonMatrix, TEset
 
     return population, transposonMatrix, TEset
+
+
+def initHGT(
+    populationMatrix,
+    transposonMatrix,
+    genomeMatrix,
+    TEset,
+    numberOfTranspositionEvents,
+    FrequencyOfInsertion,
+    ExcisionRate,
+    RepairRate,
+    InsertionRate,
+):
+    popSize = len(populationMatrix)
+    numCarrier = int(FrequencyOfInsertion * popSize)
+    # Randomly select the carriers
+    populationIndices = list(range(popSize))
+    shuffle(populationIndices)
+    carrierIndices = populationIndices[0:numCarrier]
+    for i in carrierIndices:
+        numberOfTranspositionEvents += 1
+        site = int(10000 * random.random())
+        transposonMatrix[numberOfTranspositionEvents, 0] = 2
+        transposonMatrix[numberOfTranspositionEvents, 1] = site
+        transposonMatrix[numberOfTranspositionEvents, 2] = genomeMatrix[site][0]
+        transposonMatrix[numberOfTranspositionEvents, 3] = ExcisionRate
+        transposonMatrix[numberOfTranspositionEvents, 4] = RepairRate
+        transposonMatrix[numberOfTranspositionEvents, 5] = InsertionRate
+        # Randomly select an allele
+        allele = random.choice([0, 1])
+        if isinstance(populationMatrix[i, allele], list):
+            # Check for pre-existing transposon in a site
+            TElocations = (
+                transposonMatrix[populationMatrix[i, allele], 1].astype(int).tolist()
+            )
+            if site in TElocations:
+                populationMatrix[i, allele][
+                    TElocations.index(site)
+                ] = numberOfTranspositionEvents
+            else:
+                populationMatrix[i, allele].append(numberOfTranspositionEvents)
+        else:
+            populationMatrix[i, allele] = [numberOfTranspositionEvents]
+        # Add transposon to set
+        TEset[2].add(numberOfTranspositionEvents)
+    return populationMatrix, transposonMatrix, TEset, numberOfTranspositionEvents
 
 
 # def generateTransposon(

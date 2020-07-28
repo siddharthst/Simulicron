@@ -14,6 +14,7 @@ def transposition(
     numberOfTranspositionEvents,
     v1,
     v2,
+    eta,
 ):
     # If any of the haplotyle is empty, convert the appr.
     # parameters to empty lists
@@ -48,6 +49,7 @@ def transposition(
         transposonMatrix=transposonMatrix,
         genomeMatrix=genomeMatrix,
         piRNAindices=piCoord,
+        eta=eta
     )
     transposonRepairRates = np.array(allele1RepairRate + allele2RepairRate)
     transposonInsertionRates = np.array(allele1InsertionRate + allele2InsertionRate)

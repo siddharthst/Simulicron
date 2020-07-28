@@ -31,10 +31,15 @@ def runSim(
     NumberOfTransposonInsertions,
     generations,
     genMap,
-    piSet,
+    piRNAindices,
     simHGT=None,
-    HGTgen=None,
-    HGTpop=None,
+    HMTgen=None,
+    NumberOfInsertionsPerType=None,
+    FrequencyOfInsertions=None,
+    ExcisionRates=None,
+    RepairRates=None,
+    InsertionRates=None,
+    eta=0.0
 ):
     # ------------------#
     # ------------------#
@@ -68,11 +73,6 @@ def runSim(
     )
     numberOfTranspositionEvents = len(transposonMatrix)
 
-    # Calculate piRNA coordinates
-    piCoord = []
-    for i in piSet.values():
-        piCoord = piCoord + (list(range(i[0], i[1])))
-
     # Calculate the CN and CNV for generation 0
     (copyNumber, varianceNumber, TEfamilyCount, TEfamilyVar,) = checkCopyNumber(
         populationMatrixCopy, TEset, transposonMatrixCopy
@@ -93,9 +93,9 @@ def runSim(
         populationFit = []
         populationRegulation = {k: [] for k in range(1, len(TEset.keys()) + 1)}
         for k in list(range(populationMatrixCopy.shape[0])):
-            if (HGTgen == i):
-                # Insert the supplied population
-                populationMatrixCopy[len(pop)-len(HGTpop):] = HGTpop
+            if (HMTgen == i):
+                
+                pass
             fitness = list(populationMatrixCopy[0:, 2])
             p1, p2 = random.choices(
                 list(range(populationMatrixCopy.shape[0])), weights=fitness, k=2,
@@ -154,10 +154,11 @@ def runSim(
                     genomeMatrix=genomeMatrix,
                     NumberOfTransposonInsertions=NumberOfTransposonInsertions,
                     TEset=TEset,
-                    piCoord=piCoord,
+                    piCoord=piRNAindices,
                     numberOfTranspositionEvents=numberOfTranspositionEvents,
                     v1=v1,
                     v2=v2,
+                    eta=eta,
                 )
                 indFitness = calculateFitness(transposonMatrixCopy, v1, v2)
                 for key in TEset.keys():
