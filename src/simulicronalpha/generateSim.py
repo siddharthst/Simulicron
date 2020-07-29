@@ -312,6 +312,7 @@ def initHGT(
     transposonMatrix,
     genomeMatrix,
     TEset,
+    piRNAindices,
     numberOfTranspositionEvents,
     FrequencyOfInsertion,
     ExcisionRate,
@@ -326,7 +327,9 @@ def initHGT(
     carrierIndices = populationIndices[0:numCarrier]
     for i in carrierIndices:
         numberOfTranspositionEvents += 1
-        site = int(10000 * random.random())
+        site = random.choice(
+            [i for i in range(len(genomeMatrix)) if i not in piRNAindices]
+        )
         transposonMatrix[numberOfTranspositionEvents, 0] = 2
         transposonMatrix[numberOfTranspositionEvents, 1] = site
         transposonMatrix[numberOfTranspositionEvents, 2] = genomeMatrix[site][0]

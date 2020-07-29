@@ -8,6 +8,7 @@ import time
 from generateSim import (
     generateGenome,
     generatePopulation,
+    initHGT
 )
 from recombination import recombination
 from fitness import calculateFitness
@@ -39,7 +40,7 @@ def runSim(
     ExcisionRates=None,
     RepairRates=None,
     InsertionRates=None,
-    eta=0.0
+    eta=0.0,
 ):
     # ------------------#
     # ------------------#
@@ -92,10 +93,26 @@ def runSim(
         populationV2 = []
         populationFit = []
         populationRegulation = {k: [] for k in range(1, len(TEset.keys()) + 1)}
+        if HMTgen == i:
+            (
+                populationMatrixCopy,
+                transposonMatrixCopy,
+                TEset,
+                numberOfTranspositionEvents,
+            ) = initHGT(
+                populationMatrixCopy,
+                transposonMatrixCopy,
+                genomeMatrix,
+                TEset,
+                piRNAindices,
+                numberOfTranspositionEvents,
+                FrequencyOfInsertions[-1],
+                ExcisionRates[-1],
+                RepairRates[-1],
+                InsertionRates[-1],
+            )
+        print (numberOfTranspositionEvents)
         for k in list(range(populationMatrixCopy.shape[0])):
-            if (HMTgen == i):
-                
-                pass
             fitness = list(populationMatrixCopy[0:, 2])
             p1, p2 = random.choices(
                 list(range(populationMatrixCopy.shape[0])), weights=fitness, k=2,
@@ -148,7 +165,7 @@ def runSim(
                     transposonMatrixCopy,
                     TEset,
                     numberOfTranspositionEvents,
-                    RegulationStrength
+                    RegulationStrength,
                 ) = transposition(
                     transposonMatrix=transposonMatrixCopy,
                     genomeMatrix=genomeMatrix,
@@ -186,14 +203,19 @@ def runSim(
             TEfamilyVarArrRes = dict2
             TEregulationArrRes = dict3
             return {
-                "State": "LOSS",
+                "State"      : "LOSS",
                 "Generatrion": i + 2,
-                "NTE": numberOfTranspositionEvents,
-                "AvgCopyNum": averageCopyNumber,
-                "CopyNumVar": varianceCopyNumber,
-                "TEfamilyCN": TEfamilyCountArrRes,
-                "TEfamilyVR": TEfamilyVarArrRes,
-                "TEfamilyRg": TEregulationArrRes,
+                "NTE"        : numberOfTranspositionEvents,
+                "AvgCopyNum" : averageCopyNumber,
+                "CopyNumVar" : varianceCopyNumber,
+                "TEfamilyCN" : TEfamilyCountArrRes,
+                "TEfamilyVR" : TEfamilyVarArrRes,
+                "TEfamilyRg" : TEregulationArrRes,
+                "HGTGen"     : HMTgen,
+                "ETA"        : eta,
+                "NTI"        : NumberOfTransposonInsertions,
+                "Freq"       : FrequencyOfInsertions,
+                "TRate"      : ExcisionRates
             }
         else:
             pass
@@ -259,12 +281,17 @@ def runSim(
     return {
         "State": "FLUX",
         "Generatrion": i + 2,
-        "NTE": numberOfTranspositionEvents,
-        "AvgCopyNum": averageCopyNumber,
-        "CopyNumVar": varianceCopyNumber,
-        "TEfamilyCN": TEfamilyCountArrRes,
-        "TEfamilyVR": TEfamilyVarArrRes,
-        "TEfamilyRg": TEregulationArrRes,
+        "NTE"        : numberOfTranspositionEvents,
+        "AvgCopyNum" : averageCopyNumber,
+        "CopyNumVar" : varianceCopyNumber,
+        "TEfamilyCN" : TEfamilyCountArrRes,
+        "TEfamilyVR" : TEfamilyVarArrRes,
+        "TEfamilyRg" : TEregulationArrRes,
+        "HGTGen"     : HMTgen,
+        "ETA"        : eta,
+        "NTI"        : NumberOfTransposonInsertions,
+        "Freq"       : FrequencyOfInsertions,
+        "TRate"      : ExcisionRates
     }
 
 
