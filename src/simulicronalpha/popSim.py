@@ -41,6 +41,7 @@ def runSim(
     RepairRates=None,
     InsertionRates=None,
     eta=0.0,
+    tau=None,
 ):
     # ------------------#
     # ------------------#
@@ -111,7 +112,6 @@ def runSim(
                 RepairRates[-1],
                 InsertionRates[-1],
             )
-        print (numberOfTranspositionEvents)
         for k in list(range(populationMatrixCopy.shape[0])):
             fitness = list(populationMatrixCopy[0:, 2])
             p1, p2 = random.choices(
@@ -215,7 +215,8 @@ def runSim(
                 "ETA"        : eta,
                 "NTI"        : NumberOfTransposonInsertions,
                 "Freq"       : FrequencyOfInsertions,
-                "TRate"      : ExcisionRates
+                "TRate"      : ExcisionRates,
+                "Tau"        : tau,
             }
         else:
             pass
@@ -291,7 +292,8 @@ def runSim(
         "ETA"        : eta,
         "NTI"        : NumberOfTransposonInsertions,
         "Freq"       : FrequencyOfInsertions,
-        "TRate"      : ExcisionRates
+        "TRate"      : ExcisionRates,
+        "Tau"        : tau,
     }
 
 
