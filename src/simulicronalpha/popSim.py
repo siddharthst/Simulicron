@@ -52,6 +52,8 @@ def runSim(
     unfixedTE = []
     # for storing transposons which are lost
     lostTE = []
+    # For storing the average fitness per generation
+    avgFitness = []
     # For storing the average copy number per generation
     averageCopyNumber = []
     # For storing the copy number variance per generation
@@ -88,7 +90,7 @@ def runSim(
     for i in range(generations):
         # Start the clock
         # timeStart = time.time()
-        # print(i)
+        print(i)
         # Create arrays to store information
         populationV1 = []
         populationV2 = []
@@ -211,6 +213,7 @@ def runSim(
                 "TEfamilyCN" : TEfamilyCountArrRes,
                 "TEfamilyVR" : TEfamilyVarArrRes,
                 "TEfamilyRg" : TEregulationArrRes,
+                "AvgFit"     : avgFitness,
                 "HGTGen"     : HMTgen,
                 "ETA"        : eta,
                 "NTI"        : NumberOfTransposonInsertions,
@@ -252,6 +255,8 @@ def runSim(
         varianceCopyNumber.append(varianceNumber)
         TEfamilyCountArr.append(TEfamilyCount)
         TEfamilyVarArr.append(TEfamilyVar)
+        avgFitness.append(sum((populationMatrixCopy[:,2])/len(populationMatrixCopy)))
+
         # Stop the timer
         # timeStop = time.time()
         # Terminate the loop if it runs for more than
@@ -288,6 +293,7 @@ def runSim(
         "TEfamilyCN" : TEfamilyCountArrRes,
         "TEfamilyVR" : TEfamilyVarArrRes,
         "TEfamilyRg" : TEregulationArrRes,
+        "AvgFit"     : avgFitness,
         "HGTGen"     : HMTgen,
         "ETA"        : eta,
         "NTI"        : NumberOfTransposonInsertions,

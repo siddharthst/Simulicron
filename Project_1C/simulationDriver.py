@@ -26,7 +26,7 @@ from transposition import transposition
 from recombination import recombination
 
 # Current multiprocessing implementation
-import multiprocessing
+from multiprocessing import Process
 import concurrent.futures 
 
 # Define the simulation parameters
@@ -129,6 +129,11 @@ def worker(parameters):
         tau=tau,
     )
     return result
+
+while True:
+    pool = Process(target=worker, args=parameters)
+
+
 
 countSimulations = 1 
 while True:
