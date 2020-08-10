@@ -42,6 +42,7 @@ def runSim(
     InsertionRates=None,
     eta=0.0,
     tau=None,
+    selPen = None,
 ):
     # ------------------#
     # ------------------#
@@ -90,7 +91,7 @@ def runSim(
     for i in range(generations):
         # Start the clock
         # timeStart = time.time()
-        print(i)
+        # print(i)
         # Create arrays to store information
         populationV1 = []
         populationV2 = []
@@ -220,6 +221,7 @@ def runSim(
                 "Freq"       : FrequencyOfInsertions,
                 "TRate"      : ExcisionRates,
                 "Tau"        : tau,
+                "selPen"     : selPen,
             }
         else:
             pass
@@ -300,6 +302,7 @@ def runSim(
         "Freq"       : FrequencyOfInsertions,
         "TRate"      : ExcisionRates,
         "Tau"        : tau,
+        "selPen"     : selPen,
     }
 
 

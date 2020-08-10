@@ -111,3 +111,7 @@ jupyterlab_git/labextension/*.tgz
 .pytest_cache/
 *.tsbuildinfo
 .pytest_cache/
+
+# Others
+*.pickle
+.pickle

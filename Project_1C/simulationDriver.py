@@ -49,7 +49,7 @@ parameters = {
     "FrequencyOfInsertionHGTMin": 1.0,
     "HGTgenerationMin": 5,
     "HGTgenerationMax": 8000,
-    "maxProcceses": 72,
+    "maxProcceses": 30,
 }
 
 # Wrapper function for multiprocessing
@@ -127,20 +127,16 @@ def worker(parameters):
         InsertionRates=[1, 1],
         eta=eta,
         tau=tau,
+        selPen=selectionCoef,
     )
-    return result
+    with open('%030x' % random.randrange(16**30) + ".pickle", "wb") as f:
+        pickle.dump((result), f)
 
-while True:
-    pool = Process(target=worker, args=parameters)
-
-
+    return 0
 
 countSimulations = 1 
-while True:
-    with concurrent.futures.ProcessPoolExecutor(max_workers=parameters["maxProcceses"]) as executor:
-        futures = [executor.submit(worker, arg) for arg in repeat(parameters)]
-        for future in concurrent.futures.as_completed(futures):
-            with open("./results/" + str(countSimulations) + ".pickle", "wb") as f:
-                pickle.dump((future), f)
-                countSimulations += 1
-                print ("Currently performing simulation #" + str(countSimulations-1))
+with concurrent.futures.ProcessPoolExecutor(max_workers=parameters["maxProcceses"]) as executor:
+    futures = [executor.submit(worker, arg) for arg in repeat(parameters,1000)]
+    for future in concurrent.futures.as_completed(futures):
+        print (future)
+
