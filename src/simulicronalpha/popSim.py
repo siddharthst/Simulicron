@@ -43,6 +43,7 @@ def runSim(
     eta=0.0,
     tau=None,
     selPen = None,
+    maxAvgTE = None,
 ):
     # ------------------#
     # ------------------#
@@ -259,6 +260,36 @@ def runSim(
         TEfamilyVarArr.append(TEfamilyVar)
         avgFitness.append(sum((populationMatrixCopy[:,2])/len(populationMatrixCopy)))
 
+        # Exit the simulation of TE copy number exceeds the threshold
+        if (copyNumber > maxAvgTE):
+            dict1 = {}
+            dict2 = {}
+            dict3 = {}
+            for k in TEset.keys():
+                dict1[k] = tuple(dict1[k] for dict1 in TEfamilyCountArr)
+                dict2[k] = tuple(dict2[k] for dict2 in TEfamilyVarArr)
+                dict3[k] = tuple(dict3[k] for dict3 in TEregulationArr)
+            TEfamilyCountArrRes = dict1
+            TEfamilyVarArrRes = dict2
+            TEregulationArrRes = dict3
+            return {
+                "State": "ATMAX",
+                "Generatrion": i + 2,
+                "NTE"        : numberOfTranspositionEvents,
+                "AvgCopyNum" : averageCopyNumber,
+                "CopyNumVar" : varianceCopyNumber,
+                "TEfamilyCN" : TEfamilyCountArrRes,
+                "TEfamilyVR" : TEfamilyVarArrRes,
+                "TEfamilyRg" : TEregulationArrRes,
+                "AvgFit"     : avgFitness,
+                "HGTGen"     : HMTgen,
+                "ETA"        : eta,
+                "NTI"        : NumberOfTransposonInsertions,
+                "Freq"       : FrequencyOfInsertions,
+                "TRate"      : ExcisionRates,
+                "Tau"        : tau,
+                "selPen"     : selPen,
+            }            
         # Stop the timer
         # timeStop = time.time()
         # Terminate the loop if it runs for more than
