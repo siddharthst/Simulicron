@@ -1,0 +1,22 @@
+Meeting Siddharth 19 Aug 2020
+
+* New simulation results
+ - N=1000
+ - parameters studied: eta (co regulation coefficients), 2 transposition rates, drawn randomly (uniform (0,1))
+ - T2 invades at generation 50 (1 in average per individual)
+ - variable: total number of copies (TE1 + TE2)
+ - problem with interpreting 4D datasets
+ - eta has an effect of TE2, but not on TE1 (makes sense)
+ 
+ - suggestion for exploring the parameter set in an efficient way:
+  . 1. study u1 on TE1
+  . 2. fix u1 and vary u2 and eta
+ 
+ - 
+  
+ - suggestion to decide the duration of simulations
+  . from the existing data, plot cor(TE1(T=10000), TE1(T=t)) = f(t)
+  . pick the minimum number of generations for which the correlation is already very high -> faster simulations
+ 
+ - suggestion to interpret the graphs; distinguish between piRNA insertions (that remain fixed by the end of the simulation) and non-piRNA. 
+ 
