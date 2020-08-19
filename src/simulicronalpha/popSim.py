@@ -323,7 +323,7 @@ def runSim(
                 TEregulationArrRes = dict3
                 overlap = TEpiOverlap(
                     populationMatrixCopy,
-                    transposonMatrix,
+                    transposonMatrixCopy,
                     TEset,
                     piRNAindices,
                 )
@@ -376,7 +376,10 @@ def runSim(
     TEregulationArrRes = dict3
     # Return the TE locations
     overlap = TEpiOverlap(
-        populationMatrixCopy, transposonMatrix, TEset, piRNAindices
+        populationMatrixCopy,
+        transposonMatrixCopy,
+        TEset,
+        piRNAindices,
     )
     return {
         "State": "FLUX",
