@@ -31,29 +31,56 @@ import concurrent.futures
 
 # Define the simulation parameters
 # max and min
-parameters = {
-    "generations": 10000,
-    "selectionPenaltyMin": 0.0,
-    "selectionPenaltyMax": 0.0,
+parametersSim = {
+    "generations": 5000,
+    "individuals": 500,
+    "selectionPenaltyMin": 0.001,
+    "selectionPenaltyMax": 0.001,
     "etaMin": 0.0,
     "etaMax": 1.0,
     "tauMin": 1.0,
     "tauMax": 1.0,
-    "ExcisionRateMainMin": 0.0,
+    "ExcisionRateMainMin": 1.0,
     "ExcisionRateMainMax": 1.0,
-    "ExcisionRateHGTMin": 0.0,
+    "ExcisionRateHGTMin": 1.0,
     "ExcisionRateHGTMax": 1.0,
     "FrequencyOfInsertionMainMin": 1.0,
     "FrequencyOfInsertionMainMax": 1.0,
-    "FrequencyOfInsertionHGTMax": 0.1,
-    "FrequencyOfInsertionHGTMin": 1.0,
-    "HGTgenerationMin": 5,
-    "HGTgenerationMax": 8000,
+    "FrequencyOfInsertionHGTMin": 0.2,
+    "FrequencyOfInsertionHGTMax": 0.2,
+    "HGTgenerationMin": 1,
+    "HGTgenerationMax": 100,
+    "maxProcceses": 100,
+}
+
+# Define the simulation parameters
+# max and min
+parametersBase = {
+    "generations": 5000,
+    "individuals": 500,
+    "selectionPenaltyMin": 0.001,
+    "selectionPenaltyMax": 0.001,
+    "etaMin": 0.0,
+    "etaMax": 1.0,
+    "tauMin": 1.0,
+    "tauMax": 1.0,
+    "ExcisionRateMainMin": 1.0,
+    "ExcisionRateMainMax": 1.0,
+    "ExcisionRateHGTMin": 1.0,
+    "ExcisionRateHGTMax": 1.0,
+    "FrequencyOfInsertionMainMin": 1.0,
+    "FrequencyOfInsertionMainMax": 1.0,
+    "FrequencyOfInsertionHGTMin": 0.2,
+    "FrequencyOfInsertionHGTMax": 0.2,
+    "HGTgenerationMin": 0,
+    "HGTgenerationMax": 0,
     "maxProcceses": 100,
 }
 
 # Wrapper function for multiprocessing
 def worker(parameters):
+    # Initialize the random number generator
+    np.random.seed(int.from_bytes(os.urandom(4), byteorder='little'))
     # Generate genome and population
     selectionCoef = np.random.uniform(
         parameters["selectionPenaltyMin"],
@@ -64,8 +91,8 @@ def worker(parameters):
         parameters["FrequencyOfInsertionMainMax"],
     )
     FrequencyOfInsertionHGT = np.random.uniform(
-        parameters["ExcisionRateMainMin"],
-        parameters["ExcisionRateMainMax"],
+        parameters["FrequencyOfInsertionHGTMin"],
+        parameters["FrequencyOfInsertionHGTMax"],
     )
     ExcisionRateMain = np.random.uniform(
         parameters["ExcisionRateMainMin"],
@@ -75,9 +102,9 @@ def worker(parameters):
         parameters["ExcisionRateHGTMin"],
         parameters["ExcisionRateHGTMax"],
     )
-    HMTgen = np.random.randint(
+    HMTgen = random.randint(
         parameters["HGTgenerationMin"],
-        high=parameters["HGTgenerationMax"],
+        parameters["HGTgenerationMax"],
     )
     tau = np.random.uniform(
         parameters["tauMin"], parameters["tauMax"],
@@ -95,7 +122,7 @@ def worker(parameters):
     population, transposons, TEset = generatePopulation(
         genome,
         piIndice,
-        NumberOfIndividual=1000,
+        NumberOfIndividual=parameters["individuals"],
         NumberOfTransposonTypes=2,
         NumberOfInsertionsPerType=[1, 0],
         FrequencyOfInsertions=[
@@ -129,7 +156,7 @@ def worker(parameters):
         tau=tau,
         selPen=selectionCoef,
     )
-    with open('%030x' % random.randrange(16**30) + ".pickle", "wb") as f:
+    with open("etaVsHG/"+ '%030x' % random.randrange(16**30) + ".pickle", "wb") as f:
         pickle.dump((result), f)
 
     return 0
@@ -137,6 +164,11 @@ def worker(parameters):
 countSimulations = 1 
 with concurrent.futures.ProcessPoolExecutor(max_workers=parameters["maxProcceses"]) as executor:
     futures = [executor.submit(worker, arg) for arg in repeat(parameters,2000)]
+    for future in concurrent.futures.as_completed(futures):
+        print (future)
+        
+with concurrent.futures.ProcessPoolExecutor(max_workers=parameters["maxProcceses"]) as executor:
+    futures = [executor.submit(worker, arg) for arg in repeat(parametersBase,2000)]
     for future in concurrent.futures.as_completed(futures):
         print (future)
 
