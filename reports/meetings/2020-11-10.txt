@@ -1,0 +1,35 @@
+Weekly meeting, Tuesday 10 Nov 2020
+
+* RNA matching across TE families:
+- New figures, not clearer
+- Very few "real" matches; there are some structure but probably due to low complexity sequences (check, look at the sequences?)
+- Even with 2 mismatches, difficult to see really convincing patterns.
+- The color scale is misleading. 1 or 2 matches may be biologically non relevant, but even 1% match is a lot. Remap the colors? 
+- It seems that cross-regulation across families is somehow unlikely (not enough sequence similarity). There seems to be some signal with closely related TEs.
+- Connect with phylogenetic distance
+- Is there a more abstract model that may work? (nb of mutations vs. sequence lenght?). 
+- Try with another species? Drosophila ananassae? 
+
+* Real data analysis
+- Small RNAs : some available from the lab, plenty on NCBI/other public databases
+- Do a similar analysis with real small RNAs. Matching on a general TE databse should do the job. 
+- Different presentation as for the "artificial" matching: RNAs will not be associated with a family (only one axis). 
+
+* Outline of the paper
+- Do we want to go into evidence that close TE families are actually less often in the same genome? Seems difficult. 
+- Two parts: Part 1 : simulations , Part 2: bioinformatics analysis
+- Simulations: 
+  - Figure: Illustration of the trap model (?)
+  - Figure: Eta vs #generations before TE2 transfer, + 4 small panels
+  - Figure: Effect of transposition rate (= the same effect as eta?)
+  - Figure: Epistasis on fitness (?)
+    -> Conclusion: cross-regulation is possible, but it needs to be strong to actually affects the invasion probability of TEs.
+- Bioinformatics
+  - Figure: %RNA match vs TE divergence
+  - Figure: real sRNA -> (hat would the figure loog like?)
+    -> Conclusion: cross-regulation looks possible, but may be exceptional. 
+  - Potential figure: number of copies vs. distance to the closest neighbor (think more about the details). 
+    Negative correlation -> evidence for avoidance of close neighbours? 
+  
+  Possible paper conclusion (depends on the very last figure?)
+  -> Cross regulation is unlikely to matter in TE dynamics
