@@ -1,0 +1,11 @@
+Meeting Siddharth Wed 18 Nov 2020
+
+* Simulations:
+ - Still running. Busy servers this week. Try IFB? 
+ - u1 vs u2: everything probably happens in a corner with small u2 -> reduce the scale for u2 to increase the parameter space in which everything happens? 
+
+* Bioinformatics:
+ - there were strange matches last time across different families. When looking at the details: TTTT or AAAA matches. Removed using BLAST dusting algorithm. 
+ - PolyA: do they really exist in RE or sequencing artifacts? (not really a relevant question?)
+ - Automatic pipeline in progress. All ross-family matches due to low-complexity matches? 
+ - Annotation errors in the database (partial sequences are identified as independent families). 
