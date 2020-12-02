@@ -1,0 +1,13 @@
+Meeting with Siddharth, Wed 2 dec 2020.
+
+* Simulations:
+ - Now a good set of simulations for transposition rates vs eta
+ - New run of simulations with epistasis on fitness
+ 
+* Bioinformatics
+ - piRNA data: get datasets on ovaries (wild type D. melanogaster, origin?)
+ - (filter piRNAs that start with T?)
+ - collapse (merge identical reads), dust (remove low-complexity)
+ - Theoretical analysis: OK; there are very small sequences and very large (wide diversity of sizes) -> normalize
+ - problem with distance calculation between small vs large TEs: compute identities without gaps
+ - comparison theoretical vs empirical data: this does not make sense, there is a bug somewhere. (the random looks correct?)
