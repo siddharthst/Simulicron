@@ -1,0 +1,14 @@
+Meeting with Siddharth, 18 dec 2020
+
+
+* Simulations
+  - Epistasis: all parameters fixed instead of eta and epistatic coefficient (drawn randomly)
+  Epistasis < -1 and > 1 are very strong coeffciients (especially 1, more leads to beneficial insetions). 
+  - plot copy nb vs. epistatic coefficient; discretize eta? 
+  
+* Bioinformatics
+- There are still potential bugs (involving Bowtie?). 
+- New dataset used, with a fly line well-identified
+- UPGMA clustering for the TEs (but buggy?)
+- Clustering leads to strange results. Run a phylogeny instead? Distances are too large. 
+- Plot matches vs distance (direct distance from the aligmnent). 
