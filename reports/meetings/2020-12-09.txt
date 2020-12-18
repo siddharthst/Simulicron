@@ -3,15 +3,23 @@ Meeting with Siddharth, Wednesday 9 Dec 2020
 * Simulations: 
   - Runs with epistasis of fitness: done, but technical problem so it cannot be analyzed
   - Meanwhile, discussion about the fitness formula: explanation in references/Selection; probbaly need to fix the simulation code (so that the previous problem is not too bad)
+  [ Fixed now, results available ]
 * Bioinformatics!
   - The "big bug" of last week has been fixed (not sure what was the cause). 
+    [ Fixed, not sure why ]
   - Still some issues with Gypsy, as there are piRNAs that match TE families while theoretical sequences should not match
+    [ This is a problem with the theoretical alignment, problem with Bowtie? ]
   - Beware of the LTR vs full sequence families
   - Find a way to order sequences according to some distance metrics; spreading close sequences in the whole plot might generate disturbing sequences. 
+  [ Done ]
   - Discussion about whether piRNAs matching LTR have a regulatory potential. Do we need to read more papers about regulatory mechanisms? 
   
 For next time:
 - fix bugs
+[ Some bug still remain ]
 - discuss the outline of the ms (send a draft before the meeting)
+[ TODO ]
 - simulation results with epistasis
+[ Done ]
 - D. ananassae results? 
+[ TODO ]
