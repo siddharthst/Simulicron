@@ -41,6 +41,8 @@ def runSim(
     tau=None,
     selPen=None,
     maxAvgTE=None,
+    epistasisCoefficient=0.0,
+    fitnessFunction=1
 ):
     # ------------------#
     # ------------------#
@@ -200,7 +202,8 @@ def runSim(
                     eta=eta,
                 )
                 indFitness = calculateFitness(
-                    transposonMatrixCopy, v1, v2
+                    transposonMatrixCopy, v1, v2, fitnessFunction=fitnessFunction,
+                    epistasisCoefficient=epistasisCoefficient
                 )
                 for key in TEset.keys():
                     populationRegulation[key].append(
@@ -254,6 +257,8 @@ def runSim(
                 "selPen": selPen,
                 "piRNA": piRNAindices,
                 "TEpi": "NA",
+                "FitnessFunction":fitnessFunction,
+                "epistasisCoefficient":epistasisCoefficient,
             }
         else:
             pass
@@ -346,6 +351,8 @@ def runSim(
                     "selPen": selPen,
                     "piRNA": piRNAindices,
                     "TEpi": overlap,
+                    "FitnessFunction":fitnessFunction,
+                    "epistasisCoefficient":epistasisCoefficient,
                 }
         # Stop the timer
         # timeStop = time.time()
@@ -400,6 +407,8 @@ def runSim(
         "selPen": selPen,
         "piRNA": piRNAindices,
         "TEpi": overlap,
+        "FitnessFunction":fitnessFunction,
+        "epistasisCoefficient":epistasisCoefficient,
     }
 
 

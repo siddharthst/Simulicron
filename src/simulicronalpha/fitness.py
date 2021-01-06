@@ -4,7 +4,7 @@ from numpy import concatenate as c
 import random
 
 def calculateFitness(
-    transposonMatrix, v1, v2, fitnessFunction=1,
+    transposonMatrix, v1, v2, fitnessFunction=1, epistasisCoefficient=1
 ):
     cV1 = v1
     cV2 = v2
@@ -20,3 +20,8 @@ def calculateFitness(
     penalties = transposonMatrix[teContent, 2]
     if fitnessFunction == 1:
         return np.exp(sum(penalties))
+    if fitnessFunction == 2:
+        # This follows the assumption that all sites share same
+        # selection pressure
+        w = np.exp(sum(penalties) + (0.5 * epistasisCoefficient * (penalties[0])**2 * len(penalties)**2))
+        return (w)
