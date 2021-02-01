@@ -1,0 +1,18 @@
+Meeting with Siddharth, Monday 01 Feb 2021
+
+* Decision to use the genomic TE insertions instead of consensus
+
+Genome -> repeat M vs consensus
+  -> TE list, remove < 100 bp, merge everything that is within 100bp. 
+  How to deal with ambiguous matches? 
+  What to do with TE sequences from piRNA clusters? At least label them. 
+  
+* How to analyze:
+ 1) make a tree
+ 2) make it ultrametric
+ 3) Slice it at a given divergence
+ 4) Plot #leaves (offspring) vs distance to closest neighbor at the time of the slice. 
+ 
+Will it work? We don't know. Let's see what happens. 
+
+* Manuscript: still hanging. 
