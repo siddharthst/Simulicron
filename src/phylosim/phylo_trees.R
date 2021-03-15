@@ -1,44 +1,73 @@
 #!/usr/bin/env Rscript
 
+library(ape)
+
 source("./phylosim.R")
 
 library(parallel)
 mc.cores <- detectCores() - 1
+mut.rate <- 1
 
-maxG <- 200
-tree.size <- c(40, 60)
-tree.depth <- c(50, 150)
+sims.file <- "./treecollection.Rdata"
 
-maxTEpop <- 200
-target.replicates <- 5
-max.replicates <- 50
-n0 <- 1
-
-sim.sets <- list(
-    A=c(u=0.2, v=0.1, k.regul=0.01386294, k.pi=0, deg.rate=0, deg.effect=0),
-#~     B=c(u=0.2, v=0.1, k.regul=0, k.pi=0, deg.rate=0.1, deg.effect=0.1),
-    C=c(u=0.2, v=0.1, k.regul=0, k.pi=0.03, deg.rate=0, deg.effect=0)
-)
-
-sims <- mclapply(sim.sets, function(td) {
-    ans <- list()
-    repl <- 1
-    while(length(ans) < target.replicates && repl <= max.replicates) {
-        ss <- phylosim(n0=n0, G=maxG, 
-                    u=td["u"], v=td["v"], k.regul=td["k.regul"], k.pi=td["k.pi"], 
-                    deg.rate=td["deg.rate"], deg.effect=td["deg.effect"], 
-                    maxTEpop=maxTEpop)
-        if (ncol(ss$dist) - 1 >= tree.size[1] && 
-            ncol(ss$dist) - 1 <= tree.size[2] && 
-            max(ss$dist[-1,-1], na.rm=TRUE) >= 2*tree.depth[1] && 
-            max(ss$dist[-1,-1], na.rm=TRUE) <= 2*tree.depth[2])
-                ans[[length(ans)+1]] <- ss
-        repl <- repl + 1
-    }
-    ans
-}, mc.cores=mc.cores)
+sims <- try(readRDS(sims.file))
+if (class(sims) == "try-error") stop("Impossible to load the dataset. Run phylo_treecollection.R first.")
 
 
-library(ape)
+trees <- mclapply(sims, function(sim) lapply(sim, function(ss) {
+	dist2tree(ss$dist)
+}), mc.cores=mc.cores)
+
+trees.mut <- mclapply(sims, function(sim) lapply(sim, function(ss) {
+	dist2tree(ss$dist, mut.rate=mut.rate)
+}), mc.cores=mc.cores)
+
+pdf("fig-trees-examples.pdf", width=5*length(sims), height=5)
+	layout(t(1:length(sims)))
+	for (si in seq_along(sims)) {
+		plot(trees[[si]][[1]], main=names(sim.sets)[si])
+		axis(1)
+	}
+dev.off()
 
 
+
+#~ coff <- seq(0.5, 0.8, length.out=101)
+#~ pdf("fig-trees-pastfuture.pdf", width=5*length(sims), height=5)
+#~ 	layout(t(1:length(sims)))
+#~ 	for (si in seq_along(sim.sets)) {
+#~ 		plot(NULL, xlim=range(coff), ylim=c(-0.3,0.3), xlab="Cutoff", ylab="Slope", main=names(sim.sets)[si])
+#~ 		ds <- do.call(rbind, lapply(seq_along(trees[[si]]), function(i) sapply(coff, function(co) { 
+#~ 					ns <- branchsuccess(trees[[si]][[i]], cutoff=co)
+#~ 					if (nrow(ns) > 1) {
+#~ 						ll <- lm(ns[,"branchlength"] ~ ns[,"distance"])
+#~ 						coef(ll)[2]
+#~ 					} else NA
+#~ 				})))
+#~ 		if (nrow(ds) > 0) {
+#~ 			for (i in 1:nrow(ds)) lines(coff, ds[i,], col="gray")
+#~ 			lines(coff, colMeans(ds, na.rm=TRUE), col="black")
+#~ 		}
+#~ 	}
+#~ dev.off()
+
+pdf("fig-trees-branchlengths.pdf", width=5*length(sims), height=10)
+	layout(rbind(1:length(sims), (length(sims)+1):(2*length(sims))))
+	for (si in seq_along(sim.sets)) {
+		branchlengths <- unlist(lapply(trees[[si]], branchlengthdist))
+#~ 		plot(density(unlist(branchlengths)), main=names(sim.sets)[si])
+#~ 		branchlengths <- branchlengths[branchlengths > 2]
+		hist(branchlengths, breaks=100, main=names(sim.sets)[si], freq=FALSE)
+		mm <- mean(unlist(branchlengths))
+		curve(exp(-x/mm)/mm, add=TRUE, col="red", lwd=2)
+		
+	}
+	for (si in seq_along(sim.sets)) {
+		branchlengths.mut <- unlist(lapply(trees.mut[[si]], branchlengthdist))
+#~ 		plot(density(unlist(branchlengths)), main=names(sim.sets)[si])
+#~ 		branchlengths.mut <- branchlengths.mut[branchlengths.mut > 0]
+		hist(branchlengths.mut, breaks=100, main=names(sim.sets)[si], freq=FALSE)
+		mm <- mean(unlist(branchlengths.mut))
+		curve(exp(-x/mm)/mm, add=TRUE, col="red", lwd=2)
+	}
+dev.off()

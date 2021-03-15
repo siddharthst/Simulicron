@@ -6,9 +6,9 @@ library(parallel)
 mc.cores <- detectCores() - 1
 
 todo <- c(
-    transpo = FALSE,
+    transpo = TRUE,
     regul   = FALSE,
-    degrad  = TRUE
+    degrad  = FALSE
 )
 
 # The purpose is to test the properties of the phylogenetic model
@@ -33,7 +33,7 @@ if (todo["transpo"]) {
         plot(NULL, ylim=c(0, max(ans, na.rm=TRUE)), xlim=c(0, ncol(ans)), xlab="Time steps", ylab="Copy number", main=paste0("u=", td["u"], ", v=", td["v"]))
         invisible(apply(ans, 1, function(nn) points(nn, pch=1, col="gray")))
         points(colMeans(ans, na.rm=TRUE), pch=1, col="black")
-        lines(do.call(theor.dyn, as.list(sim.td)), lwd=3, col="red")
+        lines(do.call(theor.dyn, as.list(td)), lwd=3, col="red")
     }
     dev.off()
 }
