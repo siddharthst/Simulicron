@@ -1,0 +1,10 @@
+Meeting with Siddharth, Wed 24 March 2021
+
+* Ultrametric trees: now fixed, no longer cladograms with fixed branch lengths
+* Make sure that the trees are correct (ougroup, be careful about branch lengths)
+* No real need for ultrametric trees when looking at the branch length distribution
+* Focus on the branch length distribution (expected to be ~ bimodal under piRNA regulation)
+* Forget about the "slopes" (correlation between branch length and number of leaves) as simulations 
+  suggest that piRNA regulation should not have any strong effect on this. 
+  
+Next meeting Wed 31 March, except if changes in travel plans. 
