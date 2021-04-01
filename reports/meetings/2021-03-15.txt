@@ -1,0 +1,14 @@
+Meeting with Siddharth, Wed 31 March 2021
+
+* Clean up some family trees "by hand" (making sure that rooting and alignment is OK). Done for some families. 
+* No need to make the tree ultrametric (risky because it would turn a nonsensical tree into something that looks OK). 
+* Example with DOC: Unimodal, very short branch lenghts. 
+* Exampe with FW: Very (too) recent?
+* Copia: very (too?) recent? 
+
+* OK: the phylogeny stuff is too complicated. Drop the idea of comparing branch lenghts? 
+* Use within-family phylogenies to fill the gaps (at what phylogenetic depth do divergent copies stop sharing 22nt sequences?). 
+
+* Draft: read papers and get an idea about what other people write about coregulation. 
+
+
