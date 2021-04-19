@@ -115,3 +115,5 @@ jupyterlab_git/labextension/*.tgz
 # Others
 *.pickle
 .pickle
+*.ipynb_checkpoints
+
