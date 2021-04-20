@@ -19,6 +19,68 @@ import multiprocessing
 # import ray
 # ray.init()
 
+# Aux return function
+
+
+def returnHelper(TEset, TEfamilyCountArr, TEfamilyVarArr, TEregulationArr):
+    # Make the family information "flat"
+    # https://stackoverflow.com/questions/5946236/how-to-merge-multiple-dicts-with-same-key
+    dict1 = {}
+    dict2 = {}
+    dict3 = {}
+    for k in TEset.keys():
+        dict1[k] = tuple(dict1[k] for dict1 in TEfamilyCountArr)
+        dict2[k] = tuple(dict2[k] for dict2 in TEfamilyVarArr)
+        dict3[k] = tuple(dict3[k] for dict3 in TEregulationArr)
+    return (dict1, dict2, dict3)
+
+
+def coreReturn(
+    simulationState,
+    i,
+    numberOfTranspositionEvents,
+    averageCopyNumber,
+    varianceCopyNumber,
+    TEfamilyCountArrRes,
+    TEfamilyVarArrRes,
+    TEregulationArrRes,
+    avgFitness,
+    HMTgen,
+    eta,
+    NumberOfTransposonInsertions,
+    FrequencyOfInsertions,
+    ExcisionRates,
+    tau,
+    selPen,
+    piRNAindices,
+    overlap,
+    fitnessFunction,
+    epistasisCoefficient,
+):
+    {
+        "State": simulationState,
+        "Generatrion": i + 2,
+        "NTE": numberOfTranspositionEvents,
+        "AvgCopyNum": averageCopyNumber,
+        "CopyNumVar": varianceCopyNumber,
+        "TEfamilyCN": TEfamilyCountArrRes,
+        "TEfamilyVR": TEfamilyVarArrRes,
+        "TEfamilyRg": TEregulationArrRes,
+        "AvgFit": avgFitness,
+        "HGTGen": HMTgen,
+        "ETA": eta,
+        "NTI": NumberOfTransposonInsertions,
+        "Freq": FrequencyOfInsertions,
+        "TRate": ExcisionRates,
+        "Tau": tau,
+        "selPen": selPen,
+        "piRNA": piRNAindices,
+        "TEpi": overlap,
+        "FitnessFunction": fitnessFunction,
+        "epistasisCoefficient": epistasisCoefficient,
+    }
+
+
 # For future cluster based implementation
 # @ray.remote()
 def runSim(
@@ -42,7 +104,7 @@ def runSim(
     selPen=None,
     maxAvgTE=None,
     epistasisCoefficient=0.0,
-    fitnessFunction=1
+    fitnessFunction=1,
 ):
     # ------------------#
     # ------------------#
@@ -65,7 +127,10 @@ def runSim(
     TEregulationArr = []
     # Create a insertionSiteSepecific array
     insertionSiteFrequencyArray = np.zeros(
-        (len(genomeMatrix), NumberOfTransposonInsertions,)
+        (
+            len(genomeMatrix),
+            NumberOfTransposonInsertions,
+        )
     )
     transposonMatrixCopy = transposonMatrix
     populationMatrixCopy = populationMatrix
@@ -86,9 +151,7 @@ def runSim(
         varianceNumber,
         TEfamilyCount,
         TEfamilyVar,
-    ) = checkCopyNumber(
-        populationMatrixCopy, TEset, transposonMatrixCopy
-    )
+    ) = checkCopyNumber(populationMatrixCopy, TEset, transposonMatrixCopy)
     averageCopyNumber.append(copyNumber)
     varianceCopyNumber.append(varianceNumber)
     TEfamilyCountArr.append(TEfamilyCount)
@@ -103,9 +166,7 @@ def runSim(
         populationV1 = []
         populationV2 = []
         populationFit = []
-        populationRegulation = {
-            k: [] for k in range(1, len(TEset.keys()) + 1)
-        }
+        populationRegulation = {k: [] for k in range(1, len(TEset.keys()) + 1)}
         if HMTgen == i:
             (
                 populationMatrixCopy,
@@ -135,10 +196,7 @@ def runSim(
             # Since recombination function only accepts arrays,
             # checking and forcing type conversion as needed
             # for the respective alleles
-            if (
-                populationMatrixCopy[p1, 0] == 0
-                and populationMatrixCopy[p1, 1] == 0
-            ):
+            if populationMatrixCopy[p1, 0] == 0 and populationMatrixCopy[p1, 1] == 0:
                 v1 = 0
             else:
                 cP1V1 = populationMatrixCopy[p1, 0]
@@ -153,13 +211,13 @@ def runSim(
                     cP1V2 = np.asarray([cP1V2])
 
                 v1 = recombination(
-                    genMap, transposonMatrixCopy, v1=cP1V1, v2=cP1V2,
+                    genMap,
+                    transposonMatrixCopy,
+                    v1=cP1V1,
+                    v2=cP1V2,
                 )
 
-            if (
-                populationMatrixCopy[p2, 0] == 0
-                and populationMatrixCopy[p2, 1] == 0
-            ):
+            if populationMatrixCopy[p2, 0] == 0 and populationMatrixCopy[p2, 1] == 0:
                 v2 = 0
             else:
                 cP2V1 = populationMatrixCopy[p2, 0]
@@ -174,7 +232,10 @@ def runSim(
                     cP2V2 = np.asarray([cP2V2])
 
                 v2 = recombination(
-                    genMap, transposonMatrixCopy, v1=cP2V1, v2=cP2V2,
+                    genMap,
+                    transposonMatrixCopy,
+                    v1=cP2V1,
+                    v2=cP2V2,
                 )
 
             if v1 == 0 and v2 == 0:
@@ -202,13 +263,14 @@ def runSim(
                     eta=eta,
                 )
                 indFitness = calculateFitness(
-                    transposonMatrixCopy, v1, v2, fitnessFunction=fitnessFunction,
-                    epistasisCoefficient=epistasisCoefficient
+                    transposonMatrixCopy,
+                    v1,
+                    v2,
+                    fitnessFunction=fitnessFunction,
+                    epistasisCoefficient=epistasisCoefficient,
                 )
                 for key in TEset.keys():
-                    populationRegulation[key].append(
-                        RegulationStrength[key]
-                    )
+                    populationRegulation[key].append(RegulationStrength[key])
 
             populationV1.append(v1)
             populationV2.append(v2)
@@ -218,65 +280,52 @@ def runSim(
         # n-1, hence i + 1 + 1
 
         # Check if there are no transposons left
-        if all(
-            np.array_equal(v, [0, 0])
-            for v in np.c_[populationV1, populationV2]
-        ):
-            # Make the family information "flat"
-            # https://stackoverflow.com/questions/5946236/how-to-merge-multiple-dicts-with-same-key
-            dict1 = {}
-            dict2 = {}
-            dict3 = {}
-            for k in TEset.keys():
-                dict1[k] = tuple(
-                    dict1[k] for dict1 in TEfamilyCountArr
-                )
-                dict2[k] = tuple(dict2[k] for dict2 in TEfamilyVarArr)
-                dict3[k] = tuple(
-                    dict3[k] for dict3 in TEregulationArr
-                )
-            TEfamilyCountArrRes = dict1
-            TEfamilyVarArrRes = dict2
-            TEregulationArrRes = dict3
+        if all(np.array_equal(v, [0, 0]) for v in np.c_[populationV1, populationV2]):
+            TEfamilyCountArrRes, TEfamilyVarArrRes, TEregulationArrRes = returnHelper(
+                TEset, TEfamilyCountArr, TEfamilyVarArr, TEregulationArr
+            )
+            simulationState = "LOSS"
+            overlap = "NA"
             return {
-                "State": "LOSS",
-                "Generatrion": i + 2,
-                "NTE": numberOfTranspositionEvents,
-                "AvgCopyNum": averageCopyNumber,
-                "CopyNumVar": varianceCopyNumber,
-                "TEfamilyCN": TEfamilyCountArrRes,
-                "TEfamilyVR": TEfamilyVarArrRes,
-                "TEfamilyRg": TEregulationArrRes,
-                "AvgFit": avgFitness,
-                "HGTGen": HMTgen,
-                "ETA": eta,
-                "NTI": NumberOfTransposonInsertions,
-                "Freq": FrequencyOfInsertions,
-                "TRate": ExcisionRates,
-                "Tau": tau,
-                "selPen": selPen,
-                "piRNA": piRNAindices,
-                "TEpi": "NA",
-                "FitnessFunction":fitnessFunction,
-                "epistasisCoefficient":epistasisCoefficient,
+                coreReturn(
+                    simulationState,
+                    i,
+                    numberOfTranspositionEvents,
+                    averageCopyNumber,
+                    varianceCopyNumber,
+                    TEfamilyCountArrRes,
+                    TEfamilyVarArrRes,
+                    TEregulationArrRes,
+                    avgFitness,
+                    HMTgen,
+                    eta,
+                    NumberOfTransposonInsertions,
+                    FrequencyOfInsertions,
+                    ExcisionRates,
+                    tau,
+                    selPen,
+                    piRNAindices,
+                    overlap,
+                    fitnessFunction,
+                    epistasisCoefficient,
+                )
             }
         else:
             pass
-        # Major bug in numpy - forced to use pandas
-        # Refer to the question
-        # https://stackoverflow.com/questions/60210897
-        # populationMatrixCopy = pd.DataFrame(
-        #    [populationV1, populationV2, populationFit]
-        # ).T.to_numpy()
+        # Generate population matrix for next iteration
         populationMatrixCopy = np.array(
-            [populationV1, populationV2, populationFit,],
+            [
+                populationV1,
+                populationV2,
+                populationFit,
+            ],
             dtype="object",
         ).T
         # Regulation strength for each family
         for key in TEset.keys():
-            populationRegulation[key] = sum(
-                populationRegulation[key]
-            ) / len(populationMatrixCopy)
+            populationRegulation[key] = sum(populationRegulation[key]) / len(
+                populationMatrixCopy
+            )
         TEregulationArr.append(populationRegulation)
         # (
         #     compyNumber,
@@ -293,94 +342,59 @@ def runSim(
             varianceNumber,
             TEfamilyCount,
             TEfamilyVar,
-        ) = checkCopyNumber(
-            populationMatrixCopy, TEset, transposonMatrixCopy
-        )
+        ) = checkCopyNumber(populationMatrixCopy, TEset, transposonMatrixCopy)
         averageCopyNumber.append(copyNumber)
         varianceCopyNumber.append(varianceNumber)
         TEfamilyCountArr.append(TEfamilyCount)
         TEfamilyVarArr.append(TEfamilyVar)
-        avgFitness.append(
-            sum(
-                (populationMatrixCopy[:, 2])
-                / len(populationMatrixCopy)
-            )
-        )
+        avgFitness.append(sum((populationMatrixCopy[:, 2]) / len(populationMatrixCopy)))
 
         # Exit the simulation of TE copy number exceeds the threshold
         if maxAvgTE != None:
             if maxAvgTE > copyNumber:
-                dict1 = {}
-                dict2 = {}
-                dict3 = {}
-                for k in TEset.keys():
-                    dict1[k] = tuple(
-                        dict1[k] for dict1 in TEfamilyCountArr
-                    )
-                    dict2[k] = tuple(
-                        dict2[k] for dict2 in TEfamilyVarArr
-                    )
-                    dict3[k] = tuple(
-                        dict3[k] for dict3 in TEregulationArr
-                    )
-                TEfamilyCountArrRes = dict1
-                TEfamilyVarArrRes = dict2
-                TEregulationArrRes = dict3
+                (
+                    TEfamilyCountArrRes,
+                    TEfamilyVarArrRes,
+                    TEregulationArrRes,
+                ) = returnHelper(
+                    TEset, TEfamilyCountArr, TEfamilyVarArr, TEregulationArr
+                )
                 overlap = TEpiOverlap(
                     populationMatrixCopy,
                     transposonMatrixCopy,
                     TEset,
                     piRNAindices,
                 )
+                simulationState = "ATMAX"
                 return {
-                    "State": "ATMAX",
-                    "Generatrion": i + 2,
-                    "NTE": numberOfTranspositionEvents,
-                    "AvgCopyNum": averageCopyNumber,
-                    "CopyNumVar": varianceCopyNumber,
-                    "TEfamilyCN": TEfamilyCountArrRes,
-                    "TEfamilyVR": TEfamilyVarArrRes,
-                    "TEfamilyRg": TEregulationArrRes,
-                    "AvgFit": avgFitness,
-                    "HGTGen": HMTgen,
-                    "ETA": eta,
-                    "NTI": NumberOfTransposonInsertions,
-                    "Freq": FrequencyOfInsertions,
-                    "TRate": ExcisionRates,
-                    "Tau": tau,
-                    "selPen": selPen,
-                    "piRNA": piRNAindices,
-                    "TEpi": overlap,
-                    "FitnessFunction":fitnessFunction,
-                    "epistasisCoefficient":epistasisCoefficient,
+                    coreReturn(
+                        simulationState,
+                        i,
+                        numberOfTranspositionEvents,
+                        averageCopyNumber,
+                        varianceCopyNumber,
+                        TEfamilyCountArrRes,
+                        TEfamilyVarArrRes,
+                        TEregulationArrRes,
+                        avgFitness,
+                        HMTgen,
+                        eta,
+                        NumberOfTransposonInsertions,
+                        FrequencyOfInsertions,
+                        ExcisionRates,
+                        tau,
+                        selPen,
+                        piRNAindices,
+                        overlap,
+                        fitnessFunction,
+                        epistasisCoefficient,
+                    )
                 }
-        # Stop the timer
-        # timeStop = time.time()
-        # Terminate the loop if it runs for more than
-        # 8 seconds!
-        # if (timeStop-timeStart) > 10.0:
-        #    return {
-        #        "State": "TIMEXC",
-        #        "Generatrion": i + 2,
-        #        "NTE": numberOfTranspositionEvents,
-        #        "AvgCopyNum": averageCopyNumber,
-        #        "CopyNumVar": varianceCopyNumber,
-        #        "TEfamilyCN": TEfamilyCountArr,
-        #        "TEfamilyVR": TEfamilyVarArr,
-        #    }
-
     # Quit simulation if there in a transient state
     # i.e. no loss
-    dict1 = {}
-    dict2 = {}
-    dict3 = {}
-    for k in TEset.keys():
-        dict1[k] = tuple(dict1[k] for dict1 in TEfamilyCountArr)
-        dict2[k] = tuple(dict2[k] for dict2 in TEfamilyVarArr)
-        dict3[k] = tuple(dict3[k] for dict3 in TEregulationArr)
-    TEfamilyCountArrRes = dict1
-    TEfamilyVarArrRes = dict2
-    TEregulationArrRes = dict3
+    TEfamilyCountArrRes, TEfamilyVarArrRes, TEregulationArrRes = returnHelper(
+        TEset, TEfamilyCountArr, TEfamilyVarArr, TEregulationArr
+    )
     # Return the TE locations
     overlap = TEpiOverlap(
         populationMatrixCopy,
@@ -388,140 +402,28 @@ def runSim(
         TEset,
         piRNAindices,
     )
+    simulationState = "FLUX"
     return {
-        "State": "FLUX",
-        "Generatrion": i + 2,
-        "NTE": numberOfTranspositionEvents,
-        "AvgCopyNum": averageCopyNumber,
-        "CopyNumVar": varianceCopyNumber,
-        "TEfamilyCN": TEfamilyCountArrRes,
-        "TEfamilyVR": TEfamilyVarArrRes,
-        "TEfamilyRg": TEregulationArrRes,
-        "AvgFit": avgFitness,
-        "HGTGen": HMTgen,
-        "ETA": eta,
-        "NTI": NumberOfTransposonInsertions,
-        "Freq": FrequencyOfInsertions,
-        "TRate": ExcisionRates,
-        "Tau": tau,
-        "selPen": selPen,
-        "piRNA": piRNAindices,
-        "TEpi": overlap,
-        "FitnessFunction":fitnessFunction,
-        "epistasisCoefficient":epistasisCoefficient,
+        coreReturn(
+            simulationState,
+            i,
+            numberOfTranspositionEvents,
+            averageCopyNumber,
+            varianceCopyNumber,
+            TEfamilyCountArrRes,
+            TEfamilyVarArrRes,
+            TEregulationArrRes,
+            avgFitness,
+            HMTgen,
+            eta,
+            NumberOfTransposonInsertions,
+            FrequencyOfInsertions,
+            ExcisionRates,
+            tau,
+            selPen,
+            piRNAindices,
+            overlap,
+            fitnessFunction,
+            epistasisCoefficient,
+        )
     }
-
-
-# Creating a generator for the dataset
-def createData(
-    numberOfSimulations=1000,
-    baseSelection=1,
-    baseInsertionProb=1,
-    numberOfInsertionSites=1000,
-    numberOfChromosomes=6,
-    baseRecombinationRate=0.01,
-    baseTau=1,
-    numberOfPiRNA=6,
-    piPercentage=3,
-    enablePiRecombination=False,
-    NumberOfIndividual=1000,
-    NumberOfTransposonTypes=2,
-    NumberOfInsertionsPerType=[2, 2],
-    FrequencyOfInsertions=[0.5, 0.5],
-    ExcisionRates=[0, 0],
-    RepairRates=[1, 1],
-    InsertionRates=[1, 1],
-    HardyWeinberg=False,
-    NumberOfGenerations=10000,
-):
-    for i in range(numberOfSimulations):
-        gen, piset, piIndice, rate2Map = generateGenome(
-            baseSelection=baseSelection,
-            baseInsertionProb=1,
-            numberOfInsertionSites=numberOfInsertionSites,
-            numberOfChromosomes=numberOfChromosomes,
-            baseRecombinationRate=baseRecombinationRate,
-            baseTau=baseTau,
-            numberOfPiRNA=numberOfPiRNA,
-            piPercentage=piPercentage,
-            enablePiRecombination=False,
-        )
-        pop, tr, TEset = generatePopulation(
-            genomeMatrix=gen,
-            piRNAindices=piIndice,
-            NumberOfIndividual=NumberOfIndividual,
-            NumberOfTransposonTypes=NumberOfTransposonTypes,
-            NumberOfInsertionsPerType=NumberOfInsertionsPerType,
-            FrequencyOfInsertions=FrequencyOfInsertions,
-            ExcisionRates=ExcisionRates,
-            RepairRates=RepairRates,
-            InsertionRates=InsertionRates,
-            HardyWeinberg=False,
-            numberOfPiRNA=numberOfPiRNA,
-        )
-
-        yield (
-            (
-                gen,
-                pop,
-                tr,
-                TEset,
-                NumberOfTransposonTypes,
-                NumberOfGenerations,
-                rate2Map,
-                piset,
-            )
-        )
-
-
-def runBatch(
-    numberOfSimulations=1,
-    baseSelection=1,
-    baseInsertionProb=1,
-    numberOfInsertionSites=1000,
-    numberOfChromosomes=6,
-    baseRecombinationRate=0.01,
-    baseTau=1,
-    numberOfPiRNA=6,
-    piPercentage=3,
-    enablePiRecombination=False,
-    NumberOfIndividual=1000,
-    NumberOfTransposonTypes=2,
-    NumberOfInsertionsPerType=[2, 2],
-    FrequencyOfInsertions=[0.5, 0.5],
-    ExcisionRates=[0, 0],
-    RepairRates=[1, 1],
-    InsertionRates=[1, 1],
-    HardyWeinberg=False,
-    NumberOfGenerations=100,
-    numberOfThreads=1,
-):
-    dataSet = createData(
-        numberOfSimulations=numberOfSimulations,
-        baseSelection=baseSelection,
-        baseInsertionProb=baseInsertionProb,
-        numberOfInsertionSites=numberOfInsertionSites,
-        numberOfChromosomes=numberOfChromosomes,
-        baseRecombinationRate=baseRecombinationRate,
-        baseTau=baseTau,
-        numberOfPiRNA=numberOfPiRNA,
-        piPercentage=piPercentage,
-        enablePiRecombination=enablePiRecombination,
-        NumberOfIndividual=NumberOfIndividual,
-        NumberOfTransposonTypes=NumberOfTransposonTypes,
-        NumberOfInsertionsPerType=NumberOfInsertionsPerType,
-        FrequencyOfInsertions=FrequencyOfInsertions,
-        ExcisionRates=ExcisionRates,
-        RepairRates=RepairRates,
-        InsertionRates=InsertionRates,
-        HardyWeinberg=False,
-        NumberOfGenerations=NumberOfGenerations,
-    )
-    inputSet = []
-    for i in dataSet:
-        inputSet.append(i)
-
-    with multiprocessing.Pool(processes=numberOfThreads) as pool:
-        results = pool.starmap(runSim, inputSet)
-
-    return results

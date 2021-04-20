@@ -17,6 +17,7 @@ def generateGenome(
     numberOfPiRNA=6,
     piPercentage=3,
     enablePiRecombination=False,
+    DisablePiSelection=False,
 ):
     # Create piRNA dictionary storing the coordinates
     piRNAcoord = {}
@@ -96,6 +97,16 @@ def generateGenome(
                 piRNALocation + individualPiRNALength,
             )
     piRNAindices = np.nonzero(piRNArray)[0].tolist()
+
+    # To disable piRNA selection
+    if (DisablePiSelection != False):
+        # Check if the value is of type float
+        if (isinstance(DisablePiSelection, float)):
+            SelectionCoef[piRNAindices] = DisablePiSelection
+        else:
+            # No selection
+            SelectionCoef[piRNAindices] = 0.0
+    # For recombination
     rate2Map = np.insert(
         np.cumsum(-0.5 * np.log(1 - (2 * RecombinationRates))), 0, 0, axis=0,
     )
