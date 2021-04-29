@@ -1,0 +1,12 @@
+Meeting with Siddharth, Wed 28 Apr 2021. 
+
+* Literature work
+ - On piRNA: it seems that mismatches in piRNA decrease regulation efficiency very fast (so, no regulation with more than 1 mismatch)
+ - Identification of piRNA activity in somatic cells in vertebrates (chicken)
+ 
+ - First identification of a piRNA locus: flamenco (1983). It is very different to discover a regulatory locus and to identify the piRNA mechanism though. 
+ 
+ - Theory papers : see Le Rouzic & Deceliere 2005 for review, later papers: Dolgin & Charlesworth and trap model (Kofler, Kelleher et al). 
+ 
+* Next week: training for the EGCE talk (plan for < 15 minutes). 
+* Newt science meeting in 2 weeks. 
