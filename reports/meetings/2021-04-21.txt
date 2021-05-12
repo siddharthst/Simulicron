@@ -1,0 +1,14 @@
+Meeting with Siddharth, 21 Apr 2021
+
+* Done this week:
+ - clean the Python simulation code
+ - think about the analytical model :
+    . track the site freq spectrum
+    . implement copy number regulation u(n) = 1 / (1 + r n)
+    . pay attention to the order of events (transposition/selection).
+      expected order : transposition and then selection, but use fitnesses calculated before transposition. 
+    
+ * Discussion about conferences:
+  - if some (online?) event in 2021 happens to be interesting, just go for it.
+  
+ * Next week: journal club (Apr 28) (which paper?)
