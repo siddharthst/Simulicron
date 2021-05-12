@@ -57,7 +57,7 @@ def coreReturn(
     fitnessFunction,
     epistasisCoefficient,
 ):
-    {
+    return({
         "State": simulationState,
         "Generatrion": i + 2,
         "NTE": numberOfTranspositionEvents,
@@ -78,7 +78,7 @@ def coreReturn(
         "TEpi": overlap,
         "FitnessFunction": fitnessFunction,
         "epistasisCoefficient": epistasisCoefficient,
-    }
+    })
 
 
 # For future cluster based implementation
@@ -286,7 +286,7 @@ def runSim(
             )
             simulationState = "LOSS"
             overlap = "NA"
-            return {
+            return (
                 coreReturn(
                     simulationState,
                     i,
@@ -309,7 +309,7 @@ def runSim(
                     fitnessFunction,
                     epistasisCoefficient,
                 )
-            }
+            )
         else:
             pass
         # Generate population matrix for next iteration
@@ -366,7 +366,7 @@ def runSim(
                     piRNAindices,
                 )
                 simulationState = "ATMAX"
-                return {
+                return (
                     coreReturn(
                         simulationState,
                         i,
@@ -389,7 +389,7 @@ def runSim(
                         fitnessFunction,
                         epistasisCoefficient,
                     )
-                }
+                )
     # Quit simulation if there in a transient state
     # i.e. no loss
     TEfamilyCountArrRes, TEfamilyVarArrRes, TEregulationArrRes = returnHelper(
@@ -403,7 +403,7 @@ def runSim(
         piRNAindices,
     )
     simulationState = "FLUX"
-    return {
+    return (
         coreReturn(
             simulationState,
             i,
@@ -426,4 +426,4 @@ def runSim(
             fitnessFunction,
             epistasisCoefficient,
         )
-    }
+    )
