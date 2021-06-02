@@ -56,8 +56,10 @@ def coreReturn(
     overlap,
     fitnessFunction,
     epistasisCoefficient,
+    TEset,
+    populationArray,
 ):
-    return({
+    return {
         "State": simulationState,
         "Generatrion": i + 2,
         "NTE": numberOfTranspositionEvents,
@@ -78,7 +80,9 @@ def coreReturn(
         "TEpi": overlap,
         "FitnessFunction": fitnessFunction,
         "epistasisCoefficient": epistasisCoefficient,
-    })
+        "TEset": TEset,
+        "populationArray": populationArray,
+    }
 
 
 # For future cluster based implementation
@@ -109,6 +113,8 @@ def runSim(
     # ------------------#
     # ------------------#
     # ------------------#
+    # For storing population state
+    populationArray = []
     # for storing transposons which are fixed
     fixedTE = []
     # for storing transposons which are not fixed
@@ -286,29 +292,29 @@ def runSim(
             )
             simulationState = "LOSS"
             overlap = "NA"
-            return (
-                coreReturn(
-                    simulationState,
-                    i,
-                    numberOfTranspositionEvents,
-                    averageCopyNumber,
-                    varianceCopyNumber,
-                    TEfamilyCountArrRes,
-                    TEfamilyVarArrRes,
-                    TEregulationArrRes,
-                    avgFitness,
-                    HMTgen,
-                    eta,
-                    NumberOfTransposonInsertions,
-                    FrequencyOfInsertions,
-                    ExcisionRates,
-                    tau,
-                    selPen,
-                    piRNAindices,
-                    overlap,
-                    fitnessFunction,
-                    epistasisCoefficient,
-                )
+            return coreReturn(
+                simulationState,
+                i,
+                numberOfTranspositionEvents,
+                averageCopyNumber,
+                varianceCopyNumber,
+                TEfamilyCountArrRes,
+                TEfamilyVarArrRes,
+                TEregulationArrRes,
+                avgFitness,
+                HMTgen,
+                eta,
+                NumberOfTransposonInsertions,
+                FrequencyOfInsertions,
+                ExcisionRates,
+                tau,
+                selPen,
+                piRNAindices,
+                overlap,
+                fitnessFunction,
+                epistasisCoefficient,
+                TEset,
+                populationArray,
             )
         else:
             pass
@@ -321,6 +327,8 @@ def runSim(
             ],
             dtype="object",
         ).T
+        # Append population state into matrix
+        populationArray.append(populationMatrixCopy)
         # Regulation strength for each family
         for key in TEset.keys():
             populationRegulation[key] = sum(populationRegulation[key]) / len(
@@ -366,29 +374,29 @@ def runSim(
                     piRNAindices,
                 )
                 simulationState = "ATMAX"
-                return (
-                    coreReturn(
-                        simulationState,
-                        i,
-                        numberOfTranspositionEvents,
-                        averageCopyNumber,
-                        varianceCopyNumber,
-                        TEfamilyCountArrRes,
-                        TEfamilyVarArrRes,
-                        TEregulationArrRes,
-                        avgFitness,
-                        HMTgen,
-                        eta,
-                        NumberOfTransposonInsertions,
-                        FrequencyOfInsertions,
-                        ExcisionRates,
-                        tau,
-                        selPen,
-                        piRNAindices,
-                        overlap,
-                        fitnessFunction,
-                        epistasisCoefficient,
-                    )
+                return coreReturn(
+                    simulationState,
+                    i,
+                    numberOfTranspositionEvents,
+                    averageCopyNumber,
+                    varianceCopyNumber,
+                    TEfamilyCountArrRes,
+                    TEfamilyVarArrRes,
+                    TEregulationArrRes,
+                    avgFitness,
+                    HMTgen,
+                    eta,
+                    NumberOfTransposonInsertions,
+                    FrequencyOfInsertions,
+                    ExcisionRates,
+                    tau,
+                    selPen,
+                    piRNAindices,
+                    overlap,
+                    fitnessFunction,
+                    epistasisCoefficient,
+                    TEset,
+                    populationArray,
                 )
     # Quit simulation if there in a transient state
     # i.e. no loss
@@ -403,27 +411,27 @@ def runSim(
         piRNAindices,
     )
     simulationState = "FLUX"
-    return (
-        coreReturn(
-            simulationState,
-            i,
-            numberOfTranspositionEvents,
-            averageCopyNumber,
-            varianceCopyNumber,
-            TEfamilyCountArrRes,
-            TEfamilyVarArrRes,
-            TEregulationArrRes,
-            avgFitness,
-            HMTgen,
-            eta,
-            NumberOfTransposonInsertions,
-            FrequencyOfInsertions,
-            ExcisionRates,
-            tau,
-            selPen,
-            piRNAindices,
-            overlap,
-            fitnessFunction,
-            epistasisCoefficient,
-        )
+    return coreReturn(
+        simulationState,
+        i,
+        numberOfTranspositionEvents,
+        averageCopyNumber,
+        varianceCopyNumber,
+        TEfamilyCountArrRes,
+        TEfamilyVarArrRes,
+        TEregulationArrRes,
+        avgFitness,
+        HMTgen,
+        eta,
+        NumberOfTransposonInsertions,
+        FrequencyOfInsertions,
+        ExcisionRates,
+        tau,
+        selPen,
+        piRNAindices,
+        overlap,
+        fitnessFunction,
+        epistasisCoefficient,
+        TEset,
+        populationArray,
     )
