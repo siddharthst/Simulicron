@@ -58,6 +58,7 @@ def coreReturn(
     epistasisCoefficient,
     TEset,
     populationArray,
+    transposonMatrix,
 ):
     return {
         "State": simulationState,
@@ -82,6 +83,7 @@ def coreReturn(
         "epistasisCoefficient": epistasisCoefficient,
         "TEset": TEset,
         "populationArray": populationArray,
+        "transposonMatrix": transposonMatrix,
     }
 
 
@@ -315,6 +317,7 @@ def runSim(
                 epistasisCoefficient,
                 TEset,
                 populationArray,
+                transposonMatrix,
             )
         else:
             pass
@@ -397,6 +400,7 @@ def runSim(
                     epistasisCoefficient,
                     TEset,
                     populationArray,
+                    transposonMatrix,
                 )
     # Quit simulation if there in a transient state
     # i.e. no loss
@@ -434,4 +438,5 @@ def runSim(
         epistasisCoefficient,
         TEset,
         populationArray,
+        transposonMatrix,
     )
