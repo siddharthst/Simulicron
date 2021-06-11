@@ -57,8 +57,6 @@ def coreReturn(
     fitnessFunction,
     epistasisCoefficient,
     TEset,
-    populationArray,
-    transposonMatrix,
 ):
     return {
         "State": simulationState,
@@ -82,8 +80,6 @@ def coreReturn(
         "FitnessFunction": fitnessFunction,
         "epistasisCoefficient": epistasisCoefficient,
         "TEset": TEset,
-        "populationArray": populationArray,
-        "transposonMatrix": transposonMatrix,
     }
 
 
@@ -115,8 +111,6 @@ def runSim(
     # ------------------#
     # ------------------#
     # ------------------#
-    # For storing population state
-    populationArray = []
     # for storing transposons which are fixed
     fixedTE = []
     # for storing transposons which are not fixed
@@ -316,8 +310,6 @@ def runSim(
                 fitnessFunction,
                 epistasisCoefficient,
                 TEset,
-                populationArray,
-                transposonMatrix,
             )
         else:
             pass
@@ -330,8 +322,6 @@ def runSim(
             ],
             dtype="object",
         ).T
-        # Append population state into matrix
-        populationArray.append(populationMatrixCopy)
         # Regulation strength for each family
         for key in TEset.keys():
             populationRegulation[key] = sum(populationRegulation[key]) / len(
@@ -399,8 +389,6 @@ def runSim(
                     fitnessFunction,
                     epistasisCoefficient,
                     TEset,
-                    populationArray,
-                    transposonMatrix,
                 )
     # Quit simulation if there in a transient state
     # i.e. no loss
@@ -437,6 +425,4 @@ def runSim(
         fitnessFunction,
         epistasisCoefficient,
         TEset,
-        populationArray,
-        transposonMatrix,
     )
