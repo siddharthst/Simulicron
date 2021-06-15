@@ -1,6 +1,9 @@
 # Init
 import os
 import sys
+import click
+from collections import defaultdict
+
 
 module_path = os.path.abspath(os.path.join("../src/simulicronalpha/"))
 if module_path not in sys.path:
@@ -10,7 +13,6 @@ if module_path not in sys.path:
 import random
 import numpy as np
 import pandas as pd
-import warnings
 import pickle
 from numpy import concatenate as c
 from itertools import repeat
@@ -24,10 +26,6 @@ from checkCopyNumber import checkCopyNumber
 from fitness import calculateFitness
 from transposition import transposition
 from recombination import recombination
-
-# Current multiprocessing implementation
-from multiprocessing import Process
-import concurrent.futures
 
 # Define the simulation parameters
 # max and min
@@ -87,10 +85,28 @@ def worker(parameters):
         tau=parameters["tau"],
         selPen=parameters["selectionPenalty"],
     )
-    with open("etaVsHG/" + "%030x" % random.randrange(16 ** 30) + ".pickle", "wb") as f:
-        pickle.dump((result), f)
+
+    copyNumber = result["AvgCopyNum"]
+    piOccupancy = result["TEpi"]
+    piOccupancy = piOccupancy[1]
+    resultToWrite = [copyNumber, piOccupancy]
+
+    with open("%030x" % random.randrange(16 ** 30) + ".txt", "w+") as f:
+        for x in zip(*resultToWrite):
+            f.write("{0}\t{1}\n".format(*x))
 
     return 0
 
+commandArgs = defaultdict(list)
+for k, v in ((k.lstrip('-'), v) for k,v in (a.split('=') for a in sys.argv[1:])):
+    commandArgs[k].append(v)
 
-countSimulations = 1
+for key, value in commandArgs.items():
+    if key in parameters.keys():
+        parameters[key] = type(parameters[key])(value[0])
+        value
+        print ("Supplied parameter: ", key)
+        print ("Supplied value: ", parameters[key])
+        print ("Paramter type: ", type(parameters[key]))
+
+run = worker(parameters)
