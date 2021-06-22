@@ -57,6 +57,7 @@ def coreReturn(
     fitnessFunction,
     epistasisCoefficient,
     TEset,
+    TECoreOverlap,
 ):
     return {
         "State": simulationState,
@@ -80,6 +81,7 @@ def coreReturn(
         "FitnessFunction": fitnessFunction,
         "epistasisCoefficient": epistasisCoefficient,
         "TEset": TEset,
+        "TECoreOverlap": TECoreOverlap,
     }
 
 
@@ -107,6 +109,7 @@ def runSim(
     maxAvgTE=None,
     epistasisCoefficient=0.0,
     fitnessFunction=1,
+    SingleFamily=False,
 ):
     # ------------------#
     # ------------------#
@@ -117,6 +120,9 @@ def runSim(
     unfixedTE = []
     # for storing transposons which are lost
     lostTE = []
+    # For storing transposons overlapping with piRNA
+    # The first generation will always start with 0
+    TEaPIoverlap = [0]
     # For storing the average fitness per generation
     avgFitness = []
     # For storing the average copy number per generation
@@ -310,6 +316,7 @@ def runSim(
                 fitnessFunction,
                 epistasisCoefficient,
                 TEset,
+                TEaPIoverlap,
             )
         else:
             pass
@@ -349,6 +356,15 @@ def runSim(
         TEfamilyCountArr.append(TEfamilyCount)
         TEfamilyVarArr.append(TEfamilyVar)
         avgFitness.append(sum((populationMatrixCopy[:, 2]) / len(populationMatrixCopy)))
+        TEaPIoverlap.append(
+            TEpiOverlap(
+                populationMatrixCopy,
+                transposonMatrixCopy,
+                TEset,
+                piRNAindices,
+                SingleFamily=SingleFamily,
+            )
+        )
 
         # Exit the simulation of TE copy number exceeds the threshold
         if maxAvgTE != None:
@@ -389,6 +405,7 @@ def runSim(
                     fitnessFunction,
                     epistasisCoefficient,
                     TEset,
+                    TEaPIoverlap,
                 )
     # Quit simulation if there in a transient state
     # i.e. no loss
@@ -425,4 +442,5 @@ def runSim(
         fitnessFunction,
         epistasisCoefficient,
         TEset,
+        TEaPIoverlap,
     )
