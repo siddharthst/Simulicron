@@ -1,0 +1,11 @@
+Weekkly meeting with Siddharth, Wed 23 June
+
+* Interface between simulicron and the analytical model: done, it works.
+  - double check the recombination rate
+  - still to do: a parameter for the probability of insertion in a cluster
+  
+* To be tested this week.
+
+* PhD committee: send emails this week for a commitee in September. 
+
+* Next week: discuss about the manuscript draft. 
