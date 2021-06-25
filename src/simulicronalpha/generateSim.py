@@ -60,7 +60,7 @@ def generateGenome(
     if numberOfChromosomes > 1:
         RecombinationRates[chromosomeLocation[1:-1]] = 0.499
         # Insert piRNA uniformly in chromosomes
-        counter = 1
+        counter = 0
         while (counter < numberOfPiRNA):
             for prime5, prime3 in zip(chromosomeLocation, chromosomeLocation[1:]):
                 piRNALocation = np.random.choice(
@@ -73,12 +73,12 @@ def generateGenome(
                     piRNALocation + individualPiRNALength,
                 )
                 counter += 1
-                if counter > numberOfPiRNA:
+                if counter == numberOfPiRNA:
                     break
         counter = 0
 
     else:
-        counter = 1
+        counter = 0
         # Insert piRNA randomly in single chromosome
         piRNAcoordinates = [
             individualPiRNALength * i + x
