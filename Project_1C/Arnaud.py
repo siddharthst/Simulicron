@@ -12,6 +12,8 @@
 # NumberOfInsertions = Number of insertions per individual (1)
 # piRNASelection = piRNA selection penalty (False) - Anything other than
 # default will be a float defining the value - can be 0
+# piPercentage = Percentage of genome which will make up for piRNA (3)
+# numberOfPiRNA = Number of piRNA clusters (6)
 # FileName = Output file name (DefaultOut.txt)
 
 
@@ -49,6 +51,8 @@ parameters = {
     "RecombinationRate": 0.1,
     "NumberOfInsertions": 1,
     "piRNASelection": False,
+    "piPercentage": 3,
+    "numberOfPiRNA": 6,
     "FileName": "DefaultOut.txt",
 }
 
@@ -61,6 +65,8 @@ def worker(parameters):
         baseSelection=parameters["selectionPenalty"],
         baseTau=parameters["tau"],
         DisablePiSelection=parameters["piRNASelection"],
+        piPercentage = parameters["piPercentage"],
+        numberOfPiRNA = parameters["numberOfPiRNA"],
     )
     population, transposons, TEset = generatePopulation(
         genome,
