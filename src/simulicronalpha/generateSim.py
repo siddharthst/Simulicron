@@ -77,6 +77,7 @@ def generateGenome(
         counter = 0
 
     else:
+        counter = 1
         # Insert piRNA randomly in single chromosome
         piRNAcoordinates = [
             individualPiRNALength * i + x
@@ -91,27 +92,36 @@ def generateGenome(
         ]
         for i in piRNAcoordinates:
             piRNArray[i : i + individualPiRNALength] = baseTau
-        for i in range(numberOfPiRNA):
             piRNAcoord[counter] = (
-                piRNALocation,
-                piRNALocation + individualPiRNALength,
+                i,
+                i + individualPiRNALength,
             )
+            counter += 1
+        counter = 0
     piRNAindices = np.nonzero(piRNArray)[0].tolist()
 
     # To disable piRNA selection
-    if (DisablePiSelection != False):
+    if DisablePiSelection != False:
         # Check if the value is of type float
-        if (isinstance(DisablePiSelection, float)):
+        if isinstance(DisablePiSelection, float):
             SelectionCoef[piRNAindices] = DisablePiSelection
         else:
             # No selection
             SelectionCoef[piRNAindices] = 0.0
     # For recombination
     rate2Map = np.insert(
-        np.cumsum(-0.5 * np.log(1 - (2 * RecombinationRates))), 0, 0, axis=0,
+        np.cumsum(-0.5 * np.log(1 - (2 * RecombinationRates))),
+        0,
+        0,
+        axis=0,
     )
     genome = np.vstack(
-        (SelectionCoef, insertionProbability, RecombinationRates, piRNArray,)
+        (
+            SelectionCoef,
+            insertionProbability,
+            RecombinationRates,
+            piRNArray,
+        )
     ).T
     return (
         genome,
@@ -152,13 +162,17 @@ def generatePopulation(
         TEset[i + 1] = set()
 
     # Empty population array
-    population = np.zeros((NumberOfIndividual, 3), dtype=np.ndarray,)
+    population = np.zeros(
+        (NumberOfIndividual, 3),
+        dtype=np.ndarray,
+    )
     if Mig:
         assert (
             NumberOfTransposonTypes == 2
         ), "Only two transposons are supported with unidirectional migration"
         populationMig = np.zeros(
-            (int(NumberOfIndividual * FrequencyOfInsertions[1]), 3), dtype=np.ndarray,
+            (int(NumberOfIndividual * FrequencyOfInsertions[1]), 3),
+            dtype=np.ndarray,
         )
         populationMig[0:, 2] = 1
 
