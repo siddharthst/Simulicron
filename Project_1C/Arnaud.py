@@ -22,8 +22,10 @@ import os
 import sys
 from collections import defaultdict
 
+import pathlib
 
-module_path = os.path.abspath(os.path.join("../src/simulicronalpha/"))
+
+module_path = os.path.abspath(os.path.join(pathlib.Path(__file__).parent.absolute(), "../src/simulicronalpha/"))
 if module_path not in sys.path:
     sys.path.append(module_path)
 
