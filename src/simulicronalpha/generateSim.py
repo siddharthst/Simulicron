@@ -10,7 +10,7 @@ from fitness import calculateFitness
 def generateGenome(
     baseSelection=None,
     baseInsertionProb=1,
-    numberOfInsertionSites=1000,
+    numberOfInsertionSites=10000,
     numberOfChromosomes=6,
     baseRecombinationRate=0.01,
     baseTau=1,
@@ -61,19 +61,20 @@ def generateGenome(
         RecombinationRates[chromosomeLocation[1:-1]] = 0.499
         # Insert piRNA uniformly in chromosomes
         counter = 1
-        for prime5, prime3 in zip(chromosomeLocation, chromosomeLocation[1:]):
-            piRNALocation = np.random.choice(
-                np.arange(prime5 + 1, prime3 - individualPiRNALength - 1),
-                replace=False,
-            )
-            piRNArray[piRNALocation : piRNALocation + individualPiRNALength] = baseTau
-            piRNAcoord[counter] = (
-                piRNALocation,
-                piRNALocation + individualPiRNALength,
-            )
-            counter += 1
-            if counter > numberOfPiRNA:
-                break
+        while (counter < numberOfPiRNA):
+            for prime5, prime3 in zip(chromosomeLocation, chromosomeLocation[1:]):
+                piRNALocation = np.random.choice(
+                    np.arange(prime5 + 1, prime3 - individualPiRNALength - 1),
+                    replace=False,
+                )
+                piRNArray[piRNALocation : piRNALocation + individualPiRNALength] = baseTau
+                piRNAcoord[counter] = (
+                    piRNALocation,
+                    piRNALocation + individualPiRNALength,
+                )
+                counter += 1
+                if counter > numberOfPiRNA:
+                    break
         counter = 0
 
     else:
