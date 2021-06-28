@@ -16,7 +16,7 @@ def generateGenome(
     baseTau=1,
     numberOfPiRNA=6,
     piPercentage=3,
-    enablePiRecombination=False,
+    disablePiRecombination=False,
     DisablePiSelection=False,
 ):
     # Create piRNA dictionary storing the coordinates
@@ -61,13 +61,34 @@ def generateGenome(
         RecombinationRates[chromosomeLocation[1:-1]] = 0.499
         # Insert piRNA uniformly in chromosomes
         counter = 0
-        while (counter < numberOfPiRNA):
+        while counter < numberOfPiRNA:
             for prime5, prime3 in zip(chromosomeLocation, chromosomeLocation[1:]):
                 piRNALocation = np.random.choice(
                     np.arange(prime5 + 1, prime3 - individualPiRNALength - 1),
                     replace=False,
                 )
-                piRNArray[piRNALocation : piRNALocation + individualPiRNALength] = baseTau
+                retryCounter = 0
+                # Check if the piRNA is overlapping with a previous piRNA
+                while (
+                    piRNALocation in np.nonzero(piRNArray)[0].tolist()
+                    or (piRNALocation + individualPiRNALength)
+                    in np.nonzero(piRNArray)[0].tolist()
+                ):
+                    # get a new location
+                    piRNALocation = np.random.choice(
+                        np.arange(prime5 + 1, prime3 - individualPiRNALength - 1),
+                        replace=False,
+                    )
+                    retryCounter += 1
+                    if retryCounter > 5:
+                        raise SystemExit(
+                            "Too many chromosomes defined (relative to insertion sites)"
+                        )
+                        break
+
+                piRNArray[
+                    piRNALocation : piRNALocation + individualPiRNALength
+                ] = baseTau
                 piRNAcoord[counter] = (
                     piRNALocation,
                     piRNALocation + individualPiRNALength,
@@ -109,6 +130,16 @@ def generateGenome(
         else:
             # No selection
             SelectionCoef[piRNAindices] = 0.0
+
+    # To enable disable recombination
+    if disablePiRecombination != False:
+        # Check if the value is of type float
+        if isinstance(disablePiRecombination, float):
+            RecombinationRates[piRNAindices] = disablePiRecombination
+        else:
+            # No recombination in piRNA cluster
+            RecombinationRates[piRNAindices] = 0
+
     # For recombination
     rate2Map = np.insert(
         np.cumsum(-0.5 * np.log(1 - (2 * RecombinationRates))),
@@ -116,6 +147,7 @@ def generateGenome(
         0,
         axis=0,
     )
+
     genome = np.vstack(
         (
             SelectionCoef,

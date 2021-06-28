@@ -14,6 +14,7 @@
 # default will be a float defining the value - can be 0
 # piPercentage = Percentage of genome which will make up for piRNA (3)
 # numberOfPiRNA = Number of piRNA clusters (6)
+# disablePiRecombination = Disable recombination in piRNA cluster (False)
 # FileName = Output file name (DefaultOut.txt)
 
 
@@ -53,6 +54,7 @@ parameters = {
     "piRNASelection": False,
     "piPercentage": 3,
     "numberOfPiRNA": 6,
+    "disablePiRecombination": False,
     "FileName": "DefaultOut.txt",
 }
 
@@ -67,6 +69,7 @@ def worker(parameters):
         DisablePiSelection=parameters["piRNASelection"],
         piPercentage = parameters["piPercentage"],
         numberOfPiRNA = parameters["numberOfPiRNA"],
+        disablePiRecombination = parameters["disablePiRecombination"]
     )
     population, transposons, TEset = generatePopulation(
         genome,
