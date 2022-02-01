@@ -1,0 +1,27 @@
+Monthly meeting, Siddharth, Feb 1 2022.
+
+* Bioinformatics pipeline, experimental evolution: 
+  - most scripts have run, locked at one point (not able to find the file). 
+  - mos1 insertion data (dynamics B3, mos + peach). Todo: E2 (mos alone, one time point missing). 
+  - The algorithm detects both mos and peach. -> sort afterwards? 
+  
+* Simulations, cross-regulation paper
+  - Fig 1: done. Too much stochasticity for the central panel -> N=5000, simulations are running. 
+  - Fig 2: simulations are running. Add a panel with the number of sites as a dependent variable
+  
+* Bioinformatics, cross-regulation paper
+  - Fig 3: Different Drosophila species
+           Problem with non-fll-length elements (blast isses). 
+           Check the distance units. 
+           Refine the data. 
+           Add the I element tree. 
+           Fill the rectangles with density. 
+  - Fig 4: within I element. Old insertions in pi clusters? But no piRNAs for all copies (but old copies removed). 
+	       check if the piRNA dataset can be reused
+	       piRNA data and genome data from the same strain? 
+           use Aurélie's phylogeny of I elements. 
+           Indicate pi-clusters in the figure
+           Identify primary/secondary piRNAs, sense/antisense
+           Normalize the counts! (RPKM?)
+           use the "sequence" dimension to show the density of matching. 
+           add a schematic TE with ORFs/terminal repeats at the bottom (+ scale in kb)
