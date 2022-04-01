@@ -45,6 +45,14 @@ def generateGenome(
     # Generate piRNA information
     totalPiRNALength = int(numberOfInsertionSites * (piPercentage / 100))
     individualPiRNALength = int(totalPiRNALength / numberOfPiRNA)
+    # To counter the rounding error
+    leftOverLength = totalPiRNALength - (individualPiRNALength * numberOfPiRNA)
+    leftOverLengthArray = [1] * leftOverLength
+    individualPiRNALengthArray = [individualPiRNALength] * numberOfPiRNA
+    # Assign additional leftover sites randomly
+    for i in leftOverLengthArray:
+        accessor = random.randrange(len(individualPiRNALengthArray))
+        individualPiRNALengthArray[accessor] = individualPiRNALengthArray[accessor] + i
     # Make chromosomes of equal lengths
     chromosomeLocation = [
         round(x)
@@ -64,19 +72,23 @@ def generateGenome(
         while counter < numberOfPiRNA:
             for prime5, prime3 in zip(chromosomeLocation, chromosomeLocation[1:]):
                 piRNALocation = np.random.choice(
-                    np.arange(prime5 + 1, prime3 - individualPiRNALength - 1),
+                    np.arange(
+                        prime5 + 1, prime3 - individualPiRNALengthArray[counter] - 1
+                    ),
                     replace=False,
                 )
                 retryCounter = 0
                 # Check if the piRNA is overlapping with a previous piRNA
                 while (
                     piRNALocation in np.nonzero(piRNArray)[0].tolist()
-                    or (piRNALocation + individualPiRNALength)
+                    or (piRNALocation + individualPiRNALengthArray[counter])
                     in np.nonzero(piRNArray)[0].tolist()
                 ):
                     # get a new location
                     piRNALocation = np.random.choice(
-                        np.arange(prime5 + 1, prime3 - individualPiRNALength - 1),
+                        np.arange(
+                            prime5 + 1, prime3 - individualPiRNALengthArray[counter] - 1
+                        ),
                         replace=False,
                     )
                     retryCounter += 1
@@ -87,11 +99,11 @@ def generateGenome(
                         break
 
                 piRNArray[
-                    piRNALocation : piRNALocation + individualPiRNALength
+                    piRNALocation : piRNALocation + individualPiRNALengthArray[counter]
                 ] = baseTau
                 piRNAcoord[counter] = (
                     piRNALocation,
-                    piRNALocation + individualPiRNALength,
+                    piRNALocation + individualPiRNALengthArray[counter],
                 )
                 counter += 1
                 if counter == numberOfPiRNA:
