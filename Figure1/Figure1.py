@@ -1,6 +1,7 @@
 # Init
 import os
 import sys
+import json
 
 module_path = os.path.abspath(os.path.join("../../src/simulicronalpha/"))
 if module_path not in sys.path:
@@ -28,33 +29,6 @@ from recombination import recombination
 # Current multiprocessing implementation
 from multiprocessing import Process
 import concurrent.futures 
-
-# Define the simulation parameters
-# max and min
-parameters = {
-    "generations": 4000,
-    "individuals": 500,
-    "selectionPenaltyMin": -0.001,
-    "selectionPenaltyMax": -0.001,
-    "etaMin": 0,
-    "etaMax": 1.0,
-    "tauMin": 1.0,
-    "tauMax": 1.0,
-    "ExcisionRateMainMin": 0.05,
-    "ExcisionRateMainMax": 0.05,
-    "ExcisionRateHGTMin": 0.05,
-    "ExcisionRateHGTMax": 0.05,
-    "FrequencyOfInsertionMainMin": 0.2,
-    "FrequencyOfInsertionMainMax": 0.2,
-    "FrequencyOfInsertionHGTMin": 0.2,
-    "FrequencyOfInsertionHGTMax": 0.2,
-    "HGTgenerationMin": 300,
-    "HGTgenerationMax": 300,
-    "maxProcceses": 50,
-    "epistasisCoefficientMax": 0,
-    "epistasisCoefficientMin": 0,
-    "saveSuffix": "_0",
-}
 
 # Wrapper function for multiprocessing
 def worker(parameters):
@@ -144,22 +118,24 @@ def worker(parameters):
 
     return 0
 
-countSimulations = 1
+with open('"../../Default.parameters', 'r') as file:
+    parameters = json.load(file)
 
 # General simulations
 with concurrent.futures.ProcessPoolExecutor(max_workers=parameters["maxProcceses"]) as executor:
-    futures = [executor.submit(worker, arg) for arg in repeat(parameters,1000)]
+    futures = [executor.submit(worker, arg) for arg in repeat(parameters,2000)]
     for future in concurrent.futures.as_completed(futures):
         print (future)
 
 # Set the four corners
 epistasis = [parameters["etaMin"],parameters["etaMax"]]
-generationOfInfection = [0,parameters["generations"]]
+generationOfInfection = [0,1000]
 for i in epistasis:
     for k in generationOfInfection:
         parameters["etaMin"] = i
         parameters["etaMax"] = i
-        parameters["generations"] = k
+        parameters["HGTgenerationMin"] = k
+        parameters["HGTgenerationMax"] = k
         with concurrent.futures.ProcessPoolExecutor(max_workers=parameters["maxProcceses"]) as executor:
             futures = [executor.submit(worker, arg) for arg in repeat(parameters,250)]
             for future in concurrent.futures.as_completed(futures):
