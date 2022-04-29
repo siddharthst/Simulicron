@@ -246,9 +246,9 @@ def generatePopulation(
         for i in list(range(NumberOfTransposonTypes)):
             shuffle(indices)
             for k in range(int(NumberOfIndividual * FrequencyOfInsertions[i])):
-                indices = indices[
-                    0 : int(NumberOfIndividual * FrequencyOfInsertions[i])
-                ]
+                # ~ indices = indices[
+                    # ~ 0 : int(NumberOfIndividual * FrequencyOfInsertions[i])
+                # ~ ]
                 for l in range(NumberOfInsertionsPerType[i]):
                     # Create transposon
                     shuffle(indices)
