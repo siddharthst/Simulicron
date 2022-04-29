@@ -4,6 +4,7 @@ from numpy import concatenate as c
 import pandas as pd
 import random
 import time
+import sys
 
 from generateSim import generateGenome, generatePopulation, initHGT
 from recombination import recombination
@@ -51,6 +52,7 @@ def coreReturn(
     FrequencyOfInsertions,
     ExcisionRates,
     tau,
+    regulationStr,
     selPen,
     piRNAindices,
     overlap,
@@ -75,6 +77,7 @@ def coreReturn(
         "Freq": FrequencyOfInsertions,
         "TRate": ExcisionRates,
         "Tau": tau,
+        "regulationStr": regulationStr,
         "selPen": selPen,
         "piRNA": piRNAindices,
         "TEpi": overlap,
@@ -105,6 +108,7 @@ def runSim(
     InsertionRates=None,
     eta=0.0,
     tau=None,
+    regulationStr=0.0,
     selPen=None,
     maxAvgTE=None,
     epistasisCoefficient=0.0,
@@ -269,6 +273,7 @@ def runSim(
                     v1=v1,
                     v2=v2,
                     eta=eta,
+                    regulationStr=regulationStr,
                 )
                 indFitness = calculateFitness(
                     transposonMatrixCopy,
@@ -286,9 +291,16 @@ def runSim(
         # Return i+2 since i start at 0 = generation 1
         # and the condition check happens at generation
         # n-1, hence i + 1 + 1
+        
+        # ~ print("Toto", file=sys.stderr)
+        # ~ print(len(populationV1), file=sys.stderr)
+        # ~ ll = [isinstance(item,int) for item in populationV1]
+        # ~ print(len(ll), file=sys.stderr)
+        # ~ print('\t'.join(map(str, ll)), file=sys.stderr) 
 
         # Check if there are no transposons left
-        if all(np.array_equal(v, [0, 0]) for v in np.c_[populationV1, populationV2]):
+        # ~ if all(np.array_equal(v, [0, 0]) for v in np.c_[populationV1, populationV2]):
+        if (all(isinstance(item,int) for item in populationV1)) and (all(isinstance(item,int) for item in populationV2)):
             TEfamilyCountArrRes, TEfamilyVarArrRes, TEregulationArrRes = returnHelper(
                 TEset, TEfamilyCountArr, TEfamilyVarArr, TEregulationArr
             )
@@ -310,6 +322,7 @@ def runSim(
                 FrequencyOfInsertions,
                 ExcisionRates,
                 tau,
+                regulationStr,
                 selPen,
                 piRNAindices,
                 overlap,
@@ -399,6 +412,7 @@ def runSim(
                     FrequencyOfInsertions,
                     ExcisionRates,
                     tau,
+                    regulationStr,
                     selPen,
                     piRNAindices,
                     overlap,
@@ -436,6 +450,7 @@ def runSim(
         FrequencyOfInsertions,
         ExcisionRates,
         tau,
+        regulationStr,
         selPen,
         piRNAindices,
         overlap,

@@ -9,6 +9,7 @@ def regulation(
     piRNAindices,
     fast=False,
     eta=0.0,
+    regulationStr=0.0,
 ):
     # eta = co-regulation coefficient
     # Create an empty array to store transposon locations
@@ -66,13 +67,13 @@ def regulation(
                         if key != keys
                     ]
                 )
-                * eta
+                * eta 
             )
             if TERegulationSet[keys] > 1:
                 TERegulationSet[keys] = 1.0
             indices = (TEfamily == keys).nonzero()[0]
-            TEexcEffective[indices] = TEexcision[indices] - (
+            TEexcEffective[indices] = (TEexcision[indices] - (
                 TEexcision[indices] * TERegulationSet[keys]
-                )
+                )) / (1. + len(transposons) * regulationStr)
                 
         return (TEexcEffective.tolist(), TERegulationSet)
