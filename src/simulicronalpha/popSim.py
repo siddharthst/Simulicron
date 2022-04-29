@@ -262,6 +262,13 @@ def runSim(
                     populationRegulation[key].append(0)
 
             else:
+                indFitness = calculateFitness(
+                    transposonMatrixCopy,
+                    v1,
+                    v2,
+                    fitnessFunction=fitnessFunction,
+                    epistasisCoefficient=epistasisCoefficient,
+                )
                 (
                     v1,
                     v2,
@@ -281,13 +288,7 @@ def runSim(
                     eta=eta,
                     regulationStr=regulationStr,
                 )
-                indFitness = calculateFitness(
-                    transposonMatrixCopy,
-                    v1,
-                    v2,
-                    fitnessFunction=fitnessFunction,
-                    epistasisCoefficient=epistasisCoefficient,
-                )
+
                 for key in TEset.keys():
                     populationRegulation[key].append(RegulationStrength[key])
 
