@@ -197,13 +197,19 @@ def runSim(
                 RepairRates[-1],
                 InsertionRates[-1],
             )
-        for k in list(range(populationMatrixCopy.shape[0])):
-            fitness = list(populationMatrixCopy[0:, 2])
-            p1, p2 = random.choices(
+        
+        fitness = list(populationMatrixCopy[0:, 2])
+        mothers = random.choices(
                 list(range(populationMatrixCopy.shape[0])),
                 weights=fitness,
-                k=2,
+                k=len(fitness),
             )
+        fathers = random.choices(
+                list(range(populationMatrixCopy.shape[0])),
+                weights=fitness,
+                k=len(fitness),
+            )
+        for p1, p2 in zip(mothers, fathers):
 
             # Since recombination function only accepts arrays,
             # checking and forcing type conversion as needed
