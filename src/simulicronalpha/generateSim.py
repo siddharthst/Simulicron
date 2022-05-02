@@ -43,8 +43,13 @@ def generateGenome(
         numberOfInsertionSites, baseRecombinationRate, dtype=float
     )
     # Generate piRNA information
-    totalPiRNALength = int(numberOfInsertionSites * (piPercentage / 100))
-    individualPiRNALength = int(totalPiRNALength / numberOfPiRNA)
+    
+    if numberOfPiRNA > 0:
+        totalPiRNALength = int(numberOfInsertionSites * (piPercentage / 100))
+        individualPiRNALength = int(totalPiRNALength / numberOfPiRNA)
+    else:
+        totalPiRNALength = 0
+        individualPiRNALength = 0
     # To counter the rounding error
     leftOverLength = totalPiRNALength - (individualPiRNALength * numberOfPiRNA)
     leftOverLengthArray = [1] * leftOverLength
