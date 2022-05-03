@@ -175,6 +175,8 @@ def runSim(
         # timeStart = time.time()
         # print(i)
         # Create arrays to store information
+        populationV1tmp = []
+        populationV2tmp = []
         populationV1 = []
         populationV2 = []
         populationFit = []
@@ -209,8 +211,8 @@ def runSim(
                 weights=fitness,
                 k=len(fitness),
             )
+        # Reproduction
         for p1, p2 in zip(mothers, fathers):
-
             # Since recombination function only accepts arrays,
             # checking and forcing type conversion as needed
             # for the respective alleles
@@ -269,45 +271,20 @@ def runSim(
                     fitnessFunction=fitnessFunction,
                     epistasisCoefficient=epistasisCoefficient,
                 )
-                (
-                    v1,
-                    v2,
-                    transposonMatrixCopy,
-                    TEset,
-                    numberOfTranspositionEvents,
-                    RegulationStrength,
-                ) = transposition(
-                    transposonMatrix=transposonMatrixCopy,
-                    genomeMatrix=genomeMatrix,
-                    NumberOfTransposonInsertions=NumberOfTransposonInsertions,
-                    TEset=TEset,
-                    piCoord=piRNAindices,
-                    numberOfTranspositionEvents=numberOfTranspositionEvents,
-                    v1=v1,
-                    v2=v2,
-                    eta=eta,
-                    regulationStr=regulationStr,
-                )
-
-                for key in TEset.keys():
-                    populationRegulation[key].append(RegulationStrength[key])
-
-            populationV1.append(v1)
-            populationV2.append(v2)
+            populationV1tmp.append(v1)
+            populationV2tmp.append(v2)
             populationFit.append(indFitness)
-        # Return i+2 since i start at 0 = generation 1
-        # and the condition check happens at generation
-        # n-1, hence i + 1 + 1
         
-        # ~ print("Toto", file=sys.stderr)
-        # ~ print(len(populationV1), file=sys.stderr)
-        # ~ ll = [isinstance(item,int) for item in populationV1]
-        # ~ print(len(ll), file=sys.stderr)
-        # ~ print('\t'.join(map(str, ll)), file=sys.stderr) 
-
-        # Check if there are no transposons left
-        # ~ if all(np.array_equal(v, [0, 0]) for v in np.c_[populationV1, populationV2]):
-        if (all(isinstance(item,int) for item in populationV1)) and (all(isinstance(item,int) for item in populationV2)):
+        populationMatrixCopy = np.array(
+        [
+            populationV1tmp,
+            populationV2tmp,
+            populationFit,
+        ],
+        dtype="object",
+        ).T
+        # Measurement
+        if (all(isinstance(item,int) for item in populationV1tmp)) and (all(isinstance(item,int) for item in populationV2tmp)):
             TEfamilyCountArrRes, TEfamilyVarArrRes, TEregulationArrRes = returnHelper(
                 TEset, TEfamilyCountArr, TEfamilyVarArr, TEregulationArr
             )
@@ -340,6 +317,53 @@ def runSim(
             )
         else:
             pass
+        
+        # Transposition
+        for v1, v2 in zip(populationV1tmp, populationV2tmp):
+            if v1 == 0 and v2 == 0:
+                for key in TEset.keys():
+                    populationRegulation[key].append(0)
+            else :
+                (
+                    v1,
+                    v2,
+                    transposonMatrixCopy,
+                    TEset,
+                    numberOfTranspositionEvents,
+                    RegulationStrength,
+                ) = transposition(
+                    transposonMatrix=transposonMatrixCopy,
+                    genomeMatrix=genomeMatrix,
+                    NumberOfTransposonInsertions=NumberOfTransposonInsertions,
+                    TEset=TEset,
+                    piCoord=piRNAindices,
+                    numberOfTranspositionEvents=numberOfTranspositionEvents,
+                    v1=v1,
+                    v2=v2,
+                    eta=eta,
+                    regulationStr=regulationStr,
+                )
+
+                for key in TEset.keys():
+                    populationRegulation[key].append(RegulationStrength[key])
+            
+            populationV1.append(v1)
+            populationV2.append(v2)
+
+
+        # Return i+2 since i start at 0 = generation 1
+        # and the condition check happens at generation
+        # n-1, hence i + 1 + 1
+        
+        # ~ print("Toto", file=sys.stderr)
+        # ~ print(len(populationV1), file=sys.stderr)
+        # ~ ll = [isinstance(item,int) for item in populationV1]
+        # ~ print(len(ll), file=sys.stderr)
+        # ~ print('\t'.join(map(str, ll)), file=sys.stderr) 
+
+        # Check if there are no transposons left
+        # ~ if all(np.array_equal(v, [0, 0]) for v in np.c_[populationV1, populationV2]):
+        
         # Generate population matrix for next iteration
         populationMatrixCopy = np.array(
             [
