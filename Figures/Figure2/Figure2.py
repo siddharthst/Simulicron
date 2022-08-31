@@ -38,6 +38,10 @@ def worker(parameters):
         parameters["selectionPenaltyMin"],
         parameters["selectionPenaltyMax"],
     )
+    NumberOfInsertionSites = random.randint(
+        parameters["NumberOfInsertionSitesMin"],
+        parameters["NumberOfInsertionSitesMax"],
+    )
     FrequencyOfInsertionMain = np.random.uniform(
         parameters["FrequencyOfInsertionMainMin"],
         parameters["FrequencyOfInsertionMainMax"],
@@ -64,11 +68,9 @@ def worker(parameters):
     eta = np.random.uniform(
         parameters["etaMin"], parameters["etaMax"],
     )
-    epistasisCoefficient = np.random.uniform(
-        parameters["epistasisCoefficientMax"], parameters["epistasisCoefficientMin"],
-    )
+    epistasisCoefficient = random.choice(parameters["epistasisCoefficientArray"])
     genome, piset, piIndice, rates = generateGenome(
-        numberOfInsertionSites=1000,
+        numberOfInsertionSites=NumberOfInsertionSites,
         numberOfChromosomes=5,
         baseRecombinationRate=0.1,
         baseSelection=selectionCoef,
@@ -113,31 +115,62 @@ def worker(parameters):
         epistasisCoefficient = epistasisCoefficient,
         fitnessFunction = 2,
     )
-    with open("./Results/"+'%030x' % random.randrange(16**30) + parameters["saveSuffix"] + ".pickle", "wb") as f:
+    with open("./Results/"+'%030x' % random.randrange(16**30) + "-" + str(NumberOfInsertionSites)+ "-" + parameters["saveSuffix"] + ".pickle", "wb") as f:
         pickle.dump((result), f)
 
     return 0
 
-with open('"../../Default.parameters', 'r') as file:
+generations = [0,300]
+suffixDict = {"Coregulation":"_1", "Epistasis":"_2", "InsertionSites":"_3"}
+EpiArrayDict = {"Coregulation":[0,0], "Epistasis":[-100,-10,-1,-0.01,0, 0.01], "InsertionSites":[1000,1000]}
+CorArrayDict = {"Coregulation":[0,1], "Epistasis":[0], "InsertionSites":[1000,1000]}
+InsArrayDict = {"Coregulation":[0,1], "Epistasis":[0], "InsertionSites":[200,1000]}
+ListofParameters = {"Epistasis": EpiArrayDict, "InsertionSites": InsArrayDict, "Coregulation": CorArrayDict}
+
+with open('../../Default.parameters', 'r') as file:
     parameters = json.load(file)
 
-# General simulations
-with concurrent.futures.ProcessPoolExecutor(max_workers=parameters["maxProcceses"]) as executor:
-    futures = [executor.submit(worker, arg) for arg in repeat(parameters,2000)]
-    for future in concurrent.futures.as_completed(futures):
-        print (future)
-
-# Set the four corners
-epistasis = [parameters["etaMin"],parameters["etaMax"]]
-generationOfInfection = [0,1000]
-for i in epistasis:
-    for k in generationOfInfection:
-        parameters["etaMin"] = i
-        parameters["etaMax"] = i
-        parameters["HGTgenerationMin"] = k
-        parameters["HGTgenerationMax"] = k
+for gen in generations:
+    for suffix, suffixValue in suffixDict.items():
+        parameters["etaMin"] = ListofParameters[suffix]["Coregulation"][0]
+        parameters["etaMax"] = ListofParameters[suffix]["Coregulation"][1]
+        parameters["NumberOfInsertionSitesMin"] = ListofParameters[suffix]["InsertionSites"][0]
+        parameters["NumberOfInsertionSitesMax"] = ListofParameters[suffix]["InsertionSites"][1]
+        parameters["epistasisCoefficientArray"] = ListofParameters[suffix]["Epistasis"]
+        parameters["HGTgenerationMin"] = gen
+        parameters["HGTgenerationMax"] = gen
+        parameters["saveSuffix"] = suffixValue
         with concurrent.futures.ProcessPoolExecutor(max_workers=parameters["maxProcceses"]) as executor:
             futures = [executor.submit(worker, arg) for arg in repeat(parameters,250)]
             for future in concurrent.futures.as_completed(futures):
-                print (future)
+                print (future.result())
+
+with open('../../Default.parameters', 'r') as file:
+    parameters = json.load(file)
+
+suffixDictSingle = {"Coregulation":"_4", "Epistasis":"_5", "InsertionSites":"_6"}
+
+# Setting for single TE
+for gen in generations:
+    for suffix, suffixValue in suffixDict.items():
+        parameters["etaMin"] = ListofParameters[suffix]["Coregulation"][0]
+        parameters["etaMax"] = ListofParameters[suffix]["Coregulation"][1]
+        parameters["NumberOfInsertionSitesMin"] = ListofParameters[suffix]["InsertionSites"][0]
+        parameters["NumberOfInsertionSitesMax"] = ListofParameters[suffix]["InsertionSites"][1]
+        parameters["epistasisCoefficientArray"] = ListofParameters[suffix]["Epistasis"]
+        parameters["saveSuffix"] = suffixValue
+        parameters["HGTgenerationMin"] = 0
+        parameters["HGTgenerationMax"] = 0
+        parameters["FrequencyOfInsertionHGTMin"] = 0.0,
+        parameters["FrequencyOfInsertionHGTMax"] = 0.0,
+        # Single TE simulation with just selection
+        parameters["saveSuffix"] = suffixValue
+        with concurrent.futures.ProcessPoolExecutor(max_workers=parameters["maxProcceses"]) as executor:
+            futures = [executor.submit(worker, arg) for arg in repeat(parameters,250)]
+            for future in concurrent.futures.as_completed(futures):
+                print (future.result())
+
+
+
+
 
