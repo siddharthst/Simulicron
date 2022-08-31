@@ -17,7 +17,7 @@ def generateGenome(
     numberOfPiRNA=6,
     piPercentage=3,
     disablePiRecombination=False,
-    DisablePiSelection=False,
+    enablePiSelection=False,
 ):
     # Create piRNA dictionary storing the coordinates
     piRNAcoord = {}
@@ -135,13 +135,16 @@ def generateGenome(
     piRNAindices = np.nonzero(piRNArray)[0].tolist()
 
     # To disable piRNA selection
-    if DisablePiSelection != False:
+    if enablePiSelection == False:
+        # No selection
+        SelectionCoef[piRNAindices] = 0.0
+    else:
         # Check if the value is of type float
-        if isinstance(DisablePiSelection, float):
-            SelectionCoef[piRNAindices] = DisablePiSelection
+        if isinstance(enablePiSelection, float):
+            SelectionCoef[piRNAindices] = enablePiSelection
         else:
             # No selection
-            SelectionCoef[piRNAindices] = 0.0
+            SelectionCoef[piRNAindices] = baseSelection
 
     # To enable disable recombination
     if disablePiRecombination != False:
@@ -243,9 +246,9 @@ def generatePopulation(
         for i in list(range(NumberOfTransposonTypes)):
             shuffle(indices)
             for k in range(int(NumberOfIndividual * FrequencyOfInsertions[i])):
-                indices = indices[
-                    0 : int(NumberOfIndividual * FrequencyOfInsertions[i])
-                ]
+                # ~ indices = indices[
+                    # ~ 0 : int(NumberOfIndividual * FrequencyOfInsertions[i])
+                # ~ ]
                 for l in range(NumberOfInsertionsPerType[i]):
                     # Create transposon
                     shuffle(indices)
