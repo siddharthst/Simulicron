@@ -46,29 +46,6 @@ Conda is used throughout to provde package consitency and enviroment tracking. I
  ## Parsing output
  - The tool outputs a pickle file in form of a dictionary with following keys:
 
-     simulationState,
-    i,
-    numberOfTranspositionEvents,
-    averageCopyNumber,
-    varianceCopyNumber,
-    TEfamilyCountArrRes,
-    TEfamilyVarArrRes,
-    TEregulationArrRes,
-    avgFitness,
-    HMTgen,
-    eta,
-    NumberOfTransposonInsertions,
-    FrequencyOfInsertions,
-    ExcisionRates,
-    tau,
-    selPen,
-    piRNAindices,
-    overlap,
-    fitnessFunction,
-    epistasisCoefficient,
-    TEset,
-    TECoreOverlap,
-
 
 **Key**|** Value**
 :-----:|:-----:
