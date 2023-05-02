@@ -84,11 +84,13 @@ RecordTECopiesAfterFilter <- c()
 RecordTEFiltered          <- c()
 RecordPiClusters          <- c()
 RecordPiFiltered          <- c()
+RecordFullLengthPi        <- c()
 
 # Working on each TE individually 
 ConsensusSequence <- readDNAStringSet(TEdbFile)
 for(TE in TEsToAnalyze){
     FullLengthCopyNumber <- 0
+    FullLengthInPi       <- 0
     RecordTEName <- c(RecordTEName, TE)
     dir.create(paste(file.path(getwd(), "Results/"), TE, "/",sep=""), showWarnings = FALSE)
     TELocalDIR = paste(file.path(getwd(), "Results/"), TE, "/",sep="")
@@ -116,6 +118,7 @@ for(TE in TEsToAnalyze){
         RecordPiFiltered <- c(RecordPiFiltered, 0)
         RecordTELength <- c(RecordTELength, 0)
         RecordTECopies <- c(RecordTECopies, 0)
+        RecordFullLengthPi <- c(RecordFullLengthPi,0)
         RecordTECopiesAfterFilter <- c(RecordTECopiesAfterFilter, 0)
         RecordTEFiltered <- c(RecordTEFiltered, "Yes/NPi")
        next 
@@ -169,6 +172,10 @@ for(TE in TEsToAnalyze){
             {
                 FullLengthCopyNumber <- FullLengthCopyNumber + 1
                 MSAset <- append(MSAset, MSA[2])
+                if (grepl("piRNA", names(MSA[2])[1]) == TRUE)
+                {
+                    FullLengthInPi <- FullLengthInPi + 1
+                }
                 # Append the results to Alignment file by replacing - with N
                 # MSA[[2]] <- gsub("-", "N", MSA[[2]])
                 # Alignmentset <- append(Alignmentset, MSA[2])
@@ -183,8 +190,8 @@ for(TE in TEsToAnalyze){
     }
     if (FullLengthCopyNumber > minimumCopyNumber)
         {
-            RecordTECopiesAfterFilter <- c(RecordTECopiesAfterFilter, length(MSAset))
-            MSAset <- MSAset[2:length(MSAset)]                                        
+            MSAset <- MSAset[2:length(MSAset)]
+            RecordTECopiesAfterFilter <- c(RecordTECopiesAfterFilter, FullLengthCopyNumber)
             writeXStringSet(MSAset, outputNames, append=FALSE, compress=FALSE, format="fasta")
             # Before generating trees, we need to rename the fasta headers as fasttree doesn't like :
             # cmd = paste("seqtk rename ", TELocalDIR, TE, ".msa > ", TELocalDIR, TE, ".msa.fixed", sep="")
@@ -249,11 +256,13 @@ for(TE in TEsToAnalyze){
             RecordPiClusters <- c(RecordPiClusters, length(originalPiClusters))
             RecordPiFiltered <- c(RecordPiFiltered, length(remainingPiClusters))
             if (checkPIRNA == 0){
+                RecordFullLengthPi <- c(RecordFullLengthPi, FullLengthInPi)
                 RecordTEFiltered <- c(RecordTEFiltered, "Yes/NoClusterAfterFilter")
                 file.create(paste(TELocalDIR, "Failed.TE",sep=""))
                 next
             }
             else if (checkPIRNA < minPiClusterCount){
+                RecordFullLengthPi <- c(RecordFullLengthPi, FullLengthInPi)
                 RecordTEFiltered <- c(RecordTEFiltered, "Yes/MinPiCLuster")
                 file.create(paste(TELocalDIR, "Failed.TE",sep=""))
                 next
@@ -265,6 +274,7 @@ for(TE in TEsToAnalyze){
                 ReadsDataFrame <- ReadsDataFrame[!(row.names(ReadsDataFrame) %in% removedClusters),]
                 tree <- ape::drop.tip(tree, removedClusters)
             }
+            RecordFullLengthPi <- c(RecordFullLengthPi, FullLengthInPi)
             RecordTEFiltered <- c(RecordTEFiltered, "No")
             
                                                     
@@ -349,10 +359,11 @@ for(TE in TEsToAnalyze){
     }
     else
         {
-        RecordTECopiesAfterFilter <- c(RecordTECopiesAfterFilter, length(MSAset))
+        RecordTECopiesAfterFilter <- c(RecordTECopiesAfterFilter, FullLengthCopyNumber)
         RecordTEFiltered <- c(RecordTEFiltered, "Yes/MinimumTEFailed")
         RecordPiClusters <- c(RecordPiClusters, 0)
         RecordPiFiltered <- c(RecordPiFiltered, 0)
+        RecordFullLengthPi <- c(RecordFullLengthPi, 0)
         file.create(paste(TELocalDIR, "Failed.TE",sep=""))
     }
     # Delete all files in temp folder
@@ -362,7 +373,9 @@ for(TE in TEsToAnalyze){
 }
 
 # Create a dataframe with statistics
-statsFrame <- data.frame(RecordTEName, RecordTELength, RecordTECopies, RecordTECopiesAfterFilter, RecordTEFiltered, RecordPiClusters, RecordPiFiltered)
+statsFrame <- data.frame(RecordTEName, RecordTELength, RecordTECopies, RecordTECopiesAfterFilter, RecordFullLengthPi, RecordTEFiltered, RecordPiClusters, RecordPiFiltered)
 
 # Save the dataframe on file
-write.table(statsFrame, file="./Results/stats.tsv", quote=FALSE, sep='\t')
+write.table(statsFrame, file="./Results/stats.tsv", quote=FALSE, sep='\t', row.names=FALSE)
+
+####
