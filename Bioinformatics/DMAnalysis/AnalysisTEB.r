@@ -20,11 +20,14 @@ TEfragmentDistance <- 250
 # Minimum consensus length
 minimumConLength <- 1500
 
+# Minimum piCluster count
+minPiClusterCount = 2
+
 # Minimum number of TE copies
 minimumCopyNumber = 6
 
 # Minumum number of piRNA reads required to keep the piRNA insertion
-minPiRNAReads = 100
+minPiRNAReads = 200
 
 # Create a filtered consensus
 TEdbFile <- "TEDBFiltered.fa"
@@ -48,6 +51,8 @@ minTElen <- 0.7
 # TEsToAnalyze <- c("IDM", "GYPSY", "COPIA", "BATUMI")
 TEsToAnalyze <- names(read.fasta(file = TEdbFile, seqtype = "DNA"))
 # TEsToAnalyze <- c("I_DM_I", "COPIA_DM_Copia")
+
+###################-----------------------------------------------------------------###################
 
 # First build a blast database
 cmd = paste("makeblastdb -in ", genome, " -dbtype nucl -out ./genomeDB/genomeDB", sep="")
@@ -77,12 +82,14 @@ RecordTELength            <- c()
 RecordTECopies            <- c()
 RecordTECopiesAfterFilter <- c()
 RecordTEFiltered          <- c()
+RecordPiClusters          <- c()
+RecordPiFiltered          <- c()
 
 # Working on each TE individually 
 ConsensusSequence <- readDNAStringSet(TEdbFile)
 for(TE in TEsToAnalyze){
     FullLengthCopyNumber <- 0
-    append(RecordTEName, TE)
+    RecordTEName <- c(RecordTEName, TE)
     dir.create(paste(file.path(getwd(), "Results/"), TE, "/",sep=""), showWarnings = FALSE)
     TELocalDIR = paste(file.path(getwd(), "Results/"), TE, "/",sep="")
     cmd = paste("grep \t", TE, "\t ./BEDFiles/results.tab.bed | bedtools sort > ", TELocalDIR, TE, ".bed", sep="")
@@ -105,10 +112,12 @@ for(TE in TEsToAnalyze){
     fileSize = file.info(paste(TELocalDIR, TE, ".merged.piRNA.bed", sep=""))$size
     if (fileSize == 0)
         {
-        append(RecordTELength, 0)
-        append(RecordTECopies, 0)
-        append(RecordTECopiesAfterFilter, 0)
-        append(RecordTEFiltered, "Yes/NPi")
+        RecordPiClusters <- c(RecordPiClusters, 0)
+        RecordPiFiltered <- c(RecordPiFiltered, 0)
+        RecordTELength <- c(RecordTELength, 0)
+        RecordTECopies <- c(RecordTECopies, 0)
+        RecordTECopiesAfterFilter <- c(RecordTECopiesAfterFilter, 0)
+        RecordTEFiltered <- c(RecordTEFiltered, "Yes/NPi")
        next 
     }
     piFrame <- read.table(file = paste(TELocalDIR, TE, ".merged.piRNA.bed", sep=""), sep = '\t', header = FALSE)
@@ -125,11 +134,11 @@ for(TE in TEsToAnalyze){
     
     # Perform MSA
     ConsensusLength <- nchar(toString(ConsensusSequence[TE]))
-    append(RecordTELength, ConsensusLength)
+    RecordTELength <- c(RecordTELength, ConsensusLength)
     minReqLength <- minTElen * ConsensusLength
     fastaLocation = paste(TELocalDIR, TE, ".fa", sep="")
     FastaSubset <- readDNAStringSet(fastaLocation)
-    append(RecordTECopies, length(FastaSubset))
+    RecordTECopies <- c(RecordTECopies, length(FastaSubset))
     MSAset <- c(ConsensusSequence[TE])
     Alignmentset <- c(ConsensusSequence[TE])
     outputNames <- paste(TELocalDIR, TE, ".msa",sep="")
@@ -174,8 +183,7 @@ for(TE in TEsToAnalyze){
     }
     if (FullLengthCopyNumber > minimumCopyNumber)
         {
-            append(RecordTECopiesAfterFilter, length(MSAset))
-            append(RecordTEFiltered, "No")
+            RecordTECopiesAfterFilter <- c(RecordTECopiesAfterFilter, length(MSAset))
             MSAset <- MSAset[2:length(MSAset)]                                        
             writeXStringSet(MSAset, outputNames, append=FALSE, compress=FALSE, format="fasta")
             # Before generating trees, we need to rename the fasta headers as fasttree doesn't like :
@@ -213,7 +221,7 @@ for(TE in TEsToAnalyze){
             cmd = paste("bedtools bamtobed -i ", pathToBAM, " > ",  pathToAlignmentBED, sep="")
             system(cmd)
             # Read the file into dataframe
-            AlignmentDataFrame <- as.data.frame(read.table(pathToAlignmentBED, header = FALSE, sep="\t",stringsAsFactors=FALSE, quote=""))
+            AlignmentDataFrame         <- as.data.frame(read.table(pathToAlignmentBED, header = FALSE, sep="\t",stringsAsFactors=FALSE, quote=""))
             AlignmentDataFrame$V1      <- gsub("\\(-\\)","",as.character(AlignmentDataFrame$V1))
             AlignmentDataFrame$V1      <- gsub("\\(\\+\\)","",as.character(AlignmentDataFrame$V1))
             ReadsDataFrame             <- data.frame(matrix(nrow = length(tree$tip.label), ncol = length(c(grep("piRNA", tree$tip.label, value = TRUE)))))
@@ -236,21 +244,28 @@ for(TE in TEsToAnalyze){
             
             # Continue if no piRNA insertion left
             checkPIRNA <- length(grep("piRNA", colnames(ReadsDataFrame), value = TRUE))
-            if (checkPIRNA == 0){
-                next
-                append(RecordTECopiesAfterFilter, length(MSAset))
-                append(RecordTEFiltered, "NoClusterAfterFilter")
-                file.create(paste(TELocalDIR, "Failed.TE",sep=""))
-            }                                                    
-                                                    
-            # Also remove those respective rows and leafs! 
             originalPiClusters  <- grep("piRNA", tree$tip.label, value = TRUE)
             remainingPiClusters <- grep("piRNA", colnames(ReadsDataFrame), value = TRUE)
+            RecordPiClusters <- c(RecordPiClusters, length(originalPiClusters))
+            RecordPiFiltered <- c(RecordPiFiltered, length(remainingPiClusters))
+            if (checkPIRNA == 0){
+                RecordTEFiltered <- c(RecordTEFiltered, "Yes/NoClusterAfterFilter")
+                file.create(paste(TELocalDIR, "Failed.TE",sep=""))
+                next
+            }
+            else if (checkPIRNA < minPiClusterCount){
+                RecordTEFiltered <- c(RecordTEFiltered, "Yes/MinPiCLuster")
+                file.create(paste(TELocalDIR, "Failed.TE",sep=""))
+                next
+            }  
+                                                    
+            # Also remove those respective rows and leafs! 
             if (length(originalPiClusters) != length(remainingPiClusters)){
                 removedClusters <- c(setdiff(remainingPiClusters, originalPiClusters), setdiff(originalPiClusters, remainingPiClusters))
                 ReadsDataFrame <- ReadsDataFrame[!(row.names(ReadsDataFrame) %in% removedClusters),]
                 tree <- ape::drop.tip(tree, removedClusters)
             }
+            RecordTEFiltered <- c(RecordTEFiltered, "No")
             
                                                     
             # Plot using Arnaud's method
@@ -334,19 +349,20 @@ for(TE in TEsToAnalyze){
     }
     else
         {
-        append(RecordTECopiesAfterFilter, length(MSAset))
-        append(RecordTEFiltered, "Yes")
+        RecordTECopiesAfterFilter <- c(RecordTECopiesAfterFilter, length(MSAset))
+        RecordTEFiltered <- c(RecordTEFiltered, "Yes/MinimumTEFailed")
+        RecordPiClusters <- c(RecordPiClusters, 0)
+        RecordPiFiltered <- c(RecordPiFiltered, 0)
         file.create(paste(TELocalDIR, "Failed.TE",sep=""))
     }
     # Delete all files in temp folder
     f <- list.files("./temp", include.dirs = F, full.names = T, recursive = T)
     # remove the files
     file.remove(f)
-
 }
 
-####
+# Create a dataframe with statistics
+statsFrame <- data.frame(RecordTEName, RecordTELength, RecordTECopies, RecordTECopiesAfterFilter, RecordTEFiltered, RecordPiClusters, RecordPiFiltered)
 
-# save.image(file = "1.RData")
-
-# load(file = ".RData")
+# Save the dataframe on file
+write.table(statsFrame, file="./Results/stats.tsv", quote=FALSE, sep='\t')
