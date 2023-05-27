@@ -72,6 +72,6 @@ ggsave("./Results/Plot_binned.pdf", width = 50, height = 50, units = "cm", limit
 
 # scale_fill_gradient2(high="blue", mid="navy", low="white", midpoint=0, limits=c(0,1))
 # scale_fill_continuous(type = "gradient", name="Normalized piRNA hits", na.value = 'white')
-ggsave("./Results/Plot.pdf", width = 50, height = 50, units = "cm", limitsize = FALSE)
+# ggsave("./Results/Plot.pdf", width = 50, height = 50, units = "cm", limitsize = FALSE)
 
 
