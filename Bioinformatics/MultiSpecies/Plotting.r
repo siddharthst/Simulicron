@@ -62,6 +62,13 @@ colnames(TEstats) <- gsub("_.*", "", colnames(TEstats))
 p1 <- ggtree(tree, ladderize = FALSE) + geom_tiplab(size = 4, align=TRUE, linesize=.5)
 gheatmap(p1, TEstats, offset=0.35, width=8, colnames_angle=90, color="black", colnames_offset_y=-3) + 
 scale_fill_viridis_c(option = "E", direction = -1, na.value = 'white', name="Normalized piRNA hits") + ggtree::vexpand(.1, -1)
+ggsave("./Results/Plot.pdf", width = 50, height = 50, units = "cm", limitsize = FALSE)
+                          
+# Add a binned version to clearly see which TEs are not regulated at all. 
+p2 <- ggtree(tree, ladderize = FALSE) + geom_tiplab(size = 4, align=TRUE, linesize=.5)
+gheatmap(p1, TEstats, offset=0.35, width=8, colnames_angle=90, color="black", colnames_offset_y=-3) + 
+scale_fill_viridis_b(option = "E", direction = -1, na.value = 'white', name="Normalized piRNA hits") + ggtree::vexpand(.1, -1)
+ggsave("./Results/Plot_binned.pdf", width = 50, height = 50, units = "cm", limitsize = FALSE)
 
 # scale_fill_gradient2(high="blue", mid="navy", low="white", midpoint=0, limits=c(0,1))
 # scale_fill_continuous(type = "gradient", name="Normalized piRNA hits", na.value = 'white')
