@@ -106,9 +106,24 @@ for(species in listSpecies){
     system(cmd)
     unlink(paste(NCBIResults, ".bed", sep=""))
     
-    # Merge the bed files
-    cmd = paste("bedtools merge -s -d ", TEfragmentDistance, " -c 4,5,6 -o distinct,mean,distinct -i ", bedFileLocation, " > ", bedFileLocation, ".merged.bed", sep="")
+    # Merge the records for each TE found
+    # Load the bedfile
+    NCBIrecords     <- read.table(bedFileLocation)
+    NCBIrecordsuniq <- unique(NCBIrecords$V4)
+    for(eachRecord in NCBIrecordsuniq){
+        cmd = paste("grep ", eachRecord, " ", bedFileLocation, " > ./temp/", eachRecord, ".bed", sep="")
+        system(cmd)
+        # Merge them
+        cmd = paste("bedtools merge -s -d ", TEfragmentDistance, " -c 4,5,6 -o distinct,mean,distinct -i ", "./temp/",eachRecord, ".bed", " > ", "./temp/", eachRecord, ".merged.bed", sep="")
+        system(cmd)
+    }
+    cmd = paste("cat ./temp/*.merged.bed > ./temp/", species, ".merged.bed", sep="")
     system(cmd)
+    file.copy(from = paste("./temp/", species, ".merged.bed", sep=""), to = paste(bedFileLocation, ".merged.bed", sep=""))
+    cmd = "rm -rf ./temp/*"
+    system(cmd)
+    #cmd = paste("bedtools merge -s -d ", TEfragmentDistance, " -c 4,5,6 -o distinct,mean,distinct -i ", bedFileLocation, " > ", bedFileLocation, ".merged.bed", sep="")
+    #system(cmd)
     
     # Add unique number to each TE copy
     MergedResultFile      <- read.csv(paste(bedFileLocation, ".merged.bed", sep=""), header=FALSE, sep="\t")
@@ -128,6 +143,7 @@ for(species in listSpecies){
         
         # Output names
         outputNames    <- paste("./Results/", TE,  "/", species, "_", TE, ".msa",sep="")
+        outputNamesSL  <- paste("./Results/", TE,  "/", species, "_", TE, ".sl.msa",sep="")
         bestTELocation <- paste("./Results/", TE,  "/", species, "_", TE, ".best.fa",sep="")
         
         # Isolate records
@@ -207,8 +223,11 @@ for(species in listSpecies){
                         bestTE <- Mode(AlignmentDataFrame$V1)[1]
                         # bestTE <- gsub("[()+-]", "", bestTE)
                         ResultDataFrame[species, TE] = length(which(AlignmentDataFrame$V1==bestTE))
+                        # Fix the multiline fasta file
+                        cmd = paste("seqtk seq ", outputNames, ">", outputNamesSL, sep="")
+                        system(cmd)
                         # Isolate the best TE for each species for tree construction
-                        cmd = paste("grep -A1 '", bestTE, "' ", outputNames, " > ", bestTELocation, sep="")
+                        cmd = paste("grep -A1 '", bestTE, "' ", outputNamesSL, " > ", bestTELocation, sep="")
                         system(cmd)
                     }
                 }
@@ -225,5 +244,4 @@ for(species in listSpecies){
 save.image(file = "1.RData")
 
 write.table(ResultDataFrame, file='./Results/Stats.tsv', quote=FALSE, sep='\t')
-
 
