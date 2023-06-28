@@ -11,16 +11,16 @@ options(repr.plot.width = 10, repr.plot.height = 15)
 minPiRNA <- 200
 
 # Define TEs to keep - which should be shared between all species
-NAfraction <- 0.4
+NAfraction <- 0.01
 
 # Read TE stats
-TEstats <- read.table("./Results/Stats.tsv", header = TRUE, row.names = 1)
+TEstats <- read.table("./piRNATable.txt", header = TRUE, row.names = 1, sep=",")
 
 # Remove TEs which do not have enough piRNA
 TEstats <- TEstats[sapply(TEstats, function(x) max(x, na.rm = T) > minPiRNA)]
 
 # Also remove R12 as we cannot find any copy in DM 
-TEstats <- subset(TEstats, select = -c(R12_DM_NonLTR_Retrotransposon))                          
+# TEstats <- subset(TEstats, select = -c(R12_DM_NonLTR_Retrotransposon))                          
 
 # Read tree
 tree <- ape::read.tree("./BigGene_.tre")
@@ -52,33 +52,24 @@ TEstats <- as.matrix(TEstats)
 # Normalise by DM reads
 TEstats <- t( t(TEstats) / TEstats["D.melanogaster",])
 
+#Select column whose max value is greater than  1.2
+TEstats <- as.data.frame(TEstats) %>% select_if(~max(., na.rm = TRUE) < 1.2)
+
 # Make >1 to 1
 TEstats[TEstats > 1] <- 1.0
 
 # Make 0 to -1
-TEstats[TEstats == 0] <- - 1.0                          
+# TEstats[TEstats == 0] <- - 1.0
 
 # Fix column names
 colnames(TEstats) <- gsub("_.*", "", colnames(TEstats))
 
-
 # Prepare plotting matrix
 # PlottingMatrix <- TEstats %>% replace(is.na(.), -1)
                           
-breaks <- c(-1.0, seq(from = 0.0, to = 1, by = 0.3), 1)
+breaks <- c(0, 0.01, seq(from = 0.1, to = 1, by = 0.3), 1)
 
 p1 <- ggtree(tree, ladderize = FALSE) + geom_tiplab(size = 4, align=TRUE, linesize=.5)
-gheatmap(p1, TEstats, offset=0.2, width=5, colnames_angle=90, color="black", colnames_offset_y=-3) + 
-scale_fill_viridis_b(option = "E", direction = -1, na.value = 'white', name="Normalized piRNA hits") + ggtree::vexpand(.1, -1)
-ggsave("./Results/Plot.pdf", width = 50, height = 50, units = "cm", limitsize = FALSE)
-
-                          
-p2 <- ggtree(tree, ladderize = FALSE) + geom_tiplab(size = 4, align=TRUE, linesize=.5)
-gheatmap(p1, TEstats, offset=0.2, width=5, colnames_angle=90, color="white", colnames_offset_y=-3) + 
-scale_fill_viridis_b(option = "A", direction = -1, na.value = 'gray90', name="Normalized piRNA hits", breaks = breaks) + ggtree::vexpand(.1, -1)
-ggsave("./Results/Plot_binned.pdf", width = 50, height = 50, units = "cm", limitsize = FALSE)
-# scale_fill_gradient2(high="blue", mid="navy", low="white", midpoint=0, limits=c(0,1))
-# scale_fill_continuous(type = "gradient", name="Normalized piRNA hits", na.value = 'white')
-# ggsave("./Results/Plot.pdf", width = 50, height = 50, units = "cm", limitsize = FALSE)
-
-
+gheatmap(p1, TEstats, offset=0.2, width=5, colnames_angle=90, color="white", colnames_offset_y=-3) +
+scale_fill_viridis_c(option = "G", direction = -1, na.value = 'gray', name="Normalized piRNA hits") + ggtree::vexpand(.1, -1)
+ggsave("./Plot.pdf", width = 50, height = 50, units = "cm", limitsize = FALSE)
