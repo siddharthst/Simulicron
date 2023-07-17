@@ -33,144 +33,93 @@ import concurrent.futures
 # Wrapper function for multiprocessing
 def worker(parameters):
     np.random.seed(int.from_bytes(os.urandom(4), byteorder='little'))
+    
     # Generate genome and population
-    selectionCoef = np.random.uniform(
-        parameters["selectionPenaltyMin"],
-        parameters["selectionPenaltyMax"],
-    )
-    NumberOfInsertionSites = random.randint(
-        parameters["NumberOfInsertionSitesMin"],
-        parameters["NumberOfInsertionSitesMax"],
-    )
-    FrequencyOfInsertionMain = np.random.uniform(
-        parameters["FrequencyOfInsertionMainMin"],
-        parameters["FrequencyOfInsertionMainMax"],
-    )
-    FrequencyOfInsertionHGT = np.random.uniform(
-        parameters["FrequencyOfInsertionHGTMin"],
-        parameters["FrequencyOfInsertionHGTMax"],
-    )
-    ExcisionRateMain = np.random.uniform(
-        parameters["ExcisionRateMainMin"],
-        parameters["ExcisionRateMainMax"],
-    )
-    ExcisionRateHGT = np.random.uniform(
-        parameters["ExcisionRateHGTMin"],
-        parameters["ExcisionRateHGTMax"],
-    )
-    HMTgen = random.randint(
-        parameters["HGTgenerationMin"],
-        parameters["HGTgenerationMax"],
-    )
-    tau = np.random.uniform(
-        parameters["tauMin"], parameters["tauMax"],
-    )
-    eta = np.random.uniform(
-        parameters["etaMin"], parameters["etaMax"],
-    )
-    epistasisCoefficient = random.choice(parameters["epistasisCoefficientArray"])
     genome, piset, piIndice, rates = generateGenome(
-        numberOfInsertionSites=NumberOfInsertionSites,
-        numberOfChromosomes=5,
-        baseRecombinationRate=0.1,
-        baseSelection=selectionCoef,
-        baseTau=tau,
+        numberOfInsertionSites = parameters["NumberOfInsertionSites"],
+        numberOfChromosomes    = parameters["NumberOfChromosomes"],
+        baseRecombinationRate  = parameters["RecombinationRate"],
+        baseSelection          = parameters["selectionPenalty"],
+        baseTau                = parameters["tau"],
     )
+        
     population, transposons, TEset = generatePopulation(
         genome,
         piIndice,
-        NumberOfIndividual=parameters["individuals"],
-        NumberOfTransposonTypes=2,
-        NumberOfInsertionsPerType=[1, 0],
-        FrequencyOfInsertions=[
-            FrequencyOfInsertionMain,
-            FrequencyOfInsertionHGT,
+        NumberOfIndividual     = parameters["Individuals"],
+        NumberOfTransposonTypes = 2,
+        NumberOfInsertionsPerType = [1, 0],
+        FrequencyOfInsertions  =[
+            parameters["FrequencyOfInsertionMain"],
+            parameters["FrequencyOfInsertionHGT"],
         ],
-        ExcisionRates=[ExcisionRateMain, ExcisionRateHGT],
-        RepairRates=[1, 1],
-        InsertionRates=[1, 1],
+        ExcisionRates          = [
+            parameters["ExcisionRateMain"], 
+            parameters["ExcisionRateHGT"],
+        ],
+        RepairRates            = [1, 1],
+        InsertionRates         = [1, 1],
     )
+    
+    # run the simulation
     result = runSim(
-        genomeMatrix=genome,
-        populationMatrix=population,
-        transposonMatrix=transposons,
-        TEset=TEset,
+        genomeMatrix           = genome,
+        populationMatrix       = population,
+        transposonMatrix       = transposons,
+        TEset                  = TEset,
         NumberOfTransposonInsertions=2,
-        generations=parameters["generations"],
-        genMap=rates,
-        piRNAindices=piIndice,
-        simHGT=None,
-        HMTgen=HMTgen,
-        NumberOfInsertionsPerType=None,
-        FrequencyOfInsertions=[
-            FrequencyOfInsertionMain,
-            FrequencyOfInsertionHGT,
+        generations            = parameters["Generations"],
+        genMap                 = rates,
+        piRNAindices           = piIndice,
+        simHGT                 = None,
+        HMTgen                 = parameters["HGTgeneration"],
+        NumberOfInsertionsPerType = None,
+        FrequencyOfInsertions  =[
+            parameters["FrequencyOfInsertionMain"],
+            parameters["FrequencyOfInsertionHGT"],
         ],
-        ExcisionRates=[ExcisionRateMain, ExcisionRateHGT],
-        RepairRates=[1, 1],
-        InsertionRates=[1, 1],
-        eta=eta,
-        tau=tau,
-        selPen=selectionCoef,
-        epistasisCoefficient = epistasisCoefficient,
-        fitnessFunction = 2,
+        ExcisionRates          = [
+            parameters["ExcisionRateMain"], 
+            parameters["ExcisionRateHGT"],
+        ],
+        RepairRates            = [1, 1],
+        InsertionRates         = [1, 1],
+        eta                    = parameters["eta"],
+        tau                    = parameters["tau"],
+        selPen                 = parameters["selectionPenalty"],
+        epistasisCoefficient   = parameters["epistasisCoefficient"],
+        fitnessFunction        = 2
     )
-    with open("./Results/"+'%030x' % random.randrange(16**30) + "-" + str(NumberOfInsertionSites)+ "-" + parameters["saveSuffix"] + ".pickle", "wb") as f:
+    
+    ff = "./Results/"+'%030x' % random.randrange(16**30) + "-" + parameters["saveSuffix"] + ".pickle"
+    with open(ff, "wb") as f:
         pickle.dump((result), f)
+        
+    return ff
 
-    return 0
 
-generations = [0,300]
-suffixDict = {"Coregulation":"_1", "Epistasis":"_2", "InsertionSites":"_3"}
-EpiArrayDict = {"Coregulation":[0,0], "Epistasis":[-100,-10,-1,-0.01,0, 0.01], "InsertionSites":[1000,1000]}
-CorArrayDict = {"Coregulation":[0,1], "Epistasis":[0], "InsertionSites":[1000,1000]}
-InsArrayDict = {"Coregulation":[0,1], "Epistasis":[0], "InsertionSites":[200,1000]}
-ListofParameters = {"Epistasis": EpiArrayDict, "InsertionSites": InsArrayDict, "Coregulation": CorArrayDict}
+# Figure 2A
+
 
 with open('../../Default.parameters', 'r') as file:
     parameters = json.load(file)
 
-for gen in generations:
-    for suffix, suffixValue in suffixDict.items():
-        parameters["etaMin"] = ListofParameters[suffix]["Coregulation"][0]
-        parameters["etaMax"] = ListofParameters[suffix]["Coregulation"][1]
-        parameters["NumberOfInsertionSitesMin"] = ListofParameters[suffix]["InsertionSites"][0]
-        parameters["NumberOfInsertionSitesMax"] = ListofParameters[suffix]["InsertionSites"][1]
-        parameters["epistasisCoefficientArray"] = ListofParameters[suffix]["Epistasis"]
-        parameters["HGTgenerationMin"] = gen
-        parameters["HGTgenerationMax"] = gen
-        parameters["saveSuffix"] = suffixValue
+etas          = np.arange(0, 1.0001, 0.1).tolist()
+HTgenerations = [0,300,parameters["Generations"]+1]
+replicates    = 40
+
+
+# ~ parameters["Generations"] = 10
+# ~ parameters["Individuals"] = 5
+# ~ parameters["NumberOfInsertionSites"] = 20
+
+for HTgen in HTgenerations: 
+    for eta in etas:
+        parameters["HGTgeneration"] = HTgen
+        parameters["eta"]           = eta
+        parameters["saveSuffix"]    = "HT" + str(HTgen) + f"-eta{eta:.2f}"
+        
         with concurrent.futures.ProcessPoolExecutor(max_workers=parameters["maxProcceses"]) as executor:
-            futures = [executor.submit(worker, arg) for arg in repeat(parameters,250)]
+            futures = [executor.submit(worker, arg) for arg in repeat(parameters,replicates)]
             for future in concurrent.futures.as_completed(futures):
                 print (future.result())
-
-with open('../../Default.parameters', 'r') as file:
-    parameters = json.load(file)
-
-suffixDictSingle = {"Coregulation":"_4", "Epistasis":"_5", "InsertionSites":"_6"}
-
-# Setting for single TE
-for gen in generations:
-    for suffix, suffixValue in suffixDict.items():
-        parameters["etaMin"] = ListofParameters[suffix]["Coregulation"][0]
-        parameters["etaMax"] = ListofParameters[suffix]["Coregulation"][1]
-        parameters["NumberOfInsertionSitesMin"] = ListofParameters[suffix]["InsertionSites"][0]
-        parameters["NumberOfInsertionSitesMax"] = ListofParameters[suffix]["InsertionSites"][1]
-        parameters["epistasisCoefficientArray"] = ListofParameters[suffix]["Epistasis"]
-        parameters["saveSuffix"] = suffixValue
-        parameters["HGTgenerationMin"] = 0
-        parameters["HGTgenerationMax"] = 0
-        parameters["FrequencyOfInsertionHGTMin"] = 0.0,
-        parameters["FrequencyOfInsertionHGTMax"] = 0.0,
-        # Single TE simulation with just selection
-        parameters["saveSuffix"] = suffixValue
-        with concurrent.futures.ProcessPoolExecutor(max_workers=parameters["maxProcceses"]) as executor:
-            futures = [executor.submit(worker, arg) for arg in repeat(parameters,250)]
-            for future in concurrent.futures.as_completed(futures):
-                print (future.result())
-
-
-
-
-

@@ -287,8 +287,10 @@ def runSim(
         # and the condition check happens at generation
         # n-1, hence i + 1 + 1
 
+
         # Check if there are no transposons left
-        if all(np.array_equal(v, [0, 0]) for v in np.c_[populationV1, populationV2]):
+        #if all(np.array_equal(v, [0, 0]) for v in np.c_[populationV1, populationV2]):
+        if all(v == 0 for v in populationV1) and all(v == 0 for v in populationV2):
             TEfamilyCountArrRes, TEfamilyVarArrRes, TEregulationArrRes = returnHelper(
                 TEset, TEfamilyCountArr, TEfamilyVarArr, TEregulationArr
             )
