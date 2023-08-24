@@ -52,9 +52,14 @@ select.dyn <- function(filenames, HTgen, eta) {
     ) 
 }
 
-plot.dyn <- function(dyn, ylim=c(0, max(dyn$alpha)), ...) {
-	plot(colMeans(dyn$alpha), type="l", col=col["alpha"], ylim=ylim, xlab="Generations", ylab="Copy number", ...)
-	lines(colMeans(dyn$beta), col=col["beta"])
+plot.dyn <- function(dyn, ylim=c(0, max(dyn$alpha)), err.bars  = TRUE, ...) {
+    plot(colMeans(dyn$alpha), type="l", col=col["alpha"], ylim=ylim, xlab="Generations", ylab="Copy number", ...)
+    lines(colMeans(dyn$beta), col=col["beta"])
+    if {err.bars) {
+        xx <- round(seq(1,ncol(dyn$alpha), length.out=16))
+        arrows(x0=xx, y0=(colMeans(dyn$alpha)-apply(dyn$alpha, 2, sd))[xx], y1=(colMeans(dyn$alpha)+apply(dyn$alpha, 2, sd))[xx], col=adjustcolor(col["alpha"], 0.3), length=0)
+         arrows(x0=xx, y0=(colMeans(dyn$beta)-apply(dyn$beta, 2, sd))[xx], y1=(colMeans(dyn$beta)+apply(dyn$beta, 2, sd))[xx], col=adjustcolor(col["beta"], 0.3), length=0)
+	}
 }
 
 col   <- c(alpha="blue", beta="red")
