@@ -41,6 +41,7 @@ def worker(parameters):
         baseRecombinationRate  = parameters["RecombinationRate"],
         baseSelection          = parameters["selectionPenalty"],
         baseTau                = parameters["tau"],
+        disablePiRecombination = True,
     )
         
     population, transposons, TEset = generatePopulation(
