@@ -31,11 +31,11 @@ from recombination import recombination
 from multiprocessing import Process
 import concurrent.futures 
 
+np.random.seed(int.from_bytes(os.urandom(4), byteorder='little'))
+
 # Wrapper function for multiprocessing
 def worker(parameters):
-	
-    np.random.seed(int.from_bytes(os.urandom(4), byteorder='little'))
-    
+	    
     # Generate genome and population
     genome, piset, piIndice, rates = generateGenome(
         numberOfInsertionSites = parameters["NumberOfInsertionSites"],
@@ -100,30 +100,36 @@ def worker(parameters):
         
     return ff
 
-
-with open('../../Default.parameters', 'r') as file:
-    parameters = json.load(file)
-
-
-parameters["Generations"] = 100
-parameters["Individuals"] = 100
-parameters["NumberOfInsertionSites"] = 20
-
-etas          = np.arange(0, 1.0001, 0.05).tolist()
-HTgenerations = np.arange(0, 200.01, 10).tolist()
-
-replicates    = 3
-
 def makepar(pp):
     # pp[0] is HTgen, pp[1] is eta
     mypar = copy.deepcopy(parameters) # Otherwise the reference only is copied
     mypar["HGTgeneration"] = pp[0]
     mypar["eta"]           = pp[1]
-    mypar["saveSuffix"]    = "HT" + str(pp[0]) + f"-eta{pp[1]:.2f}"	
+    mypar["saveSuffix"]    = "HT" + str(pp[0]) + f"-eta{pp[1]:.3f}"	
     return mypar
+
+with open('../../Default.parameters', 'r') as file:
+    parameters = json.load(file)
+
+method             = "random"   # Alternative: random / grid
+maxHT              = 200
+replicatesCond    = 400
+replicatesEach    = 3
+
+# ~ parameters["Generations"] = 100
+# ~ parameters["Individuals"] = 100
+# ~ parameters["NumberOfInsertionSites"] = 20
+
+if method == "grid": 
+    etas          = np.linspace(0, 1,     int(math.sqrt(replicatesCond))).tolist()
+    HTgenerations = np.linspace(0, maxHT, int(math.sqrt(replicatesCond))).tolist()
+    allpar = [makepar([h,e]) for h in HTgenerations for e in etas]
+else:
+	allpar = [makepar([round(random.uniform(0.0, maxHT)), random.uniform(0.0, 1.0)]) for i in range(replicatesCond)]
+
+
 	
-allpar = [makepar([h,e]) for h in HTgenerations for e in etas]
-allparrep = sum(list(repeat(allpar,replicates)), [])
+allparrep = sum(list(repeat(allpar,replicatesEach)), [])
 
 with concurrent.futures.ProcessPoolExecutor(max_workers=parameters["maxProcceses"]) as executor:
     futures = [executor.submit(worker, arg) for arg in allparrep]
