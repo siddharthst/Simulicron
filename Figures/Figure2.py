@@ -15,7 +15,6 @@ import warnings
 import pickle
 from numpy import concatenate as c
 from itertools import repeat
-import copy
 
 # Simulation imports
 from popSim import runSim
@@ -31,11 +30,10 @@ from recombination import recombination
 from multiprocessing import Process
 import concurrent.futures 
 
-np.random.seed(int.from_bytes(os.urandom(4), byteorder='little'))
-
 # Wrapper function for multiprocessing
 def worker(parameters):
-	    
+    np.random.seed(int.from_bytes(os.urandom(4), byteorder='little'))
+    
     # Generate genome and population
     genome, piset, piIndice, rates = generateGenome(
         numberOfInsertionSites = parameters["NumberOfInsertionSites"],
@@ -94,47 +92,35 @@ def worker(parameters):
         fitnessFunction        = 2
     )
     
-    ff = "./Results/"+'%030x' % random.randrange(16**30) + "-" + parameters["saveSuffix"] + ".pickle"
+    ff = "./Results-fig2/"+'%030x' % random.randrange(16**30) + "-" + parameters["saveSuffix"] + ".pickle"
     with open(ff, "wb") as f:
         pickle.dump((result), f)
         
     return ff
 
-def makepar(pp):
-    # pp[0] is HTgen, pp[1] is eta
-    mypar = copy.deepcopy(parameters) # Otherwise the reference only is copied
-    mypar["HGTgeneration"] = pp[0]
-    mypar["eta"]           = pp[1]
-    mypar["saveSuffix"]    = "HT" + str(pp[0]) + f"-eta{pp[1]:.3f}"	
-    return mypar
+
+# Figure 2A
+
 
 with open('../../Default.parameters', 'r') as file:
     parameters = json.load(file)
 
-method             = "random"   # Alternative: random / grid
-maxHT              = 200
-replicatesCond    = 400
-replicatesEach    = 3
+etas          = np.arange(0, 1.0001, 0.1).tolist()
+HTgenerations = [0,300,parameters["Generations"]+1]
+replicates    = 40
 
-# ~ parameters["Generations"] = 100
-# ~ parameters["Individuals"] = 100
+
+# ~ parameters["Generations"] = 10
+# ~ parameters["Individuals"] = 5
 # ~ parameters["NumberOfInsertionSites"] = 20
 
-if method == "grid": 
-    etas          = np.linspace(0, 1,     int(math.sqrt(replicatesCond))).tolist()
-    HTgenerations = np.linspace(0, maxHT, int(math.sqrt(replicatesCond))).tolist()
-    allpar = [makepar([h,e]) for h in HTgenerations for e in etas]
-else:
-	allpar = [makepar([round(random.uniform(0.0, maxHT)), random.uniform(0.0, 1.0)]) for i in range(replicatesCond)]
-
-
-	
-allparrep = sum(list(repeat(allpar,replicatesEach)), [])
-
-with concurrent.futures.ProcessPoolExecutor(max_workers=parameters["maxProcceses"]) as executor:
-    futures = [executor.submit(worker, arg) for arg in allparrep]
-    for future in concurrent.futures.as_completed(futures):
+for HTgen in HTgenerations: 
+    for eta in etas:
+        parameters["HGTgeneration"] = HTgen
+        parameters["eta"]           = eta
+        parameters["saveSuffix"]    = "HT" + str(HTgen) + f"-eta{eta:.2f}"
+        
+        with concurrent.futures.ProcessPoolExecutor(max_workers=parameters["maxProcceses"]) as executor:
+            futures = [executor.submit(worker, arg) for arg in repeat(parameters,replicates)]
+            for future in concurrent.futures.as_completed(futures):
                 print (future.result())
-
-
-

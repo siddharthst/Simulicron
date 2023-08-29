@@ -17,7 +17,7 @@ sapply <- function (X, FUN, ..., simplify = TRUE, USE.NAMES = TRUE)
 
 
 
-res.dir <- "./Results"
+res.dir <- "./Results-fig2"
 
 get.HTgen <- function(filenames) {
     as.numeric(sapply(regmatches(filenames, regexec("HT(\\d+)", filenames)), "[", 2))
