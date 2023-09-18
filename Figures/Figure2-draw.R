@@ -1,6 +1,8 @@
 library(parallel)
 library(reticulate) 
 
+source("../Figures/common.R")
+
 mc.cores <- min(12, detectCores() - 1) # No need for more, parallelizing file I/O is limited
 
 sapply <- function (X, FUN, ..., simplify = TRUE, USE.NAMES = TRUE) 
@@ -27,6 +29,11 @@ get.eta <- function(filenames) {
     as.numeric(sapply(regmatches(filenames, regexec("eta(\\d\\.\\d\\d)", filenames)), "[", 2))
 }
 
+get.sel <- function(filenames) {
+    as.numeric(sapply(regmatches(filenames, regexec("sel(\\d\\.\\d+)", filenames)), "[", 2))
+}
+
+
 get.copy.number <- function(filenames) {
     lapply(filenames, function(f) {
         r <- reticulate::py_load_object(file.path(res.dir, f))
@@ -44,7 +51,7 @@ max.copy.number <- function(filenames) {
 select.dyn <- function(filenames, HTgen, eta) {
     H <- get.HTgen(filenames)
     e <- get.eta  (filenames)
-    ff <- filenames[HTgen == H & eta == e]
+    ff <- filenames[!is.na(e) & !is.na(H) & HTgen == H & eta == e]
     dyn <- get.copy.number(ff)
     list(
         alpha = t(sapply(dyn, "[[", "alpha")), 
@@ -53,18 +60,16 @@ select.dyn <- function(filenames, HTgen, eta) {
 }
 
 plot.dyn <- function(dyn, ylim=c(0, max(dyn$alpha)), err.bars  = TRUE, ...) {
-    plot(colMeans(dyn$alpha), type="l", col=col["alpha"], ylim=ylim, xlab="Generations", ylab="Copy number", ...)
-    lines(colMeans(dyn$beta), col=col["beta"])
-    if {err.bars) {
+    plot(colMeans(dyn$alpha), type="l", col=col.alpha, ylim=ylim, xlab="Generations", ylab="Copy number", ...)
+    lines(colMeans(dyn$beta), col=col.beta)
+    if (err.bars) {
         xx <- round(seq(1,ncol(dyn$alpha), length.out=16))
-        arrows(x0=xx, y0=(colMeans(dyn$alpha)-apply(dyn$alpha, 2, sd))[xx], y1=(colMeans(dyn$alpha)+apply(dyn$alpha, 2, sd))[xx], col=adjustcolor(col["alpha"], 0.3), length=0)
-         arrows(x0=xx, y0=(colMeans(dyn$beta)-apply(dyn$beta, 2, sd))[xx], y1=(colMeans(dyn$beta)+apply(dyn$beta, 2, sd))[xx], col=adjustcolor(col["beta"], 0.3), length=0)
-	}
+        arrows(x0=xx, y0=(colMeans(dyn$alpha)-apply(dyn$alpha, 2, sd))[xx], y1=(colMeans(dyn$alpha)+apply(dyn$alpha, 2, sd))[xx], col=adjustcolor(col.alpha, 0.3), length=0)
+         arrows(x0=xx, y0=(colMeans(dyn$beta)-apply(dyn$beta, 2, sd))[xx], y1=(colMeans(dyn$beta)+apply(dyn$beta, 2, sd))[xx], col=adjustcolor(col.beta, 0.3), length=0)
+    }
 }
 
-col   <- c(alpha="blue", beta="red")
 pch   <- c(1, 0, 19)
-xshft <- c(-0.02, 0, 0.02)
 
 ff <- list.files(path=res.dir, pattern="*.pickle")
 
@@ -74,49 +79,91 @@ dd <- data.frame(
     file = ff,
     HTgen = get.HTgen(ff),
     eta   = get.eta(ff), 
+    sel   = get.sel(ff),
     max.alpha = max.cp[,1],
     max.beta  = max.cp[,2]
 )
 
 dd$max.beta[dd$HTgen == max(dd$HTgen)] <- NA # No need to plot the zeros
-names(pch) <- names(xshft) <- as.character(sort(unique(dd$HTgen)))
+names(pch) <-  as.character(sort(unique(dd$HTgen)))
 
-pdf("Figure2.pdf", width=5, height=4)
-    par(mar=c(5,4,1,1))
+pdf("Figure2A.pdf",  width=page.width / 2, height=fig.height, pointsize=fontsize)
+    xshft.2A <- setNames(c(-0.02, 0, 0.02), nm=names(pch))
     
-    plot(NULL, xlim=range(dd$eta), ylim=c(0, max(c(dd$max.alpha, dd$max.beta), na.rm=TRUE)), xlab=expression("Cross regulation "*(eta)), ylab="Max copy number")
+    par(mar=c(4.5,4,1,1), cex=1)
     
-    # All data points
-    # points(dd$eta, dd$max.alpha, col=adjustcolor(col["alpha"], 0.5), pch=pch[as.character(dd$HTgen)])
-    # points(dd$eta, dd$max.beta,  col=adjustcolor(col["beta"], 0.5),  pch=pch[as.character(dd$HTgen)])
+    dd.eta <- dd[!is.na(dd$eta),]
+    
+    plot(NULL, xlim=range(dd.eta$eta), ylim=c(0, max(c(dd.eta$max.alpha, dd.eta$max.beta), na.rm=TRUE)), xlab=expression("Cross regulation "*(eta)), ylab="Max copy number")
+    rect(par("usr")[1],par("usr")[3],par("usr")[2],par("usr")[4],col = col.bg)
 
     # Means
-    mm.alpha <- tapply(dd$max.alpha, INDEX=list(dd$eta, dd$HTgen), FUN=mean)
-    mm.beta  <- tapply(dd$max.beta, INDEX=list(dd$eta, dd$HTgen), FUN=mean)
-    sd.alpha <- tapply(dd$max.alpha, INDEX=list(dd$eta, dd$HTgen), FUN=sd)
-    sd.beta  <- tapply(dd$max.beta, INDEX=list(dd$eta, dd$HTgen), FUN=sd)
+    mm.alpha <- tapply(dd.eta$max.alpha, INDEX=list(dd.eta$eta, dd.eta$HTgen), FUN=mean)
+    mm.beta  <- tapply(dd.eta$max.beta, INDEX=list(dd.eta$eta, dd.eta$HTgen), FUN=mean)
+    sd.alpha <- tapply(dd.eta$max.alpha, INDEX=list(dd.eta$eta, dd.eta$HTgen), FUN=sd)
+    sd.beta  <- tapply(dd.eta$max.beta, INDEX=list(dd.eta$eta, dd.eta$HTgen), FUN=sd)
     
     for (g in colnames(mm.alpha)) {
-        points(as.numeric(rownames(mm.alpha))+xshft[g], mm.alpha[,g], type="p", col=col["alpha"], pch=pch[g])
-        points(as.numeric(rownames(mm.beta))+xshft[g],  mm.beta[,g],  type="p", col=col["beta"], pch=pch[g])
-        arrows(x0=as.numeric(rownames(mm.alpha))+xshft[g], y0=mm.alpha[,g]-sd.alpha[,g], y1=mm.alpha[,g]+sd.alpha[,g], code=3, angle=90, length=0.0, col=adjustcolor(col["alpha"], 0.3))
-        arrows(x0=as.numeric(rownames(mm.beta))+xshft[g],  y0=mm.beta[,g] -sd.beta[,g] , y1=mm.beta[,g] +sd.beta[,g],  code=3, angle=90, length=0.0, col=adjustcolor(col["beta"], 0.3))
+        points(as.numeric(rownames(mm.alpha))+xshft.2A[g], mm.alpha[,g], type="p", col=col.alpha, pch=pch[g])
+        points(as.numeric(rownames(mm.beta))+xshft.2A[g],  mm.beta[,g],  type="p", col=col.beta, pch=pch[g])
+        arrows(x0=as.numeric(rownames(mm.alpha))+xshft.2A[g], y0=mm.alpha[,g]-sd.alpha[,g], y1=mm.alpha[,g]+sd.alpha[,g], code=3, angle=90, length=0.0, col=adjustcolor(col.alpha, 0.3))
+        arrows(x0=as.numeric(rownames(mm.beta))+xshft.2A[g],  y0=mm.beta[,g] -sd.beta[,g] , y1=mm.beta[,g] +sd.beta[,g],  code=3, angle=90, length=0.0, col=adjustcolor(col.beta, 0.3))
     }
     
-    legend("bottomleft", pch=c(rev(pch), NA, NA), lty=c(rep(0, 3), rep(1,2)), col=c(rep("darkgray", 3), col), legend=c("No HT", "HT gen 300", "HT gen 0", expression(alpha*" (resident)"), expression(beta*" (invading)")))
+    legend("bottomleft", pch=c(rev(pch), NA, NA), lty=c(rep(0, 3), rep(1,2)), col=c(rep("black", 3), col.alpha, col.beta), legend=c("No HT", "HT gen 300", "HT gen 0", expression(alpha*" (resident)"), expression(beta*" (invading)")), bty="n")
 dev.off()
 
-pdf("Figure1bis.pdf", width=12, height=8)
-    layout(rbind(1:3,4:6))
+pdf("Figure2B.pdf",  width=page.width / 2, height=fig.height, pointsize=fontsize)
+    xshft.2B <- setNames(c(-0.0001, 0, 0.0001), nm=names(pch))
     
-    ylim <- c(0,40)
+    par(mar=c(4.5,4,1,1), cex=1)
     
-    plot.dyn(select.dyn(ff, HTgen=300, eta=0),   ylim=ylim, main=paste0("H=300, eta=0"))
-    plot.dyn(select.dyn(ff, HTgen=300, eta=0.5), ylim=ylim, main=paste0("H=300, eta=0.5"))
-    plot.dyn(select.dyn(ff, HTgen=300, eta=1),   ylim=ylim, main=paste0("H=300, eta=1"))
+    dd.sel <- dd[!is.na(dd$sel),]
     
-    plot.dyn(select.dyn(ff, HTgen=0, eta=0),     ylim=ylim, main=paste0("H=0, eta=0"))
-    plot.dyn(select.dyn(ff, HTgen=0, eta=0.5),   ylim=ylim, main=paste0("H=0, eta=0.5"))
-    plot.dyn(select.dyn(ff, HTgen=0, eta=1),     ylim=ylim, main=paste0("H=0, eta=1"))
+    xlim <- c(0,0.01) # range(dd.sel$sel)
+    ylim <- c(0, 175) # c(0, max(c(dd.sel$max.alpha, dd.sel$max.beta), na.rm=TRUE))
+    
+    plot(NULL, xlim=xlim, ylim=ylim, xlab=expression("Selection coeffcient (s)"), ylab="Max copy number")
+    rect(par("usr")[1],par("usr")[3],par("usr")[2],par("usr")[4],col = col.bg)
 
+    # Means
+    mm.alpha <- tapply(dd.sel$max.alpha, INDEX=list(dd.sel$sel, dd.sel$HTgen), FUN=mean)
+    mm.beta  <- tapply(dd.sel$max.beta, INDEX=list(dd.sel$sel, dd.sel$HTgen), FUN=mean)
+    sd.alpha <- tapply(dd.sel$max.alpha, INDEX=list(dd.sel$sel, dd.sel$HTgen), FUN=sd)
+    sd.beta  <- tapply(dd.sel$max.beta, INDEX=list(dd.sel$sel, dd.sel$HTgen), FUN=sd)
+    
+    for (g in colnames(mm.alpha)) {
+        points(as.numeric(rownames(mm.alpha))+xshft.2B[g], mm.alpha[,g], type="p", col=col.alpha, pch=pch[g])
+        points(as.numeric(rownames(mm.beta))+xshft.2B[g],  mm.beta[,g],  type="p", col=col.beta, pch=pch[g])
+        arrows(x0=as.numeric(rownames(mm.alpha))+xshft.2B[g], y0=mm.alpha[,g]-sd.alpha[,g], y1=mm.alpha[,g]+sd.alpha[,g], code=3, angle=90, length=0.0, col=adjustcolor(col.alpha, 0.3))
+        arrows(x0=as.numeric(rownames(mm.beta))+xshft.2B[g],  y0=mm.beta[,g] -sd.beta[,g] , y1=mm.beta[,g] +sd.beta[,g],  code=3, angle=90, length=0.0, col=adjustcolor(col.beta, 0.3))
+    }
+    
+    legend("topright", pch=c(rev(pch), NA, NA), lty=c(rep(0, 3), rep(1,2)), col=c(rep("black", 3), col.alpha, col.beta), legend=c("No HT", "HT gen 300", "HT gen 0", expression(alpha*" (resident)"), expression(beta*" (invading)")), bty="n")
 dev.off()
+
+
+ylim.panels <- c(0,40)
+xlim.panels <- c(0, 1500)
+
+pdf("Figure1A.pdf", width=page.width / 4, height=fig.height/2, pointsize=fontsize-1)
+    par(mar=c(3,3,2,1), mgp=c(1.5,0.5,0), cex=1)
+    plot.dyn(select.dyn(ff, HTgen=300, eta=0), xlim=xlim.panels, ylim=ylim.panels, main=expression("H=300, "*eta*"=0"))
+dev.off()
+
+pdf("Figure1D.pdf", width=page.width / 4, height=fig.height/2, pointsize=fontsize-1)
+    par(mar=c(3,3,2,1), mgp=c(1.5,0.5,0), cex=1)
+    plot.dyn(select.dyn(ff, HTgen=300, eta=1), xlim=xlim.panels, ylim=ylim.panels, main=expression("H=300, "*eta*"=1"))
+dev.off()
+
+pdf("Figure1B.pdf", width=page.width / 4, height=fig.height/2, pointsize=fontsize-1)
+    par(mar=c(3,3,2,1), mgp=c(1.5,0.5,0), cex=1)
+    plot.dyn(select.dyn(ff, HTgen=0, eta=0), xlim=xlim.panels, ylim=ylim.panels, main=expression("H=0, "*eta*"=0"))
+dev.off()
+
+pdf("Figure1E.pdf", width=page.width / 4, height=fig.height/2, pointsize=fontsize-1)
+    par(mar=c(3,3,2,1), mgp=c(1.5,0.5,0), cex=1)
+    plot.dyn(select.dyn(ff, HTgen=0, eta=1), xlim=xlim.panels, ylim=ylim.panels, main=expression("H=0, "*eta*"=1"))
+dev.off()
+
+

@@ -3,7 +3,7 @@ import os
 import sys
 import json
 
-module_path = os.path.abspath(os.path.join("../../src/simulicronalpha/"))
+module_path = os.path.abspath(os.path.join("../src/simulicronalpha/"))
 if module_path not in sys.path:
     sys.path.append(module_path)
 
@@ -108,7 +108,7 @@ def makepar(pp):
     mypar["saveSuffix"]    = "HT" + str(pp[0]) + f"-eta{pp[1]:.3f}"	
     return mypar
 
-with open('../../Default.parameters', 'r') as file:
+with open('./Default.parameters', 'r') as file:
     parameters = json.load(file)
 
 method             = "random"   # Alternative: random / grid
