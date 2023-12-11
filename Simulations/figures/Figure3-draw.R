@@ -1,7 +1,7 @@
 library(parallel)
 library(reticulate) 
 
-source("../Figures/common.R")
+source("../figures/common.R")
 
 mc.cores <- min(12, detectCores() - 1) # No need for more, parallelizing file I/O is limited
 
@@ -16,7 +16,7 @@ sapply <- function (X, FUN, ..., simplify = TRUE, USE.NAMES = TRUE)
     else answer
 }
 
-res.dir <- "./Results-fig3"
+res.dir <- "../results/Results-fig3"
 
 get.HTgen <- function(filenames) {
     as.numeric(sapply(regmatches(filenames, regexec("HT(\\d+)", filenames)), "[", 2))

@@ -3,7 +3,7 @@ import os
 import sys
 import json
 
-module_path = os.path.abspath(os.path.join("../src/simulicronalpha/"))
+module_path = os.path.abspath(os.path.join("../src/"))
 if module_path not in sys.path:
     sys.path.append(module_path)
 
@@ -31,39 +31,22 @@ import concurrent.futures
 # Common functions for different figures
 from common import worker
 
-outputdir = "./Results-fig3/"
+outputdir = "../results/Results-fig1/"
 
 with open('./Default.parameters', 'r') as file:
     parameters = json.load(file)
 
-etas          = np.linspace(0.0, 1.0, 11).tolist()
-sels          = np.linspace(0.0, 0.01, 11).tolist()
-HTgenerations = [0,300,parameters["Generations"]+1]
+etas          = [0.0, 1.0]
+HTgenerations = [0,300]
 replicates    = 40
 
-
-# ~ parameters["Generations"] = 10
-# ~ parameters["Individuals"] = 5
-# ~ parameters["NumberOfInsertionSites"] = 20
+parameters["Generations"] = 1500 # Better staying safe fof fig 1
 
 for HTgen in HTgenerations: 
-    # Figure 2A
     for eta in etas:
         parameters["HGTgeneration"] = HTgen
         parameters["eta"]           = eta
         parameters["saveSuffix"]    = "HT" + str(HTgen) + f"-eta{eta:.2f}"
-        
-        with concurrent.futures.ProcessPoolExecutor(max_workers=parameters["maxProcceses"]) as executor:
-            futures = [executor.submit(worker, arg, outputdir) for arg in repeat(parameters,replicates)]
-            for future in concurrent.futures.as_completed(futures):
-                print (future.result())
-    
-    # Figure 2B
-    for s in sels:
-        parameters["HGTgeneration"] = HTgen
-        parameters["eta"]           = 0.9
-        parameters["selectionPenalty"] = -s # In the simulation program, selection coefficients are negative
-        parameters["saveSuffix"]    = "HT" + str(HTgen) + f"-sel{s:.3f}"
         
         with concurrent.futures.ProcessPoolExecutor(max_workers=parameters["maxProcceses"]) as executor:
             futures = [executor.submit(worker, arg, outputdir) for arg in repeat(parameters,replicates)]
