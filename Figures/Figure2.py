@@ -10,11 +10,9 @@ if module_path not in sys.path:
     sys.path.append(module_path)
 
 # Imports
-import random
 import numpy as np
 import pandas as pd
 import warnings
-import pickle
 from numpy import concatenate as c
 from itertools import repeat
 
@@ -51,11 +49,13 @@ with open('./Default.parameters', 'r') as file:
 method             = "grid"   # Alternative: random / grid
 maxHT              = 200
 replicatesCond    = 400
-replicatesEach    = 3
+replicatesEach    = 7
 
 if method == "grid": 
     etas          = np.linspace(0, 1,     int(math.sqrt(replicatesCond))).tolist()
     HTgenerations = np.linspace(0, maxHT, int(math.sqrt(replicatesCond))).tolist()
+    HTgenerations = [round(x) for x in HTgenerations]
+    
     allpar = [makepar([h,e]) for h in HTgenerations for e in etas]
 else:
     allpar = [makepar([round(random.uniform(0.0, maxHT)), random.uniform(0.0, 1.0)]) for i in range(replicatesCond)]

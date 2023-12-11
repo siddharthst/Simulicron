@@ -2,7 +2,7 @@
     "NumberOfChromosomes": 5,
     "RecombinationRate": 0.01,
     "NumberOfInsertionSites": 1000,
-    "Generations": 4000,
+    "Generations": 1500,
     "Individuals": 2000,
     "ExcisionRateHGT": 0.05,
     "ExcisionRateMain": 0.05,

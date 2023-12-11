@@ -1,5 +1,7 @@
 from generateSim import generatePopulation, generateGenome, initHGT
 from popSim import runSim
+import random
+import pickle
 
 
 # Wrapper function for multiprocessing

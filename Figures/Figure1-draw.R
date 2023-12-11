@@ -26,6 +26,11 @@ get.eta <- function(filenames) {
     as.numeric(sapply(regmatches(filenames, regexec("eta(\\d\\.\\d\\d)", filenames)), "[", 2))
 }
 
+get.sel <- function(filenames) {
+    as.numeric(sapply(regmatches(filenames, regexec("sel(\\d\\.\\d+)", filenames)), "[", 2))
+}
+
+
 get.copy.number <- function(filenames) {
     lapply(filenames, function(f) {
         r <- reticulate::py_load_object(file.path(res.dir, f))
@@ -40,22 +45,29 @@ max.copy.number <- function(filenames) {
     }))
 }
 
-constrain <- function(x, range) {
-    ifelse( x > range[2], range[2], ifelse(x < range[1], range[1], x))
+select.dyn <- function(filenames, HTgen, eta) {
+    H <- get.HTgen(filenames)
+    e <- get.eta  (filenames)
+    ff <- filenames[!is.na(e) & !is.na(H) & HTgen == H & eta == e]
+    dyn <- get.copy.number(ff)
+    list(
+        alpha = t(sapply(dyn, "[[", "alpha")), 
+        beta  = t(sapply(dyn, "[[", "beta" ))
+    ) 
 }
 
-zlim <- list(
-    logratio = c(-0.5, 3), 
-    alpha    = c(0, 50),
-    beta     = c(0, 50))
-    
-ncol <- 1024
+plot.dyn <- function(dyn, ylim=c(0, max(dyn$alpha)), err.bars  = TRUE, ...) {
+    plot(colMeans(dyn$alpha), type="l", col=col.alpha, ylim=ylim, xlab="Generations", ylab="Copy number", ...)
+    lines(colMeans(dyn$beta), col=col.beta)
+    if (err.bars) {
+        xxa <- round(seq(1,ncol(dyn$alpha), length.out=16))
+        xxb <- xxa[-1] - diff(xxa[1:2])/2
+        arrows(x0=xxa, y0=(colMeans(dyn$alpha)-apply(dyn$alpha, 2, sd))[xxa], y1=(colMeans(dyn$alpha)+apply(dyn$alpha, 2, sd))[xxa], col=adjustcolor(col.alpha, 0.3), length=0)
+        arrows(x0=xxb, y0=(colMeans(dyn$beta)-apply(dyn$beta, 2, sd))[xxb], y1=(colMeans(dyn$beta)+apply(dyn$beta, 2, sd))[xxb], col=adjustcolor(col.beta, 0.3), length=0)
+    }
+}
 
-grad <- list(
-    logratio = colorRampPalette(c("yellow", "darkred"))(ncol+1),
-    alpha    = colorRampPalette(c("cyan1", col.alpha))(ncol+1),
-    beta     = colorRampPalette(c("yellow2", col.beta))(ncol+1))
-
+pch   <- c(1, 0, 19)
 
 ff <- list.files(path=res.dir, pattern="*.pickle")
 
@@ -65,63 +77,33 @@ dd <- data.frame(
     file = ff,
     HTgen = get.HTgen(ff),
     eta   = get.eta(ff), 
+    sel   = get.sel(ff),
     max.alpha = max.cp[,1],
     max.beta  = max.cp[,2]
 )
-dd$logratio <- dd$max.alpha / dd$max.beta
 
-# in case of replicates: take the mean
-ddm <- aggregate(. ~ HTgen + eta, dd[,-1], mean)
+dd$max.beta[dd$HTgen == max(dd$HTgen)] <- NA # No need to plot the zeros
+names(pch) <-  as.character(sort(unique(dd$HTgen)))
 
-# Main panel
-pdf("Figure1.pdf", width=page.width / 2, height=fig.height, pointsize=fontsize)
-    layout(t(1:2), width=c(0.8,0.2))
-    
-    par(cex=1, mar=c(4.5,4,2,0.5))
-    
-    colplot.logratio <- grad[["logratio"]][1+round(ncol*((constrain(ddm$logratio, zlim[["logratio"]])-zlim[["logratio"]][1])/diff(zlim[["logratio"]])))]
-    
-    plot(ddm$eta, ddm$HTgen, xlab=expression("Cross-regulation coefficient ("*eta*")"), ylab=expression("Introduction of TE "*beta*"(H)"),  main=expression("Max("*alpha*")/Max("*beta*")"))
-    rect(par("usr")[1],par("usr")[3],par("usr")[2],par("usr")[4],col = col.bg)
-    points(ddm$eta, ddm$HTgen, pch=19, col=colplot.logratio, cex=2)
-    
-    par(mar=c(4.5,2,2,0.5))
-    
-    image(x=1, y=seq(zlim[["logratio"]][1], zlim[["logratio"]][2], length=ncol), z=t(seq(zlim[["logratio"]][1], zlim[["logratio"]][2], length=ncol)), col=grad[["logratio"]], xlab="", ylab=expression("Max("*alpha*")/Max("*beta*")"), xaxt="n", yaxt="n")
-    axis(2, at=log(c(1, 2, 5, 10)), labels=c(1,2,5,10))
+ylim.panels <- c(0,40)
+xlim.panels <- c(0, 1500)
+
+pdf("Figure1A.pdf", width=page.width / 4, height=fig.height/2, pointsize=fontsize-1)
+    par(mar=c(3,3,2,1), mgp=c(1.5,0.5,0), cex=1)
+    plot.dyn(select.dyn(ff, HTgen=300, eta=0), xlim=xlim.panels, ylim=ylim.panels, main=expression("H=300, "*eta*"=0"))
 dev.off()
 
-pdf("Figure1-alpha.pdf", width=page.width / 2, height=fig.height, pointsize=fontsize)
-    layout(t(1:2), width=c(0.8,0.2))
-    
-    par(cex=1, mar=c(4.5,4,2,0.5))
-    
-    colplot.alpha <- grad[["alpha"]][1+round(ncol*((constrain(ddm$max.alpha, zlim[["alpha"]])-zlim[["alpha"]][1])/diff(zlim[["alpha"]])))]
-    
-    plot(ddm$eta, ddm$HTgen, xlab=expression("Cross-regulation coefficient ("*eta*")"), ylab=expression("Introduction of TE "*beta*"(H)"), main=expression("Resident TE ("*alpha*")"))
-    rect(par("usr")[1],par("usr")[3],par("usr")[2],par("usr")[4],col = col.bg)
-    points(ddm$eta, ddm$HTgen, pch=19, col=colplot.alpha, cex=2)
-    
-    par(mar=c(4.5,2,2,0.5))
-    
-    image(x=1, y=seq(zlim[["alpha"]][1], zlim[["alpha"]][2], length=ncol), z=t(seq(zlim[["alpha"]][1], zlim[["alpha"]][2], length=ncol)), col=grad[["alpha"]], xlab="", ylab="", xaxt="n")
-    mtext(side=2, line=-2, col="white", text=expression("Max copy number "*alpha))
-
+pdf("Figure1C.pdf", width=page.width / 4, height=fig.height/2, pointsize=fontsize-1)
+    par(mar=c(3,3,2,1), mgp=c(1.5,0.5,0), cex=1)
+    plot.dyn(select.dyn(ff, HTgen=300, eta=1), xlim=xlim.panels, ylim=ylim.panels, main=expression("H=300, "*eta*"=1"))
 dev.off()
 
-pdf("Figure1-beta.pdf", width=page.width / 2, height=fig.height, pointsize=fontsize)
-    layout(t(1:2), width=c(0.8,0.2))
-    
-    par(cex=1, mar=c(4.5,4,2,0.5))
-    
-    colplot.beta <- grad[["beta"]][1+round(ncol*((constrain(ddm$max.beta, zlim[["beta"]])-zlim[["beta"]][1])/diff(zlim[["beta"]])))]
+pdf("Figure1B.pdf", width=page.width / 4, height=fig.height/2, pointsize=fontsize-1)
+    par(mar=c(3,3,2,1), mgp=c(1.5,0.5,0), cex=1)
+    plot.dyn(select.dyn(ff, HTgen=0, eta=0), xlim=xlim.panels, ylim=ylim.panels, main=expression("H=0, "*eta*"=0"))
+dev.off()
 
-    plot(ddm$eta, ddm$HTgen, xlab=expression("Cross-regulation coefficient ("*eta*")"), ylab=expression("Introduction of TE "*beta*"(H)"), main=expression("Invading TE ("*beta*")"))
-    rect(par("usr")[1],par("usr")[3],par("usr")[2],par("usr")[4],col = col.bg)
-    points(ddm$eta, ddm$HTgen, pch=19, col=colplot.beta, cex=2)
-    
-    par(mar=c(4.5,2,2,0.5))
-    
-    image(x=1, y=seq(zlim[["beta"]][1], zlim[["beta"]][2], length=ncol), z=t(seq(zlim[["beta"]][1], zlim[["beta"]][2], length=ncol)), col=grad[["beta"]], xlab="", ylab="", xaxt="n")
-    mtext(side=2, line=-2, col="white", text=expression("Max copy number "*beta))
+pdf("Figure1D.pdf", width=page.width / 4, height=fig.height/2, pointsize=fontsize-1)
+    par(mar=c(3,3,2,1), mgp=c(1.5,0.5,0), cex=1)
+    plot.dyn(select.dyn(ff, HTgen=0, eta=1), xlim=xlim.panels, ylim=ylim.panels, main=expression("H=0, "*eta*"=1"))
 dev.off()
