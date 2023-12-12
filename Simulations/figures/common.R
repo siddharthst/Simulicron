@@ -3,7 +3,7 @@
 col.alpha <- "darkblue"
 col.beta  <- "darkgreen"
 
-col.bg    <- "lightgray"
+col.bg    <- "gray90"
 
 fontsize <- 7
 page.width <- 5.90 # 5.9 inches = 15cm
