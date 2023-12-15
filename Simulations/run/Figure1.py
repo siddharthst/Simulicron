@@ -37,7 +37,7 @@ with open('./Default.parameters', 'r') as file:
     parameters = json.load(file)
 
 etas          = [0.0, 1.0]
-HTgenerations = [0,300]
+HTgenerations = [0,200]
 replicates    = 40
 
 parameters["Generations"] = 1500 # Better staying safe fof fig 1

@@ -38,7 +38,7 @@ with open('./Default.parameters', 'r') as file:
 
 etas          = np.linspace(0.0, 1.0, 11).tolist()
 sels          = np.linspace(0.0, 0.01, 11).tolist()
-HTgenerations = [0,300,parameters["Generations"]+1]
+HTgenerations = [0,200,parameters["Generations"]+1]
 replicates    = 40
 
 

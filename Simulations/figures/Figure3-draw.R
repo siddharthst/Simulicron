@@ -99,7 +99,7 @@ pdf("Figure3A.pdf",  width=page.width / 2, height=fig.height, pointsize=fontsize
         arrows(x0=as.numeric(rownames(mm.beta))+xshft.2A[g],  y0=mm.beta[,g] -sd.beta[,g] , y1=mm.beta[,g] +sd.beta[,g],  code=3, angle=90, length=0.0, col=adjustcolor(col.beta, 0.3))
     }
     
-    legend("bottomleft", pch=c(rev(pch)), lty=c(rep(0, 3)), col=c(rep("black", 3)), legend=c("No HT", "HT gen 300", "HT gen 0"), bty="n")
+    legend("bottomleft", pch=c(rev(pch)), lty=c(rep(0, 3)), col=c(rep("black", 3)), legend=c("No HT", "HT gen 200", "HT gen 0"), bty="n")
     legend("topright", pch=c(NA, NA), lty=c(0,0), col=c(col.alpha, col.beta), text.col=c(col.alpha, col.beta), legend=c(expression(alpha*" (resident)"), expression(beta*" (invading)")), bty="n")
 dev.off()
 
@@ -129,7 +129,7 @@ pdf("Figure3B.pdf",  width=page.width / 2, height=fig.height, pointsize=fontsize
         arrows(x0=as.numeric(rownames(mm.beta))+xshft.2B[g],  y0=mm.beta[,g] -sd.beta[,g] , y1=mm.beta[,g] +sd.beta[,g],  code=3, angle=90, length=0.0, col=adjustcolor(col.beta, 0.3))
     }
     
-    legend("topright", pch=c(rev(pch), NA, NA), lty=c(rep(0, 5)), col=c(rep("black", 3), col.alpha, col.beta), text.col=c(rep("black", 3), col.alpha, col.beta), legend=c("No HT", "HT gen 300", "HT gen 0", expression(alpha*" (resident)"), expression(beta*" (invading)")), bty="n")
+    legend("topright", pch=c(rev(pch), NA, NA), lty=c(rep(0, 5)), col=c(rep("black", 3), col.alpha, col.beta), text.col=c(rep("black", 3), col.alpha, col.beta), legend=c("No HT", "HT gen 200", "HT gen 0", expression(alpha*" (resident)"), expression(beta*" (invading)")), bty="n")
 dev.off()
 
 
