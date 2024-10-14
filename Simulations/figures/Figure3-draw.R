@@ -74,7 +74,10 @@ dd <- data.frame(
 dd$max.beta[dd$HTgen == max(dd$HTgen)] <- NA # No need to plot the zeros
 names(pch) <-  as.character(sort(unique(dd$HTgen)))
 
-browser()
+#~ browser()
+
+dd <- dd[dd$HTgen != 0,]
+pch <- pch[names(pch) != "0"]
 
 pdf("Figure3A.pdf",  width=page.width / 2, height=fig.height, pointsize=fontsize)
     xshft.2A <- setNames(c(-0.02, 0, 0.02), nm=names(pch))
@@ -83,8 +86,7 @@ pdf("Figure3A.pdf",  width=page.width / 2, height=fig.height, pointsize=fontsize
     
     dd.eta <- dd[!is.na(dd$eta),]
     
-    plot(NULL, xlim=range(dd.eta$eta), ylim=c(0, max(c(dd.eta$max.alpha, dd.eta$max.beta), na.rm=TRUE)), xlab=expression("Cross regulation "*(eta)), ylab="Max copy number")
-    rect(par("usr")[1],par("usr")[3],par("usr")[2],par("usr")[4],col = col.bg)
+    plot(NULL, xlim=range(dd.eta$eta), ylim=c(0, 30), xlab=expression("Cross regulation "*(eta)), ylab="Max copy number")
 
     # Means
     mm.alpha <- tapply(dd.eta$max.alpha, INDEX=list(dd.eta$eta, dd.eta$HTgen), FUN=mean)
@@ -99,7 +101,7 @@ pdf("Figure3A.pdf",  width=page.width / 2, height=fig.height, pointsize=fontsize
         arrows(x0=as.numeric(rownames(mm.beta))+xshft.2A[g],  y0=mm.beta[,g] -sd.beta[,g] , y1=mm.beta[,g] +sd.beta[,g],  code=3, angle=90, length=0.0, col=adjustcolor(col.beta, 0.3))
     }
     
-    legend("bottomleft", pch=c(rev(pch)), lty=c(rep(0, 3)), col=c(rep("black", 3)), legend=c("No HT", "HT gen 200", "HT gen 0"), bty="n")
+    legend("bottomleft", pch=c(rev(pch)), lty=c(rep(0, 2)), col=c(rep("black", 2)), legend=c(expression(alpha*" alone"), expression(alpha+beta)), bty="n")
     legend("topright", pch=c(NA, NA), lty=c(0,0), col=c(col.alpha, col.beta), text.col=c(col.alpha, col.beta), legend=c(expression(alpha*" (resident)"), expression(beta*" (invading)")), bty="n")
 dev.off()
 
@@ -114,7 +116,6 @@ pdf("Figure3B.pdf",  width=page.width / 2, height=fig.height, pointsize=fontsize
     ylim <- c(0, 175) # c(0, max(c(dd.sel$max.alpha, dd.sel$max.beta), na.rm=TRUE))
     
     plot(NULL, xlim=xlim, ylim=ylim, xlab=expression("Selection coeffcient (s)"), ylab="Max copy number")
-    rect(par("usr")[1],par("usr")[3],par("usr")[2],par("usr")[4],col = col.bg)
 
     # Means
     mm.alpha <- tapply(dd.sel$max.alpha, INDEX=list(dd.sel$sel, dd.sel$HTgen), FUN=mean)
@@ -129,7 +130,7 @@ pdf("Figure3B.pdf",  width=page.width / 2, height=fig.height, pointsize=fontsize
         arrows(x0=as.numeric(rownames(mm.beta))+xshft.2B[g],  y0=mm.beta[,g] -sd.beta[,g] , y1=mm.beta[,g] +sd.beta[,g],  code=3, angle=90, length=0.0, col=adjustcolor(col.beta, 0.3))
     }
     
-    legend("topright", pch=c(rev(pch), NA, NA), lty=c(rep(0, 5)), col=c(rep("black", 3), col.alpha, col.beta), text.col=c(rep("black", 3), col.alpha, col.beta), legend=c("No HT", "HT gen 200", "HT gen 0", expression(alpha*" (resident)"), expression(beta*" (invading)")), bty="n")
+    legend("topright", pch=c(rev(pch), NA, NA), lty=c(rep(0, 4)), col=c(rep("black", 2), col.alpha, col.beta), text.col=c(rep("black", 2), col.alpha, col.beta), legend=c(expression(alpha*" alone"), expression(alpha+beta), expression(alpha*" (resident)"), expression(beta*" (invading)")), bty="n")
 dev.off()
 
 

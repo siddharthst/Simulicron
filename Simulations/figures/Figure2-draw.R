@@ -108,7 +108,7 @@ plot.image <- function(eta, HTgen, max.copy, grad, zlim, ...) {
     mm.rot <- t(mm)
     
     image(x=ee, y=gg, z=mm.rot, col=grad, zlim=zlim, xlab=expression("Cross-regulation coefficient ("*eta*")"), ylab=expression("Introduction of TE "*beta*"(H)"), ...)
-    contour(x=ee, y=gg, z=convolve.mat(mm.rot), zlim=zlim, levels=c(1, 10, 20, 30), add=TRUE)
+    contour(x=ee, y=gg, z=convolve.mat(mm.rot), zlim=zlim, levels=if (min(mm.rot) < 10) c(1, 10, 20, 30) else c(20, 25, 30), add=TRUE)
 }
 
 

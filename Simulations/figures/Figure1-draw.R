@@ -93,12 +93,12 @@ pdf("Figure1A.pdf", width=page.width / 4, height=fig.height/2, pointsize=fontsiz
     plot.dyn(select.dyn(ff, HTgen=200, eta=0), xlim=xlim.panels, ylim=ylim.panels, main=expression("H=200, "*eta*"=0"))
 dev.off()
 
-pdf("Figure1C.pdf", width=page.width / 4, height=fig.height/2, pointsize=fontsize-1)
+pdf("Figure1B.pdf", width=page.width / 4, height=fig.height/2, pointsize=fontsize-1)
     par(mar=c(3,3,2,1), mgp=c(1.5,0.5,0), cex=1)
     plot.dyn(select.dyn(ff, HTgen=200, eta=1), xlim=xlim.panels, ylim=ylim.panels, main=expression("H=200, "*eta*"=1"))
 dev.off()
 
-pdf("Figure1B.pdf", width=page.width / 4, height=fig.height/2, pointsize=fontsize-1)
+pdf("Figure1C.pdf", width=page.width / 4, height=fig.height/2, pointsize=fontsize-1)
     par(mar=c(3,3,2,1), mgp=c(1.5,0.5,0), cex=1)
     plot.dyn(select.dyn(ff, HTgen=0, eta=0), xlim=xlim.panels, ylim=ylim.panels, main=expression("H=0, "*eta*"=0"))
 dev.off()
