@@ -13,6 +13,6 @@
     "eta": 1.0,
     "selectionPenalty": -0.005,
     "tau": 1.0,
-    "maxProcceses": 40,
+    "maxProcceses": 5,
     "saveSuffix": "_"
 }
