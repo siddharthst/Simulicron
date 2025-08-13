@@ -49,7 +49,7 @@ with open('./Default.parameters', 'r') as file:
 method             = "grid"   # Alternative: random / grid
 maxHT              = 200
 replicatesCond    = 400
-replicatesEach    = 7
+replicatesEach    = 35
 
 if method == "grid": 
     etas          = np.linspace(0, 1,     int(math.sqrt(replicatesCond))).tolist()

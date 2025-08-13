@@ -88,22 +88,24 @@ names(pch) <-  as.character(sort(unique(dd$HTgen)))
 ylim.panels <- c(0,40)
 xlim.panels <- c(0, 1500)
 
-pdf("Figure1A.pdf", width=page.width / 4, height=fig.height/2, pointsize=fontsize-1)
-    par(mar=c(3,3,2,1), mgp=c(1.5,0.5,0), cex=1)
-    plot.dyn(select.dyn(ff, HTgen=200, eta=0), xlim=xlim.panels, ylim=ylim.panels, main=expression("H=200, "*eta*"=0"))
-dev.off()
+etas <- c("0", "0.25", "0.5", "0.75", "1")
 
-pdf("Figure1B.pdf", width=page.width / 4, height=fig.height/2, pointsize=fontsize-1)
-    par(mar=c(3,3,2,1), mgp=c(1.5,0.5,0), cex=1)
-    plot.dyn(select.dyn(ff, HTgen=200, eta=1), xlim=xlim.panels, ylim=ylim.panels, main=expression("H=200, "*eta*"=1"))
-dev.off()
-
-pdf("Figure1C.pdf", width=page.width / 4, height=fig.height/2, pointsize=fontsize-1)
-    par(mar=c(3,3,2,1), mgp=c(1.5,0.5,0), cex=1)
-    plot.dyn(select.dyn(ff, HTgen=0, eta=0), xlim=xlim.panels, ylim=ylim.panels, main=expression("H=0, "*eta*"=0"))
-dev.off()
-
-pdf("Figure1D.pdf", width=page.width / 4, height=fig.height/2, pointsize=fontsize-1)
-    par(mar=c(3,3,2,1), mgp=c(1.5,0.5,0), cex=1)
-    plot.dyn(select.dyn(ff, HTgen=0, eta=1), xlim=xlim.panels, ylim=ylim.panels, main=expression("H=0, "*eta*"=1"))
+pdf("Figure1.pdf", width=pahe.width, height=fig.height, pointsize=fontsize-1)
+	layout(1:(2*length(etas)), ncol=length(etas))
+	par(mar=c(1,1,1,1), oma=c(4,4,1,0), cex=1)
+	for (eta in etas) {
+		plot.dyn(select.dyn(ff, HTgen=200, eta=eta), xlim=xlim.panels, ylim=ylim.panels, main=substitute("H=200, "*eta*"="*ee, list("ee"=eta)), xaxt="n", yaxt="n", xlab="", ylab="")
+		if (eta == etas[1]) {
+			axis(2, xpd=NA)
+			mtext("Copy number", 2, cex=1.2)
+		}
+		plot.dyn(select.dyn(ff, HTgen=0, eta=eta), xlim=xlim.panels, ylim=ylim.panels, main=substitute("H=0, "*eta*"="*ee, list("ee"=eta)), xaxt="n", yaxt="n", xlab="", ylab="")
+		if (eta == etas[1]) {
+			axis(2, xpd=NA)
+			mtext("Copy number", 2, cex=1.2)
+		}
+		axis(1, xpd=NA)
+		mtext("Generations", 1, cex=1.2)
+	}
+	
 dev.off()

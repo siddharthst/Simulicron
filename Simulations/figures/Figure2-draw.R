@@ -94,7 +94,7 @@ convolve.mat <- function(m, n=7) {
     ma
 }
 
-plot.image <- function(eta, HTgen, max.copy, grad, zlim, ...) {
+plot.image <- function(eta, HTgen, max.copy, grad, zlim, legend=TRUE, mgp=c(2.5,1,0), ...) {
     par(mar=c(4.5, 4, 2, 0.5))
     
     ee <- sort(unique(eta))
@@ -107,8 +107,15 @@ plot.image <- function(eta, HTgen, max.copy, grad, zlim, ...) {
         
     mm.rot <- t(mm)
     
-    image(x=ee, y=gg, z=mm.rot, col=grad, zlim=zlim, xlab=expression("Cross-regulation coefficient ("*eta*")"), ylab=expression("Introduction of TE "*beta*"(H)"), ...)
+    if (legend)
+		layout(t(1:2), widths=c(0.75, 0.25))
+    
+    image(x=ee, y=gg, z=mm.rot, col=grad, zlim=zlim, xlab=expression("Cross-regulation coefficient ("*eta*")"), ylab=expression("Introduction of TE "*beta*"(H)"), mgp=mgp, ...)
     contour(x=ee, y=gg, z=convolve.mat(mm.rot), zlim=zlim, levels=if (min(mm.rot) < 10) c(1, 10, 20, 30) else c(20, 25, 30), add=TRUE)
+
+	if (legend) {
+		image(x=c(0,1), y=seq(zlim[1], zlim[2], length.out=101), z=t(matrix(seq(zlim[1], zlim[2], length.out=100), ncol=1)), zlim=zlim, col=grad, xlab="", xaxt="n", ylab="Max copy number", mgp=c(2,1,0))
+	}
 }
 
 
@@ -141,7 +148,9 @@ dd$logratio <- dd$max.alpha / dd$max.beta
 # in case of replicates: take the mean
 ddm <- aggregate(. ~ HTgen + eta, dd[,-1], mean)
 
-mode <- "image" # Alternative: "image"
+mode <- "image" # Alternative: "dots", "image"
+
+browser()
 
 pdf("Figure2A.pdf", width=page.width / 2, height=fig.height, pointsize=fontsize)
 

@@ -36,7 +36,7 @@ outputdir = "../results/Results-fig1/"
 with open('./Default.parameters', 'r') as file:
     parameters = json.load(file)
 
-etas          = [0.0, 1.0]
+etas          = [0.0, 0.25, 0.5, 0.75, 1.0]
 HTgenerations = [0,200]
 replicates    = 40
 

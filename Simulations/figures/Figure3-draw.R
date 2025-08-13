@@ -82,11 +82,11 @@ pch <- pch[names(pch) != "0"]
 pdf("Figure3A.pdf",  width=page.width / 2, height=fig.height, pointsize=fontsize)
     xshft.2A <- setNames(c(-0.02, 0, 0.02), nm=names(pch))
     
-    par(mar=c(4.5,4,1,1), cex=1)
+    par(mar=c(4.5,4,2,1), cex=1)
     
     dd.eta <- dd[!is.na(dd$eta),]
     
-    plot(NULL, xlim=range(dd.eta$eta), ylim=c(0, 30), xlab=expression("Cross regulation "*(eta)), ylab="Max copy number")
+    plot(NULL, xlim=range(dd.eta$eta), ylim=c(0, 30), xlab=expression("Cross regulation "*(eta)), ylab="Max copy number", main=expression("H=200, s=0.005"))
 
     # Means
     mm.alpha <- tapply(dd.eta$max.alpha, INDEX=list(dd.eta$eta, dd.eta$HTgen), FUN=mean)
@@ -108,14 +108,14 @@ dev.off()
 pdf("Figure3B.pdf",  width=page.width / 2, height=fig.height, pointsize=fontsize)
     xshft.2B <- setNames(c(-0.0001, 0, 0.0001), nm=names(pch))
     
-    par(mar=c(4.5,4,1,1), cex=1)
+    par(mar=c(4.5,4,2,1), cex=1)
     
     dd.sel <- dd[!is.na(dd$sel),]
     
     xlim <- c(0,0.01) # range(dd.sel$sel)
     ylim <- c(0, 175) # c(0, max(c(dd.sel$max.alpha, dd.sel$max.beta), na.rm=TRUE))
     
-    plot(NULL, xlim=xlim, ylim=ylim, xlab=expression("Selection coeffcient (s)"), ylab="Max copy number")
+    plot(NULL, xlim=xlim, ylim=ylim, xlab=expression("Selection coeffcient (s)"), ylab="Max copy number", main=expression("H=200, "*eta*"=0.9"))
 
     # Means
     mm.alpha <- tapply(dd.sel$max.alpha, INDEX=list(dd.sel$sel, dd.sel$HTgen), FUN=mean)
