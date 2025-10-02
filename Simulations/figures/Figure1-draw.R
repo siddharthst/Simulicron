@@ -1,5 +1,6 @@
 library(parallel)
 library(reticulate) 
+reticulate::use_python("/usr/bin/python3", required=TRUE)
 
 source("../figures/common.R")
 
@@ -56,8 +57,8 @@ select.dyn <- function(filenames, HTgen, eta) {
     ) 
 }
 
-plot.dyn <- function(dyn, ylim=c(0, max(dyn$alpha)), err.bars  = TRUE, ...) {
-    plot(colMeans(dyn$alpha), type="l", col=col.alpha, ylim=ylim, xlab="Generations", ylab="Copy number", ...)
+plot.dyn <- function(dyn, ylim=c(0, max(dyn$alpha)), err.bars  = TRUE, xlab="Generations", ylab="Copy number", ...) {
+    plot(colMeans(dyn$alpha), type="l", col=col.alpha, ylim=ylim, xlab=xlab, ylab=ylab, ...)
     lines(colMeans(dyn$beta), col=col.beta)
     if (err.bars) {
         xxa <- round(seq(1,ncol(dyn$alpha), length.out=16))
@@ -90,22 +91,22 @@ xlim.panels <- c(0, 1500)
 
 etas <- c("0", "0.25", "0.5", "0.75", "1")
 
-pdf("Figure1.pdf", width=pahe.width, height=fig.height, pointsize=fontsize-1)
-	layout(1:(2*length(etas)), ncol=length(etas))
+pdf("Figure1.pdf", width=page.width, height=fig.height, pointsize=fontsize-1)
+	layout(matrix(1:(2*length(etas)), ncol=length(etas)))
 	par(mar=c(1,1,1,1), oma=c(4,4,1,0), cex=1)
 	for (eta in etas) {
 		plot.dyn(select.dyn(ff, HTgen=200, eta=eta), xlim=xlim.panels, ylim=ylim.panels, main=substitute("H=200, "*eta*"="*ee, list("ee"=eta)), xaxt="n", yaxt="n", xlab="", ylab="")
 		if (eta == etas[1]) {
 			axis(2, xpd=NA)
-			mtext("Copy number", 2, cex=1.2)
+			mtext("Copy number", 2, line=2.5, cex=1.2)
 		}
 		plot.dyn(select.dyn(ff, HTgen=0, eta=eta), xlim=xlim.panels, ylim=ylim.panels, main=substitute("H=0, "*eta*"="*ee, list("ee"=eta)), xaxt="n", yaxt="n", xlab="", ylab="")
 		if (eta == etas[1]) {
 			axis(2, xpd=NA)
-			mtext("Copy number", 2, cex=1.2)
+			mtext("Copy number", 2, line=2.5, cex=1.2)
 		}
 		axis(1, xpd=NA)
-		mtext("Generations", 1, cex=1.2)
+		mtext("Generations", 1, line=2.5, cex=1.2)
 	}
 	
 dev.off()

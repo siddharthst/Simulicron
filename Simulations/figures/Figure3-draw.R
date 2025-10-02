@@ -1,5 +1,6 @@
 library(parallel)
 library(reticulate) 
+reticulate::use_python("/usr/bin/python3", required=TRUE)
 
 source("../figures/common.R")
 
